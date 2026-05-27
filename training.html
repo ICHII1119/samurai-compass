@@ -483,37 +483,83 @@ const SPIRITS = {
 const SPIRIT_KEYS = Object.keys(SPIRITS);
 
 const EXERCISES = [
-  { id:'shomen',   jp:'正面素振り',    en:'Shomen Suburi',      cat:'suburi',   type:'reps', target:30, sets:2, spirit:'DISCERNMENT',  desc:'剣先を正面に向け、腰の力で真っ直ぐ振り下ろす。呼吸と動きを一致させよ。',              muscles:['肩','背中','体幹'] },
-  { id:'naname',   jp:'斜め素振り',    en:'Naname Suburi',      cat:'suburi',   type:'reps', target:20, sets:2, spirit:'ADAPTABILITY', desc:'左右45度に振る。腰の回転を使い、体全体で斬る。',                                      muscles:['肩','腰','体幹'] },
-  { id:'katate',   jp:'片手素振り',    en:'Katate Suburi',      cat:'suburi',   type:'reps', target:15, sets:2, spirit:'PERSPECTIVE',   desc:'利き手一本で正確に。握力と集中力を鍛える。',                                          muscles:['前腕','肩','体幹'] },
-  { id:'plank',    jp:'プランク',      en:'Plank Hold',         cat:'core',     type:'time', target:60, sets:3, spirit:'PRESENCE',      desc:'肘を肩の真下に。背骨を一直線に保ち、呼吸を止めるな。',                               muscles:['体幹','肩','臀部'] },
-  { id:'side',     jp:'サイドプランク',en:'Side Plank',         cat:'core',     type:'time', target:45, sets:2, spirit:'PRESENCE',      desc:'体を横一枚の板として保つ。腰を落とすな。左右それぞれ行う。',                          muscles:['腹斜筋','体幹'] },
-  { id:'deadbug',  jp:'デッドバグ',    en:'Dead Bug',           cat:'core',     type:'reps', target:10, sets:3, spirit:'DISCERNMENT',   desc:'対角の腕と脚をゆっくり伸ばす。腰を床に押しつけたまま。',                             muscles:['体幹','腸腰筋'] },
-  { id:'squat',    jp:'スクワット',    en:'Squat',              cat:'footwork', type:'reps', target:20, sets:3, spirit:'ADAPTABILITY',  desc:'足は肩幅。腰を深く落とし、膝をつま先方向へ。踏み込みの基礎。',                       muscles:['太もも','臀部','ふくらはぎ'] },
-  { id:'sumo',     jp:'相撲スクワット',en:'Sumo Squat',         cat:'footwork', type:'reps', target:15, sets:3, spirit:'PRESENCE',      desc:'四股立ちから深く腰を落とす。下半身の安定と内ももを鍛える。',                          muscles:['内もも','臀部','太もも'] },
-  { id:'lunge',    jp:'踏み込み',      en:'Forward Lunge',      cat:'footwork', type:'reps', target:20, sets:3, spirit:'DISCERNMENT',   desc:'大きく踏み込み、前膝を90度に。剣道の踏み込みと同じ原理。左右交互に。',              muscles:['太もも','臀部','ふくらはぎ'] },
-  { id:'lateral',  jp:'横踏み込み',    en:'Lateral Lunge',      cat:'footwork', type:'reps', target:16, sets:3, spirit:'ADAPTABILITY',  desc:'左右へ大きく踏み出す。足さばきの基本。内ももと臀部に効く。',                         muscles:['内もも','臀部','太もも'] },
-  { id:'pushup',   jp:'腕立て伏せ',    en:'Push-up',            cat:'upper',    type:'reps', target:20, sets:3, spirit:'INTEGRITY',     desc:'肩幅より少し広め。体を一本の棒に保つ。素振りの腕力の基礎。',                         muscles:['胸','肩','三頭筋'] },
-  { id:'pike',     jp:'逆三角腕立て',  en:'Pike Push-up',       cat:'upper',    type:'reps', target:12, sets:3, spirit:'INTEGRITY',     desc:'腰を高く上げ、頭を地面へ近づける。肩の強化に特に効果的。',                           muscles:['肩','三頭筋'] },
-  { id:'burpee',   jp:'バーピー',      en:'Burpee',             cat:'full',     type:'reps', target:10, sets:3, spirit:'ADAPTABILITY',  desc:'起き上がり、跳躍。全身を瞬時に動かす。最高の全身稽古。',                             muscles:['全身'] },
-  { id:'mountain', jp:'山岳登り',      en:'Mountain Climber',   cat:'full',     type:'time', target:30, sets:3, spirit:'DISCERNMENT',   desc:'プランク姿勢から膝を交互に引きつける。体幹と有酸素を同時に。',                       muscles:['体幹','脚','肩'] },
+  // ── 可動域・ウォームアップ ──
+  { id:'catcow',    jp:'キャット&カウ',   en:'Cat-Cow',             cat:'mobility', type:'reps', target:10, sets:2, spirit:'PRESENCE',
+    desc:'四つん這いで息を吸いながら背中を反らせ（カウ）、吐きながら丸める（キャット）。ゆっくり10回。脊椎全体を目覚めさせる朝の儀式。',
+    muscles:['脊椎','体幹','肩'] },
+  { id:'thoracic',  jp:'胸椎回旋',        en:'Thoracic Rotation',   cat:'mobility', type:'reps', target:10, sets:2, spirit:'ADAPTABILITY',
+    desc:'横向きに寝て膝を90度に曲げ、上の腕をゆっくり後方へ開く。左右各10回。素振りの回旋力の源になる胸椎を解放する。',
+    muscles:['胸椎','肩','背中'] },
+  { id:'hip90',     jp:'股関節90/90',     en:'Hip 90/90 Stretch',   cat:'mobility', type:'time', target:60, sets:2, spirit:'PRESENCE',
+    desc:'床に座り両脚を前後90度に曲げる。上体を立てたまま30秒キープ、左右交互。踏み込みと足さばきに直結する股関節の柔軟性を回復する。',
+    muscles:['股関節','臀部','内もも'] },
+
+  // ── 素振り ──
+  { id:'shomen',    jp:'正面素振り',      en:'Shomen Suburi',       cat:'suburi',   type:'reps', target:20, sets:2, spirit:'DISCERNMENT',
+    desc:'剣先を正面に向け、腰の力で真っ直ぐ振り下ろす。回数より呼吸と動きの一致を大切に。肩の力を抜き、腰から動く感覚を育てる。',
+    muscles:['肩','背中','体幹'] },
+  { id:'naname',    jp:'斜め素振り',      en:'Naname Suburi',       cat:'suburi',   type:'reps', target:15, sets:2, spirit:'ADAPTABILITY',
+    desc:'左右45度に振る。腰の回転を使い体全体で斬る。胸椎回旋のウォームアップが活きる。無理に大きく振らず、軌道の正確さを重視。',
+    muscles:['肩','腰','体幹'] },
+  { id:'katate',    jp:'片手素振り',      en:'Katate Suburi',       cat:'suburi',   type:'reps', target:10, sets:2, spirit:'PERSPECTIVE',
+    desc:'利き手一本で正確に振る。回数は少なくてよい。握力と集中力を丁寧に鍛える。疲れを感じたら即座に止めること。',
+    muscles:['前腕','肩','体幹'] },
+
+  // ── 体幹 ──
+  { id:'birddog',   jp:'バードドッグ',    en:'Bird Dog',            cat:'core',     type:'reps', target:8,  sets:3, spirit:'DISCERNMENT',
+    desc:'四つん這いで対角の腕と脚をゆっくり伸ばし3秒キープ。腰を揺らさないことが核心。左右交互に。腰痛予防と体幹安定の最善手。',
+    muscles:['体幹','臀部','背中'] },
+  { id:'deadbug',   jp:'デッドバグ',      en:'Dead Bug',            cat:'core',     type:'reps', target:8,  sets:3, spirit:'DISCERNMENT',
+    desc:'仰向けで腕を天井へ伸ばし、対角の腕と脚をゆっくり床へ下ろす。腰を床に押しつけたまま離さない。急がず、丁寧に。',
+    muscles:['体幹','腸腰筋'] },
+  { id:'plank',     jp:'プランク',        en:'Plank Hold',          cat:'core',     type:'time', target:40, sets:3, spirit:'PRESENCE',
+    desc:'肘を肩の真下に、背骨を一直線に保つ。呼吸を止めない。40秒から始め、慣れたら5秒ずつ延ばす。平常心を体で覚える稽古。',
+    muscles:['体幹','肩','臀部'] },
+  { id:'side',      jp:'サイドプランク',  en:'Side Plank',          cat:'core',     type:'time', target:30, sets:2, spirit:'PRESENCE',
+    desc:'肘をついて横向きに体を一直線に保つ。腰を落とさない。左右それぞれ30秒。膝をついた軽減版からでもよい。',
+    muscles:['腹斜筋','体幹'] },
+
+  // ── 下半身 ──
+  { id:'glute',     jp:'グルートブリッジ',en:'Glute Bridge',        cat:'lower',    type:'reps', target:15, sets:3, spirit:'INTEGRITY',
+    desc:'仰向けで膝を立て、臀部をゆっくり持ち上げ2秒キープ。膝・腰・肩を一直線に。腰痛予防、素振りの「腰の力」の土台。最も安全な下半身強化。',
+    muscles:['臀部','太もも','体幹'] },
+  { id:'squat',     jp:'スロースクワット', en:'Slow Squat',         cat:'lower',    type:'reps', target:10, sets:3, spirit:'ADAPTABILITY',
+    desc:'3秒かけてゆっくり下ろし、1秒止め、2秒で戻る。膝をつま先と同じ方向へ。回数を減らしテンポを落とすことで、関節への負担を最小化しながら筋力を高める。',
+    muscles:['太もも','臀部','ふくらはぎ'] },
+  { id:'reverse',   jp:'後ろ踏み込み',    en:'Reverse Lunge',       cat:'lower',    type:'reps', target:10, sets:3, spirit:'DISCERNMENT',
+    desc:'後ろへ一歩引いて膝を曲げる。前方への踏み込みより膝への負荷が格段に少ない。左右交互に、ゆっくりと。足さばきの感覚と連動させる。',
+    muscles:['太もも','臀部','ふくらはぎ'] },
+  { id:'wallsit',   jp:'壁スクワット',    en:'Wall Sit',            cat:'lower',    type:'time', target:30, sets:3, spirit:'PRESENCE',
+    desc:'壁に背をつけ膝90度で静止。武道の「半身の構え」と同じ精神で動じない。30秒から始め、慣れたら延ばす。関節に優しい等尺性（静止）トレーニング。',
+    muscles:['太もも','臀部','体幹'] },
+
+  // ── 上半身 ──
+  { id:'pushup',    jp:'腕立て伏せ',      en:'Push-up',             cat:'upper',    type:'reps', target:10, sets:3, spirit:'INTEGRITY',
+    desc:'3秒かけてゆっくり下ろし、押し上げる。難しければ膝をついた形で可。体を一本の棒に保つ。素振りを支える肩・胸の基礎を丁寧に作る。',
+    muscles:['胸','肩','三頭筋'] },
+  { id:'superman',  jp:'スーパーマン',    en:'Superman Hold',       cat:'upper',    type:'reps', target:10, sets:3, spirit:'INTEGRITY',
+    desc:'うつ伏せで腕と脚を同時に持ち上げ2秒キープ。背中全体と臀部を強化。腰痛予防に直結する後面の筋群を、負荷なく丁寧に鍛える。',
+    muscles:['背中','臀部','体幹'] },
 ];
 
 const PROGRAMS = [
   {
-    id:'suburi-kihon', name:'素振り基本', sub:'Foundation of the Blade',
+    id:'morning-suburi', name:'朝の素振り稽古', sub:'Morning Blade & Body',
     duration:15, spirit:'DISCERNMENT', icon:'⚔',
-    exercises:['shomen','naname','plank','squat','katate']
+    exercises:['catcow','thoracic','shomen','naname','birddog','glute'],
+    note:'体を目覚めさせてから素振りへ。朝15分の習慣が軸を作る。'
   },
   {
-    id:'tanden', name:'体幹鍛錬', sub:'Forge the Center',
+    id:'tanden', name:'体幹・可動域', sub:'Core & Mobility',
     duration:20, spirit:'PRESENCE', icon:'◉',
-    exercises:['plank','side','deadbug','sumo','lateral','shomen']
+    exercises:['catcow','thoracic','birddog','deadbug','plank','side','hip90'],
+    note:'関節と体幹を丁寧に整える。疲れた日や雨の日の稽古に。'
   },
   {
-    id:'budo-full', name:'武道全身', sub:"The Warrior's Way",
+    id:'budo-full', name:'武道全身稽古', sub:"The Warrior's Way",
     duration:30, spirit:'INTEGRITY', icon:'侍',
-    exercises:['shomen','naname','pushup','squat','lunge','plank','burpee','katate']
+    exercises:['catcow','thoracic','glute','squat','reverse','pushup','plank','superman','shomen','naname'],
+    note:'全身を総合的に鍛える週2〜3回の稽古。無理は禁物。'
   },
 ];
 
@@ -614,6 +660,7 @@ function renderHome() {
           <span class="program-tag">${p.exercises.length}種目</span>
           <span class="program-tag">${p.spirit}</span>
         </div>
+        ${p.note ? `<div style="font-size:.72rem;color:var(--muted);margin-top:.4rem;line-height:1.5">${p.note}</div>` : ''}
       </div>
       <div class="program-arrow">›</div>
     `;
@@ -774,9 +821,9 @@ function onNextBtn() {
     st.exIdx++;
     st.setIdx = 0;
     if (st.exIdx >= st.exercises.length) { completeSession(); return; }
-    showRest(30, renderExercise);
+    showRest(45, renderExercise); // 種目間45秒（体を労る）
   } else {
-    showRest(20, renderExercise);
+    showRest(30, renderExercise); // セット間30秒
   }
 }
 
