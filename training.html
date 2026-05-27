@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="道場">
+<meta name="theme-color" content="#c9a84c">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%230e0a04'/><text x='256' y='310' font-size='260' text-anchor='middle' fill='%23c9a030' font-family='serif'>道</text></svg>">
+<title>SAMURAI Dojo — 稽古</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Antique+Soft&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fefcf7;
+  --bg2: #f7f1e6;
+  --bg3: #ffffff;
+  --gold: #a07828;
+  --gold2: #c9a030;
+  --gold-dim: rgba(160,120,40,.1);
+  --red: #8b2828;
+  --cream: #241a0e;
+  --cream2: #5a4830;
+  --muted: #9a8a70;
+  --border: rgba(160,120,40,.22);
+  --shadow: 0 8px 36px rgba(120,80,20,.1);
+  --r: 16px;
+  --r-lg: 24px;
+  --tr: .32s cubic-bezier(.34,1.2,.64,1);
+  --font: 'Inter', -apple-system, sans-serif;
+  --font-brush: 'Cormorant Garamond', 'Zen Antique Soft', serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+html { -webkit-text-size-adjust: 100%; font-size: 16px }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--cream);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 10%, rgba(200,150,50,.07), transparent 55%),
+    radial-gradient(ellipse at 85% 85%, rgba(180,100,40,.05), transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.screen { display: none; min-height: 100vh; min-height: 100dvh; position: relative; z-index: 1; flex-direction: column }
+.screen.active { display: flex; animation: fadeUp .4s cubic-bezier(.34,1.1,.64,1) both }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+
+/* ── SHARED ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem .6rem;
+}
+.page-title { font-family: var(--font-brush); font-size: 1.5rem; color: var(--gold); letter-spacing: .04em }
+.back-btn { background: none; border: none; color: var(--gold); font-size: 1.5rem; cursor: pointer; padding: .3rem .5rem; line-height: 1 }
+.page-scroll { flex: 1; overflow-y: auto; padding: 0 1.2rem 2rem }
+.section-label { font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: .7rem }
+
+/* ── HOME ── */
+.home-hero { padding: 1.4rem 1.2rem .8rem; text-align: center }
+.dojo-mark { font-family: var(--font-brush); font-size: 3.2rem; color: var(--gold); line-height: 1; text-shadow: 0 2px 12px rgba(160,120,40,.2) }
+.dojo-sub { font-family: var(--font-brush); font-size: .88rem; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; margin-top: .2rem }
+.streak-bar { display: flex; align-items: center; justify-content: center; gap: .5rem; margin: .8rem 0 .5rem; font-size: .85rem; color: var(--cream2) }
+.streak-count { font-family: var(--font-brush); font-size: 2.2rem; color: var(--gold); line-height: 1; font-weight: 600 }
+.date-label { text-align: center; font-size: .75rem; color: var(--muted); letter-spacing: .06em; margin-bottom: 1.2rem }
+
+.spirit-banner {
+  background: linear-gradient(135deg, #1a1208 0%, #2e1e0c 100%);
+  border-radius: var(--r);
+  padding: 1rem 1.4rem;
+  margin: 0 1.2rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(200,160,48,.15);
+  position: relative;
+  overflow: hidden;
+}
+.spirit-banner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 15%; right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,160,48,.4), transparent);
+}
+.spirit-icon { font-family: var(--font-brush); font-size: 2.6rem; color: var(--gold2); opacity: .85; flex-shrink: 0; line-height: 1 }
+.spirit-label { font-size: .62rem; color: var(--gold2); letter-spacing: .14em; text-transform: uppercase; margin-bottom: .2rem }
+.spirit-name { font-family: var(--font-brush); font-size: 1.15rem; color: #fff; letter-spacing: .04em }
+.spirit-quote { font-size: .76rem; color: rgba(255,255,255,.55); line-height: 1.55; margin-top: .25rem }
+
+.program-list { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.4rem }
+.program-card {
+  background: linear-gradient(135deg, var(--bg3) 0%, var(--bg2) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.15rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .15s;
+}
+.program-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.program-card:active { transform: scale(.98) }
+.program-icon {
+  width: 50px; height: 50px;
+  background: var(--gold-dim);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-brush);
+  font-size: 1.4rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.program-info { flex: 1; min-width: 0 }
+.program-name { font-family: var(--font-brush); font-size: 1.12rem; color: var(--cream); letter-spacing: .02em }
+.program-sub { font-size: .7rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-top: .1rem }
+.program-meta { display: flex; gap: .4rem; margin-top: .35rem; flex-wrap: wrap }
+.program-tag { font-size: .62rem; background: var(--gold-dim); color: var(--gold); border-radius: 20px; padding: .14rem .5rem; letter-spacing: .05em }
+.program-arrow { color: var(--gold); font-size: 1.1rem; opacity: .5 }
+
+.btn-ghost-dash {
+  width: 100%;
+  background: none;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--r);
+  padding: 1rem;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: .88rem;
+  cursor: pointer;
+  letter-spacing: .04em;
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  transition: color .2s, border-color .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-ghost-dash:active { color: var(--gold); border-color: var(--gold) }
+.app-footer { text-align: center; padding: 1rem; font-size: .68rem; color: var(--muted); letter-spacing: .06em }
+
+/* ── SESSION ── */
+.session-top { padding: .75rem 1.2rem; display: flex; align-items: center; gap: .8rem }
+.session-prog-name { font-family: var(--font-brush); font-size: 1rem; color: var(--gold); flex: 1 }
+.session-progress { font-size: .74rem; color: var(--muted); white-space: nowrap }
+.progress-track { height: 3px; background: var(--gold-dim); margin: 0 1.2rem; border-radius: 2px; overflow: hidden }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 2px; transition: width .6s ease }
+
+.exercise-card {
+  margin: .9rem 1.2rem;
+  background: linear-gradient(160deg, #1a1208 0%, #2a1808 100%);
+  border-radius: var(--r-lg);
+  padding: 1.6rem 1.5rem 1.3rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,.18);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(200,160,48,.1);
+}
+.exercise-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 15%; right: 15%;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--gold2), transparent);
+}
+.ex-spirit-badge {
+  display: inline-block;
+  font-size: .59rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--gold2);
+  background: rgba(200,160,48,.1);
+  border: 1px solid rgba(200,160,48,.22);
+  border-radius: 20px;
+  padding: .18rem .65rem;
+  margin-bottom: .75rem;
+}
+.ex-jp { font-family: var(--font-brush); font-size: 2rem; color: #fff; letter-spacing: .04em; line-height: 1.15 }
+.ex-en { font-family: var(--font-brush); font-size: .92rem; color: rgba(255,255,255,.45); letter-spacing: .06em; margin-top: .15rem }
+.ex-desc { font-size: .76rem; color: rgba(255,255,255,.5); line-height: 1.65; margin-top: .75rem }
+.ex-muscles { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .7rem }
+.muscle-tag { font-size: .6rem; color: rgba(255,255,255,.35); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: .12rem .45rem }
+
+.counter-area { display: flex; flex-direction: column; align-items: center; gap: .9rem; padding: .5rem 1.2rem }
+
+.rep-display { font-family: var(--font-brush); font-size: 5.5rem; color: var(--gold); line-height: 1; min-width: 2ch; text-align: center; transition: transform .12s }
+.rep-target { font-size: .73rem; color: var(--muted); letter-spacing: .06em }
+.rep-tap {
+  width: 108px; height: 108px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.4rem; color: var(--gold);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s, background .12s;
+}
+.rep-tap:active { transform: scale(.88); background: rgba(160,120,40,.22) }
+.rep-controls { display: flex; gap: .9rem }
+.rep-btn { background: none; border: 1px solid var(--border); border-radius: 10px; padding: .4rem .95rem; color: var(--muted); font-size: .82rem; cursor: pointer }
+
+.timer-wrap { position: relative; display: flex; align-items: center; justify-content: center; width: 150px; height: 150px }
+.timer-wrap svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-90deg) }
+.timer-wrap circle { fill: none; stroke-width: 5 }
+.timer-track { stroke: var(--gold-dim) }
+.timer-fill { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset .8s linear }
+.timer-display { font-family: var(--font-brush); font-size: 4rem; color: var(--gold); line-height: 1; position: relative; z-index: 1 }
+.timer-target { font-size: .73rem; color: var(--muted); letter-spacing: .06em }
+.timer-btn {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  border: 2px solid var(--border);
+  font-size: 1.4rem; color: var(--gold);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.timer-btn:active { transform: scale(.9) }
+
+.sets-row { display: flex; align-items: center; justify-content: center; gap: .55rem; margin: 0 1.2rem .7rem }
+.set-dot { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--border); background: none; transition: background .2s, border-color .2s }
+.set-dot.done { background: var(--gold); border-color: var(--gold) }
+.sets-label { font-size: .73rem; color: var(--muted); margin-left: .4rem }
+
+.next-preview {
+  margin: 0 1.2rem;
+  padding: .75rem 1rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  display: flex; align-items: center; gap: .6rem;
+}
+.next-label { font-size: .62rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase }
+.next-name { font-family: var(--font-brush); font-size: .98rem; color: var(--cream) }
+
+.session-actions { padding: .9rem 1.2rem; display: flex; gap: .75rem; margin-top: auto }
+.btn-primary {
+  flex: 1;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border: none; border-radius: var(--r);
+  padding: .95rem;
+  color: #fff;
+  font-family: var(--font-brush);
+  font-size: 1.1rem; letter-spacing: .06em;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(160,120,40,.28);
+  transition: transform .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:active { transform: scale(.97) }
+.btn-ghost {
+  background: none; border: 1.5px solid var(--border); border-radius: var(--r);
+  padding: .95rem 1.1rem; color: var(--muted); font-size: .85rem; cursor: pointer;
+}
+
+/* ── REST OVERLAY ── */
+#rest-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,8,4,.93);
+  backdrop-filter: blur(14px);
+  z-index: 200;
+  flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center;
+}
+#rest-overlay.active { display: flex; animation: fadeUp .3s ease }
+.rest-title { font-family: var(--font-brush); font-size: 2rem; color: var(--gold2); letter-spacing: .06em }
+.rest-timer-num { font-family: var(--font-brush); font-size: 6rem; color: #fff; line-height: 1 }
+.rest-breathe { font-size: .78rem; color: rgba(255,255,255,.35); letter-spacing: .14em; text-transform: uppercase }
+.rest-skip { margin-top: .5rem; background: none; border: 1px solid rgba(255,255,255,.18); border-radius: 10px; color: rgba(255,255,255,.45); padding: .5rem 1.3rem; font-size: .8rem; cursor: pointer }
+
+/* ── COMPLETE ── */
+.complete-hero { text-align: center; padding: 1.8rem 1.2rem .8rem }
+.complete-mark { font-family: var(--font-brush); font-size: 3.5rem; color: var(--gold) }
+.complete-title { font-family: var(--font-brush); font-size: 1.8rem; color: var(--cream); margin-top: .2rem }
+.complete-sub { font-size: .76rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-top: .15rem }
+
+.stats-row { display: flex; gap: .7rem; margin: .9rem 1.2rem }
+.stat-box { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: .85rem; text-align: center }
+.stat-val { font-family: var(--font-brush); font-size: 2rem; color: var(--gold); line-height: 1 }
+.stat-lbl { font-size: .62rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-top: .2rem }
+
+.card-preview-wrap { margin: 0 1.2rem .9rem; border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow) }
+#share-canvas { width: 100%; height: auto; display: block }
+
+.complete-actions { padding: 0 1.2rem; display: flex; flex-direction: column; gap: .7rem }
+.share-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #1a1208 0%, #2e1e0c 100%);
+  border: 1px solid rgba(200,160,48,.25);
+  border-radius: var(--r); padding: 1rem;
+  color: #fff; font-family: var(--font-brush); font-size: 1.1rem; letter-spacing: .06em;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── HISTORY ── */
+.history-list { display: flex; flex-direction: column; gap: .7rem }
+.history-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem 1.2rem; display: flex; align-items: center; gap: .9rem }
+.h-date-num { font-family: var(--font-brush); font-size: 1.6rem; color: var(--gold); line-height: 1; min-width: 2rem; text-align: center }
+.h-date-day { font-size: .6rem; color: var(--muted); text-align: center }
+.h-info { flex: 1 }
+.h-prog { font-family: var(--font-brush); font-size: 1rem; color: var(--cream) }
+.h-meta { font-size: .71rem; color: var(--muted); margin-top: .12rem }
+.h-spirit { font-size: .6rem; color: var(--gold); letter-spacing: .08em; text-transform: uppercase; margin-top: .15rem }
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); font-family: var(--font-brush); font-size: 1.05rem; line-height: 1.8 }
+</style>
+</head>
+<body>
+
+<!-- ════ HOME ════ -->
+<div id="s-home" class="screen active">
+  <div class="home-hero">
+    <div class="dojo-mark">道場</div>
+    <div class="dojo-sub">SAMURAI Dojo</div>
+    <div class="streak-bar">
+      <span>稽古</span>
+      <span class="streak-count" id="streak-num">0</span>
+      <span>日連続</span>
+    </div>
+    <div class="date-label" id="today-label"></div>
+  </div>
+
+  <div class="spirit-banner">
+    <div class="spirit-icon" id="spirit-icon-home">観</div>
+    <div>
+      <div class="spirit-label">今日の Spirit</div>
+      <div class="spirit-name" id="spirit-name-home">PERSPECTIVE</div>
+      <div class="spirit-quote" id="spirit-quote-home"></div>
+    </div>
+  </div>
+
+  <div style="padding: 0 1.2rem; margin-bottom: 1.4rem;">
+    <div class="section-label">稽古メニュー</div>
+    <div class="program-list" id="program-list"></div>
+    <button class="btn-ghost-dash" onclick="nav('s-history')" style="margin-top:.5rem">
+      📜 稽古録を見る
+    </button>
+  </div>
+
+  <div class="app-footer">SAMURAI in You — Still Becoming.</div>
+</div>
+
+<!-- ════ SESSION ════ -->
+<div id="s-session" class="screen">
+  <div class="session-top">
+    <button class="back-btn" onclick="confirmQuit()">←</button>
+    <div class="session-prog-name" id="sess-prog-name"></div>
+    <div class="session-progress" id="sess-progress"></div>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+  </div>
+
+  <div class="exercise-card">
+    <div class="ex-spirit-badge" id="ex-spirit"></div>
+    <div class="ex-jp" id="ex-jp"></div>
+    <div class="ex-en" id="ex-en"></div>
+    <div class="ex-desc" id="ex-desc"></div>
+    <div class="ex-muscles" id="ex-muscles"></div>
+  </div>
+
+  <div class="counter-area" id="counter-area"></div>
+
+  <div class="sets-row">
+    <div id="sets-dots" style="display:flex;gap:.5rem"></div>
+    <span class="sets-label" id="sets-label"></span>
+  </div>
+
+  <div class="next-preview" id="next-preview" style="display:none">
+    <div style="flex:1">
+      <div class="next-label">次の稽古</div>
+      <div class="next-name" id="next-name"></div>
+    </div>
+    <div style="color:var(--muted);font-size:.85rem">›</div>
+  </div>
+
+  <div style="flex:1;min-height:.5rem"></div>
+
+  <div class="session-actions">
+    <button class="btn-ghost" onclick="confirmQuit()">中断</button>
+    <button class="btn-primary" id="next-btn" onclick="onNextBtn()">次へ ›</button>
+  </div>
+</div>
+
+<!-- ════ COMPLETE ════ -->
+<div id="s-complete" class="screen">
+  <div class="complete-hero">
+    <div class="complete-mark">⚔</div>
+    <div class="complete-title">稽古完了</div>
+    <div class="complete-sub">Training Complete</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-val" id="stat-ex">—</div>
+      <div class="stat-lbl">種目</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="stat-reps">—</div>
+      <div class="stat-lbl">総回数</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="stat-min">—</div>
+      <div class="stat-lbl">所要時間</div>
+    </div>
+  </div>
+
+  <div class="card-preview-wrap">
+    <canvas id="share-canvas"></canvas>
+  </div>
+
+  <div class="complete-actions">
+    <button class="share-btn" onclick="shareCard()">📤 SNSでシェア</button>
+    <button class="btn-primary" onclick="nav('s-home')">道場へ戻る</button>
+    <button class="btn-ghost" onclick="nav('s-history')" style="text-align:center">稽古録を見る</button>
+  </div>
+
+  <div style="height:1.5rem"></div>
+</div>
+
+<!-- ════ HISTORY ════ -->
+<div id="s-history" class="screen">
+  <div class="page-header">
+    <button class="back-btn" onclick="nav('s-home')">←</button>
+    <div class="page-title">稽古録</div>
+    <div style="width:2rem"></div>
+  </div>
+  <div class="page-scroll">
+    <div class="history-list" id="history-list"></div>
+  </div>
+</div>
+
+<!-- ════ REST OVERLAY ════ -->
+<div id="rest-overlay">
+  <div class="rest-title">休憩</div>
+  <div class="rest-timer-num" id="rest-num">30</div>
+  <div class="rest-breathe">BREATHE</div>
+  <button class="rest-skip" onclick="skipRest()">スキップ →</button>
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────
+
+const SPIRITS = {
+  PERSPECTIVE:  { jp:'観見',   icon:'観', quote:'相手全体を観よ。一点に囚われるな。',          en:'See the whole — never be captured by one point.' },
+  DISCERNMENT:  { jp:'判断力', icon:'判', quote:'千日の稽古を鍛とし、万日の稽古を錬とす。',     en:'A thousand days to forge. Ten thousand days to refine.' },
+  ADAPTABILITY: { jp:'有構無構',icon:'構', quote:'形に囚われず、形を超えよ。',                  en:'Transcend the form. Do not be captured by it.' },
+  PRESENCE:     { jp:'平常心', icon:'心', quote:'稽古中も、戦場でも、食卓でも — 同じ心で。',    en:'In training, in battle, at the table — one mind.' },
+  INTEGRITY:    { jp:'仁義',   icon:'仁', quote:'表裏なく、一つの軸で立て。',                   en:'No front. No back. One unshakeable axis.' },
+};
+const SPIRIT_KEYS = Object.keys(SPIRITS);
+
+const EXERCISES = [
+  { id:'shomen',   jp:'正面素振り',    en:'Shomen Suburi',      cat:'suburi',   type:'reps', target:30, sets:2, spirit:'DISCERNMENT',  desc:'剣先を正面に向け、腰の力で真っ直ぐ振り下ろす。呼吸と動きを一致させよ。',              muscles:['肩','背中','体幹'] },
+  { id:'naname',   jp:'斜め素振り',    en:'Naname Suburi',      cat:'suburi',   type:'reps', target:20, sets:2, spirit:'ADAPTABILITY', desc:'左右45度に振る。腰の回転を使い、体全体で斬る。',                                      muscles:['肩','腰','体幹'] },
+  { id:'katate',   jp:'片手素振り',    en:'Katate Suburi',      cat:'suburi',   type:'reps', target:15, sets:2, spirit:'PERSPECTIVE',   desc:'利き手一本で正確に。握力と集中力を鍛える。',                                          muscles:['前腕','肩','体幹'] },
+  { id:'plank',    jp:'プランク',      en:'Plank Hold',         cat:'core',     type:'time', target:60, sets:3, spirit:'PRESENCE',      desc:'肘を肩の真下に。背骨を一直線に保ち、呼吸を止めるな。',                               muscles:['体幹','肩','臀部'] },
+  { id:'side',     jp:'サイドプランク',en:'Side Plank',         cat:'core',     type:'time', target:45, sets:2, spirit:'PRESENCE',      desc:'体を横一枚の板として保つ。腰を落とすな。左右それぞれ行う。',                          muscles:['腹斜筋','体幹'] },
+  { id:'deadbug',  jp:'デッドバグ',    en:'Dead Bug',           cat:'core',     type:'reps', target:10, sets:3, spirit:'DISCERNMENT',   desc:'対角の腕と脚をゆっくり伸ばす。腰を床に押しつけたまま。',                             muscles:['体幹','腸腰筋'] },
+  { id:'squat',    jp:'スクワット',    en:'Squat',              cat:'footwork', type:'reps', target:20, sets:3, spirit:'ADAPTABILITY',  desc:'足は肩幅。腰を深く落とし、膝をつま先方向へ。踏み込みの基礎。',                       muscles:['太もも','臀部','ふくらはぎ'] },
+  { id:'sumo',     jp:'相撲スクワット',en:'Sumo Squat',         cat:'footwork', type:'reps', target:15, sets:3, spirit:'PRESENCE',      desc:'四股立ちから深く腰を落とす。下半身の安定と内ももを鍛える。',                          muscles:['内もも','臀部','太もも'] },
+  { id:'lunge',    jp:'踏み込み',      en:'Forward Lunge',      cat:'footwork', type:'reps', target:20, sets:3, spirit:'DISCERNMENT',   desc:'大きく踏み込み、前膝を90度に。剣道の踏み込みと同じ原理。左右交互に。',              muscles:['太もも','臀部','ふくらはぎ'] },
+  { id:'lateral',  jp:'横踏み込み',    en:'Lateral Lunge',      cat:'footwork', type:'reps', target:16, sets:3, spirit:'ADAPTABILITY',  desc:'左右へ大きく踏み出す。足さばきの基本。内ももと臀部に効く。',                         muscles:['内もも','臀部','太もも'] },
+  { id:'pushup',   jp:'腕立て伏せ',    en:'Push-up',            cat:'upper',    type:'reps', target:20, sets:3, spirit:'INTEGRITY',     desc:'肩幅より少し広め。体を一本の棒に保つ。素振りの腕力の基礎。',                         muscles:['胸','肩','三頭筋'] },
+  { id:'pike',     jp:'逆三角腕立て',  en:'Pike Push-up',       cat:'upper',    type:'reps', target:12, sets:3, spirit:'INTEGRITY',     desc:'腰を高く上げ、頭を地面へ近づける。肩の強化に特に効果的。',                           muscles:['肩','三頭筋'] },
+  { id:'burpee',   jp:'バーピー',      en:'Burpee',             cat:'full',     type:'reps', target:10, sets:3, spirit:'ADAPTABILITY',  desc:'起き上がり、跳躍。全身を瞬時に動かす。最高の全身稽古。',                             muscles:['全身'] },
+  { id:'mountain', jp:'山岳登り',      en:'Mountain Climber',   cat:'full',     type:'time', target:30, sets:3, spirit:'DISCERNMENT',   desc:'プランク姿勢から膝を交互に引きつける。体幹と有酸素を同時に。',                       muscles:['体幹','脚','肩'] },
+];
+
+const PROGRAMS = [
+  {
+    id:'suburi-kihon', name:'素振り基本', sub:'Foundation of the Blade',
+    duration:15, spirit:'DISCERNMENT', icon:'⚔',
+    exercises:['shomen','naname','plank','squat','katate']
+  },
+  {
+    id:'tanden', name:'体幹鍛錬', sub:'Forge the Center',
+    duration:20, spirit:'PRESENCE', icon:'◉',
+    exercises:['plank','side','deadbug','sumo','lateral','shomen']
+  },
+  {
+    id:'budo-full', name:'武道全身', sub:"The Warrior's Way",
+    duration:30, spirit:'INTEGRITY', icon:'侍',
+    exercises:['shomen','naname','pushup','squat','lunge','plank','burpee','katate']
+  },
+];
+
+// ── STATE ────────────────────────────────────────
+
+const st = {
+  program: null,
+  exercises: [],
+  exIdx: 0,
+  setIdx: 0,
+  reps: 0,
+  timerSec: 0,
+  timerMax: 0,
+  timerRunning: false,
+  timerIv: null,
+  restIv: null,
+  restDone: null,
+  sessionStart: 0,
+  log: [],
+};
+
+// ── UTILS ────────────────────────────────────────
+
+const todayKey = () => new Date().toISOString().slice(0, 10);
+const getHistory = () => JSON.parse(localStorage.getItem('samurai-dojo-v1') || '[]');
+const saveHistory = h => localStorage.setItem('samurai-dojo-v1', JSON.stringify(h));
+const exById = id => EXERCISES.find(e => e.id === id);
+
+function getStreak() {
+  const dates = [...new Set(getHistory().map(s => s.date))].sort().reverse();
+  if (!dates.length) return 0;
+  let streak = 0;
+  let cur = new Date(todayKey());
+  for (const d of dates) {
+    const diff = Math.round((cur - new Date(d)) / 86400000);
+    if (diff <= 1) { streak++; cur = new Date(d); } else break;
+  }
+  return streak;
+}
+
+function getDailySpirit() {
+  return SPIRIT_KEYS[new Date().getDay() % SPIRIT_KEYS.length];
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const words = text.split('');
+  let line = '';
+  let ly = y;
+  for (const ch of words) {
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, ly);
+      line = ch;
+      ly += lineH;
+    } else { line = test; }
+  }
+  if (line) ctx.fillText(line, x, ly);
+  return ly;
+}
+
+// ── NAVIGATION ───────────────────────────────────
+
+function nav(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 's-home') renderHome();
+  if (id === 's-history') renderHistory();
+}
+
+// ── HOME ─────────────────────────────────────────
+
+function renderHome() {
+  document.getElementById('streak-num').textContent = getStreak();
+
+  const now = new Date();
+  document.getElementById('today-label').textContent =
+    now.toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+
+  const sk = getDailySpirit();
+  const sp = SPIRITS[sk];
+  document.getElementById('spirit-icon-home').textContent = sp.icon;
+  document.getElementById('spirit-name-home').textContent = sk;
+  document.getElementById('spirit-quote-home').textContent = sp.quote;
+
+  const list = document.getElementById('program-list');
+  list.innerHTML = '';
+  PROGRAMS.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'program-card';
+    el.onclick = () => startSession(p.id);
+    el.innerHTML = `
+      <div class="program-icon">${p.icon}</div>
+      <div class="program-info">
+        <div class="program-name">${p.name}</div>
+        <div class="program-sub">${p.sub}</div>
+        <div class="program-meta">
+          <span class="program-tag">約${p.duration}分</span>
+          <span class="program-tag">${p.exercises.length}種目</span>
+          <span class="program-tag">${p.spirit}</span>
+        </div>
+      </div>
+      <div class="program-arrow">›</div>
+    `;
+    list.appendChild(el);
+  });
+}
+
+// ── SESSION ──────────────────────────────────────
+
+function startSession(programId) {
+  const prog = PROGRAMS.find(p => p.id === programId);
+  st.program = prog;
+  st.exercises = prog.exercises.map(id => exById(id)).filter(Boolean);
+  st.exIdx = 0;
+  st.setIdx = 0;
+  st.log = [];
+  st.sessionStart = Date.now();
+  nav('s-session');
+  renderExercise();
+}
+
+function renderExercise() {
+  const ex = st.exercises[st.exIdx];
+  const total = st.exercises.length;
+
+  document.getElementById('sess-prog-name').textContent = st.program.name;
+  document.getElementById('sess-progress').textContent = `${st.exIdx + 1} / ${total}`;
+  document.getElementById('prog-fill').style.width = (st.exIdx / total * 100) + '%';
+
+  document.getElementById('ex-spirit').textContent = ex.spirit;
+  document.getElementById('ex-jp').textContent = ex.jp;
+  document.getElementById('ex-en').textContent = ex.en;
+  document.getElementById('ex-desc').textContent = ex.desc;
+  document.getElementById('ex-muscles').innerHTML = ex.muscles.map(m => `<span class="muscle-tag">${m}</span>`).join('');
+
+  // sets dots
+  const dotsEl = document.getElementById('sets-dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < ex.sets; i++) {
+    const d = document.createElement('div');
+    d.className = 'set-dot' + (i < st.setIdx ? ' done' : '');
+    dotsEl.appendChild(d);
+  }
+  document.getElementById('sets-label').textContent = `セット ${st.setIdx + 1} / ${ex.sets}`;
+
+  // next preview
+  const isLastSet = st.setIdx + 1 >= ex.sets;
+  const nextEl = document.getElementById('next-preview');
+  if (isLastSet && st.exIdx + 1 < total) {
+    nextEl.style.display = 'flex';
+    document.getElementById('next-name').textContent = st.exercises[st.exIdx + 1].jp;
+  } else {
+    nextEl.style.display = 'none';
+  }
+
+  const isLast = st.exIdx === total - 1 && isLastSet;
+  document.getElementById('next-btn').textContent = isLast ? '稽古完了 ⚔' : '次へ ›';
+
+  renderCounter(ex);
+}
+
+function renderCounter(ex) {
+  const area = document.getElementById('counter-area');
+  area.innerHTML = '';
+  st.reps = 0;
+
+  if (ex.type === 'reps') {
+    area.innerHTML = `
+      <div style="text-align:center">
+        <div class="rep-display" id="rep-num">0</div>
+        <div class="rep-target">目標 ${ex.target} 回</div>
+      </div>
+      <div class="rep-tap" id="rep-tap" onclick="countRep()">＋</div>
+      <div class="rep-controls">
+        <button class="rep-btn" onclick="adjustRep(-1)">−1</button>
+        <button class="rep-btn" onclick="adjustRep(1)">+1</button>
+      </div>
+    `;
+  } else {
+    st.timerMax = ex.target;
+    st.timerSec = ex.target;
+    st.timerRunning = false;
+    clearInterval(st.timerIv);
+
+    const R = 60, circ = Math.round(2 * Math.PI * R);
+    area.innerHTML = `
+      <div class="timer-wrap" style="width:160px;height:160px">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle class="timer-track" cx="80" cy="80" r="${R}" stroke-dasharray="${circ}"/>
+          <circle class="timer-fill" id="timer-fill" cx="80" cy="80" r="${R}" stroke-dasharray="${circ}" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-display" id="timer-display">${ex.target}</div>
+      </div>
+      <button class="timer-btn" id="timer-btn" onclick="toggleTimer()">▶</button>
+      <div class="timer-target">目標 ${ex.target} 秒</div>
+    `;
+  }
+}
+
+function countRep() {
+  st.reps++;
+  const el = document.getElementById('rep-num');
+  if (!el) return;
+  el.textContent = st.reps;
+  el.style.transition = 'transform .1s';
+  el.style.transform = 'scale(1.18)';
+  setTimeout(() => { el.style.transform = 'scale(1)'; }, 120);
+}
+
+function adjustRep(d) {
+  st.reps = Math.max(0, st.reps + d);
+  const el = document.getElementById('rep-num');
+  if (el) el.textContent = st.reps;
+}
+
+function toggleTimer() {
+  if (st.timerRunning) {
+    clearInterval(st.timerIv);
+    st.timerRunning = false;
+    document.getElementById('timer-btn').textContent = '▶';
+  } else {
+    st.timerRunning = true;
+    document.getElementById('timer-btn').textContent = '⏸';
+    st.timerIv = setInterval(() => {
+      st.timerSec = Math.max(0, st.timerSec - 1);
+      updateTimerDisplay();
+      if (st.timerSec <= 0) {
+        clearInterval(st.timerIv);
+        st.timerRunning = false;
+        const btn = document.getElementById('timer-btn');
+        if (btn) btn.textContent = '✓';
+        navigator.vibrate && navigator.vibrate([100, 60, 100]);
+      }
+    }, 1000);
+  }
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timer-display');
+  const fill = document.getElementById('timer-fill');
+  if (el) el.textContent = st.timerSec;
+  if (fill) {
+    const R = 60, circ = Math.round(2 * Math.PI * R);
+    fill.setAttribute('stroke-dashoffset', circ * (1 - st.timerSec / st.timerMax));
+  }
+}
+
+function onNextBtn() {
+  const ex = st.exercises[st.exIdx];
+  clearInterval(st.timerIv);
+  st.timerRunning = false;
+
+  const val = ex.type === 'reps' ? st.reps : (st.timerMax - st.timerSec);
+  st.log.push({ exId: ex.id, type: ex.type, value: val });
+
+  st.setIdx++;
+  if (st.setIdx >= ex.sets) {
+    st.exIdx++;
+    st.setIdx = 0;
+    if (st.exIdx >= st.exercises.length) { completeSession(); return; }
+    showRest(30, renderExercise);
+  } else {
+    showRest(20, renderExercise);
+  }
+}
+
+function confirmQuit() {
+  if (confirm('稽古を中断しますか？')) {
+    clearInterval(st.timerIv);
+    clearInterval(st.restIv);
+    document.getElementById('rest-overlay').classList.remove('active');
+    nav('s-home');
+  }
+}
+
+// ── REST ─────────────────────────────────────────
+
+function showRest(sec, onDone) {
+  const overlay = document.getElementById('rest-overlay');
+  const numEl = document.getElementById('rest-num');
+  let remaining = sec;
+  numEl.textContent = remaining;
+  overlay.classList.add('active');
+  st.restDone = () => {
+    clearInterval(st.restIv);
+    overlay.classList.remove('active');
+    onDone();
+  };
+  st.restIv = setInterval(() => {
+    remaining--;
+    numEl.textContent = remaining;
+    if (remaining <= 0) st.restDone();
+  }, 1000);
+}
+
+function skipRest() {
+  if (st.restDone) st.restDone();
+}
+
+// ── COMPLETE ─────────────────────────────────────
+
+function completeSession() {
+  const dur = Math.round((Date.now() - st.sessionStart) / 1000);
+  const totalReps = st.log.reduce((a, l) => a + l.value, 0);
+
+  const record = {
+    date: todayKey(),
+    programId: st.program.id,
+    programName: st.program.name,
+    spirit: st.program.spirit,
+    exercises: st.exercises.length,
+    totalReps,
+    duration: dur,
+  };
+  const h = getHistory();
+  h.push(record);
+  saveHistory(h);
+
+  document.getElementById('stat-ex').textContent = st.exercises.length;
+  document.getElementById('stat-reps').textContent = totalReps;
+  document.getElementById('stat-min').textContent = Math.round(dur / 60) + '分';
+
+  nav('s-complete');
+  document.fonts.ready.then(() => generateShareCard(record));
+}
+
+// ── CANVAS SHARE CARD ────────────────────────────
+
+function generateShareCard(record) {
+  const canvas = document.getElementById('share-canvas');
+  const W = 1080, H = 1080;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#0e0a04');
+  bg.addColorStop(1, '#1c1208');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Gold accent lines top/bottom
+  const gold = ctx.createLinearGradient(0, 0, W, 0);
+  gold.addColorStop(0, 'transparent');
+  gold.addColorStop(.3, '#c9a030');
+  gold.addColorStop(.7, '#c9a030');
+  gold.addColorStop(1, 'transparent');
+  ctx.fillStyle = gold;
+  ctx.fillRect(0, 0, W, 3);
+  ctx.fillRect(0, H - 3, W, 3);
+
+  // Watermark
+  ctx.font = '560px serif';
+  ctx.fillStyle = 'rgba(200,160,48,.022)';
+  ctx.textAlign = 'center';
+  ctx.fillText('侍', W * .78, H * .76);
+
+  // Brand
+  ctx.font = '500 40px "Cormorant Garamond", serif';
+  ctx.fillStyle = 'rgba(200,160,48,.65)';
+  ctx.textAlign = 'center';
+  ctx.fillText('SAMURAI in You', W / 2, 88);
+
+  // Title
+  ctx.font = 'bold 80px "Cormorant Garamond", serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('今日の稽古', W / 2, 192);
+
+  // Sub
+  ctx.font = '32px "Inter", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.4)';
+  ctx.fillText(record.programName + '  —  ' + new Date().toLocaleDateString('ja-JP'), W / 2, 246);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(200,160,48,.28)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(W * .18, 278); ctx.lineTo(W * .82, 278); ctx.stroke();
+
+  // Exercise list
+  let y = 334;
+  const exs = st.exercises;
+  const logs = st.log;
+  const lineH = 68;
+  ctx.font = '38px "Inter", sans-serif';
+
+  exs.forEach((ex, i) => {
+    if (y > H - 300) return;
+    const relLogs = logs.filter(l => l.exId === ex.id);
+    const total = relLogs.reduce((a, l) => a + l.value, 0);
+    const unit = ex.type === 'reps' ? '回' : '秒';
+
+    ctx.fillStyle = '#c9a030';
+    ctx.beginPath(); ctx.arc(190, y - 12, 6, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,.88)';
+    ctx.textAlign = 'left';
+    ctx.font = '38px "Inter", sans-serif';
+    ctx.fillText(ex.jp, 218, y);
+
+    ctx.fillStyle = '#c9a030';
+    ctx.textAlign = 'right';
+    ctx.font = 'bold 40px "Cormorant Garamond", serif';
+    ctx.fillText(total + unit, W - 190, y);
+
+    y += lineH;
+  });
+
+  // Spirit section
+  const spiritY = H - 230;
+  ctx.strokeStyle = 'rgba(200,160,48,.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(W * .18, spiritY - 28); ctx.lineTo(W * .82, spiritY - 28); ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.font = '28px "Inter", sans-serif';
+  ctx.fillStyle = 'rgba(200,160,48,.7)';
+  ctx.fillText(record.spirit, W / 2, spiritY + 8);
+
+  const sp = SPIRITS[record.spirit];
+  ctx.font = 'italic 36px "Cormorant Garamond", serif';
+  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  wrapText(ctx, sp.quote, W / 2, spiritY + 54, W * .7, 44);
+
+  const streak = getStreak();
+  ctx.font = 'bold 62px "Cormorant Garamond", serif';
+  ctx.fillStyle = '#c9a030';
+  ctx.fillText('Day ' + streak, W / 2, spiritY + 150);
+
+  ctx.font = '28px "Inter", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.28)';
+  ctx.fillText('Still Becoming.', W / 2, spiritY + 192);
+}
+
+function shareCard() {
+  const canvas = document.getElementById('share-canvas');
+  const prog = st.program;
+  canvas.toBlob(blob => {
+    const file = new File([blob], 'samurai-dojo.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({
+        files: [file],
+        title: '今日の稽古 — SAMURAI in You',
+        text: `${prog ? prog.name : ''}を完了。#SAMURAIinYou #武道 #StillBecoming`,
+      }).catch(() => {});
+    } else {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'samurai-dojo.png';
+      a.click();
+    }
+  }, 'image/png');
+}
+
+// ── HISTORY ──────────────────────────────────────
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const history = getHistory().slice().reverse();
+  if (!history.length) {
+    list.innerHTML = '<div class="empty-state">まだ稽古の記録がありません<br><span style="font-size:.82rem;color:var(--muted)">First step onto a path that has no end.</span></div>';
+    return;
+  }
+  const DAYS = ['日','月','火','水','木','金','土'];
+  list.innerHTML = history.map(s => {
+    const d = new Date(s.date + 'T00:00:00');
+    return `
+      <div class="history-item">
+        <div>
+          <div class="h-date-num">${d.getDate()}</div>
+          <div class="h-date-day">${DAYS[d.getDay()]}曜</div>
+        </div>
+        <div class="h-info">
+          <div class="h-prog">${s.programName}</div>
+          <div class="h-meta">${s.exercises}種目 · ${s.totalReps}回/秒 · 約${Math.round(s.duration/60)}分</div>
+          <div class="h-spirit">${s.spirit}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── INIT ─────────────────────────────────────────
+
+renderHome();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
