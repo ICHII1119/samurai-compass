@@ -1439,29 +1439,29 @@ function showResult() {
   const recap = document.getElementById('selected-recap');
   const spiritOrder = ['hei','jiko','flex','strat','sei'];
   recap.innerHTML = `
-    <div style="grid-column:1/-1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.2rem">
-      <div style="font-size:.75rem;letter-spacing:.15em;color:var(--muted);margin-bottom:.7rem">Spirit の分布 — ${total}枚</div>
+    <div style="grid-column:1/-1;background:#f5f0e6;border:1px solid rgba(154,117,32,.35);border-radius:var(--r);padding:1.1rem 1.2rem">
+      <div style="font-size:.75rem;letter-spacing:.15em;color:#7a6840;margin-bottom:.7rem">Spirit の分布 — ${total}枚</div>
       <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
         ${spiritOrder.filter(k => counts[k] > 0).map(k => {
           const s = SPIRITS[k];
           const pct = Math.round(counts[k] / total * 100);
-          return `<div style="display:flex;align-items:center;gap:.45rem;background:${s.bg};border:1px solid ${s.color}40;border-radius:8px;padding:.35rem .75rem">
+          return `<div style="display:flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.7);border:1px solid ${s.color}80;border-radius:8px;padding:.35rem .75rem">
             <span style="font-size:.82rem">${s.name.split(' ')[0]}</span>
             <span style="font-size:.8rem;font-weight:600;color:${s.color}">${s.name.split(' ').slice(1).join(' ')}</span>
-            <span style="font-size:.72rem;color:${s.color};font-weight:700;opacity:.85">${counts[k]}枚 ${pct}%</span>
+            <span style="font-size:.72rem;color:${s.color};font-weight:700">${counts[k]}枚 ${pct}%</span>
           </div>`;
         }).join('')}
       </div>
-      <div style="height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin-bottom:.8rem"></div>
-      <div style="font-size:.75rem;letter-spacing:.15em;color:var(--muted);margin-bottom:.6rem">Skill の分布</div>
+      <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(154,117,32,.3),transparent);margin-bottom:.8rem"></div>
+      <div style="font-size:.75rem;letter-spacing:.15em;color:#7a6840;margin-bottom:.6rem">Skill の分布</div>
       <div style="display:flex;flex-wrap:wrap;gap:.4rem">
         ${skillRanked.map(([skill, d]) => {
           const s = SPIRITS[d.spirit];
           const pct = Math.round(d.count / total * 100);
-          return `<div style="display:flex;align-items:center;gap:.4rem;background:${s.bg};border:1px solid ${s.color}30;border-radius:6px;padding:.28rem .65rem">
+          return `<div style="display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.7);border:1px solid ${s.color}70;border-radius:6px;padding:.28rem .65rem">
             <span style="font-size:.78rem;font-weight:700;color:${s.color}">${skill}</span>
-            <span style="font-size:.72rem;color:${s.color};opacity:.75">· ${d.skillJa}</span>
-            <span style="font-size:.7rem;color:${s.color};font-weight:700;opacity:.85">${d.count}枚</span>
+            <span style="font-size:.72rem;color:#5a4a2a;opacity:.85">· ${d.skillJa}</span>
+            <span style="font-size:.7rem;color:${s.color};font-weight:700">${d.count}枚</span>
           </div>`;
         }).join('')}
       </div>
