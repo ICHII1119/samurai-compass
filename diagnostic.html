@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#c9a84c">
+<title>SAMURAI Compass Diagnostic — Career Development</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Antique+Soft&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+:root {
+  --bg:       #1a1a1f;
+  --bg2:      #222228;
+  --bg3:      #2a2a32;
+  --gold:     #c9a84c;
+  --gold2:    #e8c060;
+  --gold-dim: rgba(201,168,76,.15);
+  --red:      #c04848;
+  --cream:    #f0ece0;
+  --cream2:   #c8b090;
+  --muted:    #7a7060;
+  --border:   rgba(201,168,76,.2);
+  --shadow:   0 6px 28px rgba(0,0,0,.5);
+  --shadow-sm:0 2px 10px rgba(0,0,0,.3);
+  --r:        14px;
+  --r-lg:     22px;
+  --tr:       .28s cubic-bezier(.34,1.2,.64,1);
+  --font:     'Inter', -apple-system, sans-serif;
+  --font-b:   'Cormorant Garamond','Zen Antique Soft',serif;
+
+  /* Spirit colors — brighter for dark bg */
+  --c-jiko:    #4aaa5a;
+  --c-jiko-bg: rgba(74,170,90,.15);
+  --c-flex:    #4a88d8;
+  --c-flex-bg: rgba(74,136,216,.15);
+  --c-strat:   #e86040;
+  --c-strat-bg:rgba(232,96,64,.15);
+  --c-sei:     #a060e0;
+  --c-sei-bg:  rgba(160,96,224,.15);
+  --c-hei:     #60a0b8;
+  --c-hei-bg:  rgba(96,160,184,.15);
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+html { -webkit-text-size-adjust:100%; font-size:16px; scroll-behavior:smooth }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--cream);
+  min-height: 100vh;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse at 12% 8%, rgba(201,168,76,.08), transparent 55%),
+    radial-gradient(ellipse at 88% 90%, rgba(160,96,224,.05), transparent 55%);
+  pointer-events:none; z-index:0;
+}
+
+/* ── SCREENS ── */
+.screen { display:none; position:relative; z-index:1; min-height:100vh }
+.screen.active { display:block; animation: fadeUp .4s cubic-bezier(.16,1,.3,1) both }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+
+/* ══════════════════════════
+   INTRO SCREEN
+══════════════════════════ */
+#s-intro.active {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding: 2.5rem 1.5rem;
+  min-height: 100vh;
+}
+
+.intro-box {
+  width:100%; max-width:520px;
+  background: linear-gradient(160deg, var(--bg3) 0%, var(--bg2) 100%);
+  border:1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 3rem 2.5rem 2.5rem;
+  box-shadow: var(--shadow), 0 0 60px rgba(201,168,76,.08);
+  position:relative; overflow:hidden;
+  text-align: center;
+}
+.intro-box::before {
+  content:'';
+  position:absolute; top:-1px; left:15%; right:15%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.intro-box::after {
+  content:'';
+}
+
+.intro-title {
+  font-family: var(--font-b);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing:.05em;
+  margin-bottom:.3rem;
+}
+.intro-sub {
+  font-size:.8rem;
+  letter-spacing:.25em;
+  color:var(--muted);
+  margin-bottom:1.8rem;
+}
+.intro-desc {
+  font-size:.95rem;
+  color:var(--cream2);
+  line-height:1.8;
+  margin-bottom:.8rem;
+}
+.intro-step {
+  display:flex; flex-direction:column; gap:.6rem;
+  margin:1.6rem 0 2rem;
+  text-align:left;
+}
+.intro-step-item {
+  display:flex; align-items:flex-start; gap:.8rem;
+  background:var(--gold-dim);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:.7rem 1rem;
+}
+.intro-step-num {
+  font-family:var(--font-b);
+  font-size:1.3rem;
+  color:var(--gold2);
+  font-weight:600;
+  line-height:1;
+  flex-shrink:0;
+  padding-top:.1rem;
+}
+.intro-step-text { font-size:.88rem; color:var(--cream); line-height:1.6 }
+.intro-step-text strong { color:var(--gold) }
+
+.ornament {
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent);
+  margin:1.4rem 0; position:relative;
+}
+.ornament::after {
+  content:'◆';
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  background:var(--bg3); color:var(--gold);
+  padding:0 .6rem; font-size:.5rem;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:.5rem;
+  font-family:var(--font);
+  font-size:.9rem; font-weight:600;
+  letter-spacing:.1em;
+  padding:.85rem 2.2rem;
+  border-radius:50px;
+  border:none; cursor:pointer;
+  transition: var(--tr);
+  text-decoration:none;
+}
+.btn-primary {
+  background:linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
+  color:#fff;
+  box-shadow:0 4px 20px rgba(160,120,40,.3);
+}
+.btn-primary:hover {
+  transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(160,120,40,.4);
+}
+.btn-secondary {
+  background:transparent;
+  color:var(--gold);
+  border:1.5px solid var(--border);
+}
+.btn-secondary:hover {
+  background:var(--gold-dim);
+  transform:translateY(-1px);
+}
+.btn-lg { font-size:1rem; padding:1rem 2.8rem }
+
+/* ══════════════════════════
+   CARD SELECTION SCREEN
+══════════════════════════ */
+#s-cards.active {
+  display:flex; flex-direction:column;
+  padding:0;
+}
+
+/* Sticky header */
+.cards-header {
+  position:sticky; top:0; z-index:100;
+  background:rgba(26,26,31,.95);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:.8rem 1.5rem;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem;
+}
+.cards-header-left {
+  display:flex; flex-direction:column;
+}
+.cards-header-title {
+  font-family:var(--font-b);
+  font-size:1.15rem;
+  font-weight:600;
+  color:var(--cream);
+}
+.cards-header-sub {
+  font-size:.72rem;
+  letter-spacing:.15em;
+  color:var(--muted);
+}
+.selection-counter {
+  display:flex; align-items:center; gap:.5rem;
+  flex-shrink:0;
+}
+.counter-dots {
+  display:flex; gap:.3rem;
+}
+.counter-dot {
+  width:12px; height:12px;
+  border-radius:50%;
+  border:2px solid var(--border);
+  background:transparent;
+  transition:var(--tr);
+}
+.counter-dot.filled {
+  border-color:var(--gold);
+  background:var(--gold);
+  box-shadow:0 0 8px rgba(160,120,40,.4);
+}
+.counter-label {
+  font-size:.8rem;
+  font-weight:600;
+  color:var(--gold);
+  min-width:3.5rem;
+}
+
+/* Filter bar */
+.filter-bar {
+  display:flex; gap:.5rem; align-items:center;
+  padding:.6rem 1.5rem;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  border-bottom:1px solid rgba(160,120,40,.1);
+  background:var(--bg);
+}
+.filter-bar::-webkit-scrollbar { display:none }
+.filter-btn {
+  flex-shrink:0;
+  font-size:.75rem;
+  font-weight:600;
+  letter-spacing:.05em;
+  padding:.4rem .9rem;
+  border-radius:20px;
+  border:1.5px solid var(--border);
+  background:transparent;
+  color:var(--cream2);
+  cursor:pointer;
+  transition:var(--tr-fast, .18s ease);
+  white-space:nowrap;
+}
+.filter-btn:hover { background:var(--gold-dim) }
+.filter-btn.active {
+  color:#fff;
+  border-color:transparent;
+}
+.filter-btn[data-spirit="all"].active { background:var(--gold) }
+.filter-btn[data-spirit="jiko"].active   { background:var(--c-jiko) }
+.filter-btn[data-spirit="flex"].active   { background:var(--c-flex) }
+.filter-btn[data-spirit="strat"].active  { background:var(--c-strat) }
+.filter-btn[data-spirit="sei"].active    { background:var(--c-sei) }
+.filter-btn[data-spirit="hei"].active    { background:var(--c-hei) }
+
+/* Cards grid */
+.cards-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap:1rem;
+  padding:1.2rem 1.5rem 2rem;
+  flex:1;
+}
+
+/* Individual card */
+.challenge-card {
+  background:var(--bg3);
+  border:1.5px solid var(--border);
+  border-radius:var(--r);
+  padding:1rem 1.1rem 1rem;
+  cursor:pointer;
+  transition:var(--tr);
+  position:relative;
+  overflow:hidden;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.challenge-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0;
+  height:3px;
+  opacity:.6;
+  transition:.2s;
+}
+.challenge-card[data-spirit="jiko"]::before  { background:var(--c-jiko) }
+.challenge-card[data-spirit="flex"]::before  { background:var(--c-flex) }
+.challenge-card[data-spirit="strat"]::before { background:var(--c-strat) }
+.challenge-card[data-spirit="sei"]::before   { background:var(--c-sei) }
+.challenge-card[data-spirit="hei"]::before   { background:var(--c-hei) }
+
+.challenge-card:hover:not(.disabled) {
+  transform:translateY(-3px);
+  box-shadow:var(--shadow);
+}
+.challenge-card.selected {
+  border-width:2px;
+  box-shadow:0 0 0 3px rgba(160,120,40,.2), var(--shadow);
+}
+.challenge-card[data-spirit="jiko"].selected  { border-color:var(--c-jiko);  box-shadow:0 0 0 3px rgba(45,122,58,.15),var(--shadow) }
+.challenge-card[data-spirit="flex"].selected  { border-color:var(--c-flex);  box-shadow:0 0 0 3px rgba(37,99,168,.15),var(--shadow) }
+.challenge-card[data-spirit="strat"].selected { border-color:var(--c-strat); box-shadow:0 0 0 3px rgba(201,74,32,.15),var(--shadow) }
+.challenge-card[data-spirit="sei"].selected   { border-color:var(--c-sei);   box-shadow:0 0 0 3px rgba(123,59,181,.15),var(--shadow) }
+.challenge-card[data-spirit="hei"].selected   { border-color:var(--c-hei);   box-shadow:0 0 0 3px rgba(74,122,138,.15),var(--shadow) }
+
+.challenge-card.disabled:not(.selected) {
+  opacity:.4;
+  cursor:not-allowed;
+}
+
+.card-top {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:.5rem;
+}
+.card-num {
+  font-family:var(--font-b);
+  font-size:.8rem;
+  color:var(--muted);
+  font-weight:500;
+}
+.card-spirit-badge {
+  font-size:.68rem;
+  font-weight:600;
+  padding:.18rem .55rem;
+  border-radius:20px;
+  letter-spacing:.03em;
+  display:flex; align-items:center; gap:.25rem;
+}
+.card-spirit-badge .emoji { font-size:.8rem }
+.challenge-card[data-spirit="jiko"]  .card-spirit-badge { background:var(--c-jiko-bg);  color:var(--c-jiko) }
+.challenge-card[data-spirit="flex"]  .card-spirit-badge { background:var(--c-flex-bg);  color:var(--c-flex) }
+.challenge-card[data-spirit="strat"] .card-spirit-badge { background:var(--c-strat-bg); color:var(--c-strat) }
+.challenge-card[data-spirit="sei"]   .card-spirit-badge { background:var(--c-sei-bg);   color:var(--c-sei) }
+.challenge-card[data-spirit="hei"]   .card-spirit-badge { background:var(--c-hei-bg);   color:var(--c-hei) }
+
+.card-ja {
+  font-size:.88rem;
+  color:var(--cream);
+  line-height:1.65;
+  margin-bottom:.45rem;
+}
+.card-en {
+  font-size:.72rem;
+  color:var(--muted);
+  line-height:1.5;
+}
+.card-skill {
+  margin-top:.5rem;
+  font-size:.7rem;
+  font-weight:600;
+  letter-spacing:.08em;
+  color:var(--muted);
+}
+
+.card-check {
+  position:absolute; top:.7rem; right:.7rem;
+  width:22px; height:22px;
+  border-radius:50%;
+  background:var(--gold);
+  display:none;
+  align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(160,120,40,.4);
+}
+.card-check svg { width:12px; height:12px }
+.challenge-card.selected .card-check { display:flex }
+
+/* Bottom action bar */
+.action-bar {
+  position:sticky; bottom:0;
+  background:rgba(26,26,31,.95);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  padding:1rem 1.5rem;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem;
+}
+.action-bar-hint {
+  font-size:.82rem;
+  color:var(--muted);
+}
+.action-bar-hint strong { color:var(--gold) }
+
+/* ══════════════════════════
+   RESULTS SCREEN
+══════════════════════════ */
+#s-result {
+  padding: 1.5rem;
+  max-width:780px;
+  margin:0 auto;
+}
+#s-result.active { display:block }
+
+.result-header {
+  text-align:center;
+  padding:2rem 0 1.5rem;
+}
+.result-header h2 {
+  font-family:var(--font-b);
+  font-size:1.9rem;
+  font-weight:600;
+  color:var(--cream);
+  margin-bottom:.3rem;
+}
+.result-header p {
+  font-size:.85rem;
+  color:var(--muted);
+  letter-spacing:.15em;
+}
+
+/* Selected cards recap */
+.selected-recap {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:.8rem;
+  margin-bottom:2rem;
+}
+.recap-card {
+  background:var(--bg3);
+  border:1.5px solid var(--border);
+  border-radius:var(--r);
+  padding:.9rem;
+  position:relative;
+  overflow:hidden;
+}
+.recap-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0;
+  height:3px;
+}
+.recap-card[data-spirit="jiko"]::before  { background:var(--c-jiko) }
+.recap-card[data-spirit="flex"]::before  { background:var(--c-flex) }
+.recap-card[data-spirit="strat"]::before { background:var(--c-strat) }
+.recap-card[data-spirit="sei"]::before   { background:var(--c-sei) }
+.recap-card[data-spirit="hei"]::before   { background:var(--c-hei) }
+
+.recap-num { font-size:.72rem; color:var(--muted); margin-bottom:.3rem }
+.recap-ja { font-size:.82rem; color:var(--cream); line-height:1.6 }
+.recap-skill {
+  margin-top:.5rem;
+  font-size:.68rem; font-weight:600;
+  letter-spacing:.07em;
+}
+.recap-card[data-spirit="jiko"]  .recap-skill { color:var(--c-jiko) }
+.recap-card[data-spirit="flex"]  .recap-skill { color:var(--c-flex) }
+.recap-card[data-spirit="strat"] .recap-skill { color:var(--c-strat) }
+.recap-card[data-spirit="sei"]   .recap-skill { color:var(--c-sei) }
+.recap-card[data-spirit="hei"]   .recap-skill { color:var(--c-hei) }
+
+/* Pentagon Chart */
+.pentagon-section {
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:2rem 1.5rem;
+  margin-bottom:1.5rem;
+  text-align:center;
+}
+.pentagon-section h3 {
+  font-family:var(--font-b);
+  font-size:1.2rem; font-weight:600;
+  color:var(--cream);
+  margin-bottom:.3rem;
+}
+.pentagon-section .penta-sub {
+  font-size:.78rem; color:var(--muted);
+  margin-bottom:1.5rem;
+}
+.pentagon-wrap {
+  display:flex; align-items:center; justify-content:center;
+  gap:2rem;
+  flex-wrap:wrap;
+}
+#pentagon-svg {
+  width:min(280px, 90vw);
+  height:min(280px, 90vw);
+  flex-shrink:0;
+}
+.pentagon-legend {
+  display:flex; flex-direction:column; gap:.6rem;
+  text-align:left;
+  min-width:180px;
+}
+.legend-item {
+  display:flex; align-items:center; gap:.6rem;
+  padding:.5rem .8rem;
+  border-radius:8px;
+  transition:.2s;
+}
+.legend-item.highlight {
+  background:var(--gold-dim);
+  border:1px solid var(--border);
+}
+.legend-dot {
+  width:10px; height:10px; border-radius:50%; flex-shrink:0;
+}
+.legend-name { font-size:.82rem; color:var(--cream); line-height:1.4 }
+.legend-count {
+  margin-left:auto;
+  font-size:.75rem; font-weight:700;
+  min-width:20px;
+}
+
+/* Focus recommendation */
+.focus-section {
+  border-radius:var(--r-lg);
+  padding:2rem 1.8rem;
+  margin-bottom:1.5rem;
+  position:relative;
+  overflow:hidden;
+}
+.focus-section::before {
+  content:'';
+  position:absolute; top:-1px; left:15%; right:15%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+.focus-label {
+  font-size:.72rem; letter-spacing:.25em; color:var(--muted);
+  margin-bottom:.5rem;
+}
+.focus-primary-spirit {
+  font-family:var(--font-b);
+  font-size:2.4rem; font-weight:600;
+  line-height:1.15;
+  margin-bottom:.3rem;
+}
+.focus-primary-spirit .spirit-en {
+  font-size:1rem; font-weight:400;
+  color:var(--muted); display:block;
+  letter-spacing:.15em;
+  font-family:var(--font);
+  margin-top:.15rem;
+}
+.focus-skill-row {
+  display:flex; gap:.6rem; flex-wrap:wrap;
+  margin:1rem 0;
+}
+.focus-skill-tag {
+  font-size:.8rem; font-weight:600;
+  letter-spacing:.1em;
+  padding:.35rem .9rem;
+  border-radius:20px;
+  border:2px solid currentColor;
+}
+.focus-message {
+  font-size:.92rem; color:var(--cream2);
+  line-height:1.8;
+  margin-top:1rem;
+  padding-top:1rem;
+  border-top:1px solid rgba(0,0,0,.06);
+}
+
+/* Spirit-specific colors for focus section */
+.focus-spirit-jiko  { background:var(--c-jiko-bg);  color:var(--c-jiko) }
+.focus-spirit-flex  { background:var(--c-flex-bg);  color:var(--c-flex) }
+.focus-spirit-strat { background:var(--c-strat-bg); color:var(--c-strat) }
+.focus-spirit-sei   { background:var(--c-sei-bg);   color:var(--c-sei) }
+.focus-spirit-hei   { background:var(--c-hei-bg);   color:var(--c-hei) }
+
+/* Multi-spirit result (1+1+1 split) */
+.multi-focus {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:1.8rem;
+  margin-bottom:1.5rem;
+}
+.multi-focus h3 {
+  font-family:var(--font-b);
+  font-size:1.2rem; font-weight:600;
+  color:var(--cream);
+  margin-bottom:1rem;
+}
+.multi-spirit-list {
+  display:flex; flex-direction:column; gap:.7rem;
+}
+.multi-spirit-item {
+  display:flex; align-items:center; gap:1rem;
+  padding:.9rem 1.1rem;
+  background:var(--bg3);
+  border-radius:10px;
+  border:1px solid var(--border);
+}
+.multi-spirit-icon { font-size:1.5rem }
+.multi-spirit-info { flex:1 }
+.multi-spirit-name { font-weight:600; font-size:.9rem; color:var(--cream) }
+.multi-spirit-skill { font-size:.75rem; color:var(--muted); margin-top:.15rem }
+
+/* Actions */
+.result-actions {
+  display:flex; gap:.8rem; justify-content:center;
+  flex-wrap:wrap;
+  padding:1rem 0 2.5rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .cards-grid { grid-template-columns:1fr 1fr; gap:.7rem; padding:.8rem }
+  .selected-recap { grid-template-columns:1fr }
+  .pentagon-wrap { flex-direction:column; gap:1.2rem }
+  .intro-box { padding:2rem 1.5rem }
+  .intro-title { font-size:1.6rem }
+  .result-header h2 { font-size:1.5rem }
+  .focus-primary-spirit { font-size:1.9rem }
+  .cards-header { padding:.7rem 1rem }
+  .cards-grid { padding:.8rem 1rem 5rem }
+}
+@media (max-width: 400px) {
+  .cards-grid { grid-template-columns:1fr }
+}
+
+/* ══════════════════════════
+   PROFILE SCREEN
+══════════════════════════ */
+#s-profile.active {
+  display:flex; flex-direction:column;
+  align-items:center;
+  padding: 3rem 1.5rem 5rem;
+  min-height: 100vh;
+}
+.profile-header {
+  text-align:center;
+  margin-bottom: 2rem;
+  max-width: 560px;
+  width: 100%;
+}
+.profile-header h2 {
+  font-family: var(--font-b);
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: .4rem;
+}
+.profile-header p {
+  font-size: .8rem;
+  letter-spacing: .18em;
+  color: var(--muted);
+}
+.profile-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 560px;
+  width: 100%;
+}
+.profile-question {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.3rem 1.4rem;
+  box-shadow: var(--shadow-sm);
+  position: relative; overflow: hidden;
+}
+.profile-question::before {
+  content:'';
+  position:absolute; top:-1px; left:15%; right:15%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.profile-question-label {
+  font-size: .7rem;
+  letter-spacing: .2em;
+  color: var(--muted);
+  margin-bottom: .25rem;
+}
+.profile-question-text {
+  font-size: .98rem;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: 1rem;
+}
+.profile-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.profile-option {
+  padding: .5rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  font-size: .84rem;
+  font-weight: 500;
+  color: var(--cream2);
+  background: transparent;
+  cursor: pointer;
+  transition: all .2s ease;
+  user-select: none;
+}
+.profile-option:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-dim);
+}
+.profile-option.selected {
+  border-color: var(--gold2);
+  background: var(--gold-dim);
+  color: var(--gold);
+  font-weight: 600;
+  box-shadow: 0 0 0 3px rgba(160,120,40,.1);
+}
+.profile-proceed {
+  margin-top: 2rem;
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+}
+
+/* ══════════════════════════
+   ADMIN SCREENS
+══════════════════════════ */
+.admin-row {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem 1.2rem;
+  margin-bottom: .6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all .2s;
+  box-shadow: var(--shadow-sm);
+}
+.admin-row:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow);
+  transform: translateX(3px);
+}
+.admin-pin-input {
+  width:100%; padding:.75rem 1rem;
+  border:1.5px solid var(--border);
+  border-radius:var(--r);
+  font-size:1.1rem; letter-spacing:.3em;
+  background:var(--bg2); color:var(--cream);
+  outline:none; transition:border-color .2s;
+  text-align:center;
+}
+.admin-pin-input:focus { border-color:var(--gold) }
+
+/* ── LOGO IMAGE ── */
+.logo-img {
+  display:block;
+  margin:0 auto;
+  -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 44%, black 52%, transparent 80%);
+  mask-image:         radial-gradient(ellipse 88% 82% at 50% 44%, black 52%, transparent 80%);
+  pointer-events:none;
+}
+.logo-lg  { width:240px; }
+.logo-md  { width:140px; }
+.logo-sm  { width:100px; }
+
+/* Hidden helper */
+.hidden { display:none !important }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     SCREEN 1: INTRO
+══════════════════════════════════ -->
+<section id="s-intro" class="screen active">
+  <div class="intro-box">
+    <div class="logo-area" style="margin-bottom:.6rem">
+      <img src="logo.png" alt="SAMURAI in You" class="logo-img logo-lg">
+    </div>
+    <div class="intro-title">Compass Diagnostic</div>
+    <div class="intro-sub">CAREER DEVELOPMENT — 54 CHALLENGE CARDS</div>
+
+    <div class="ornament"></div>
+
+    <p class="intro-desc">
+      54枚のチャレンジカードの中から、<strong style="color:var(--cream)">今の自分に当てはまるもの</strong>をすべて選んでください。<br>
+      選んだカードからあなたの<strong style="color:var(--gold)">Pentagon Compass</strong>の<br>フォーカスポイントが見えてきます。
+    </p>
+
+    <div class="intro-step">
+      <div class="intro-step-item">
+        <span class="intro-step-num">1</span>
+        <span class="intro-step-text">54枚のカードをスクロールして読む</span>
+      </div>
+      <div class="intro-step-item">
+        <span class="intro-step-num">2</span>
+        <span class="intro-step-text"><strong>今の自分に当てはまる</strong>カードをすべて選ぶ</span>
+      </div>
+      <div class="intro-step-item">
+        <span class="intro-step-num">3</span>
+        <span class="intro-step-text">あなたの<strong>フォーカス領域</strong>を確認する</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-lg" onclick="showCards()">
+      はじめる →
+    </button>
+
+    <div style="margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <a href="#" onclick="event.preventDefault();showScreen('s-admin-login')"
+         style="font-size:.7rem;letter-spacing:.1em;color:var(--muted);text-decoration:none;opacity:.6">
+        管理者の方はこちら
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SCREEN 2: PROFILE
+══════════════════════════════════ -->
+<section id="s-profile" class="screen">
+  <div class="profile-header">
+    <img src="logo.png" alt="SAMURAI in You" class="logo-img logo-md" style="margin-bottom:.6rem">
+    <h2>あなたについて教えてください</h2>
+    <p>CONTEXT — 3 QUESTIONS</p>
+    <p style="font-size:.85rem;color:var(--cream2);margin-top:.5rem">Q1・Q2・Q3 すべてに回答してください</p>
+  </div>
+
+  <div class="profile-questions">
+
+    <div class="profile-question">
+      <div class="profile-question-label">Q1 · ROLE</div>
+      <div class="profile-question-text">今の仕事での役割・立場は？</div>
+      <div class="profile-options" id="profile-role">
+        <div class="profile-option" onclick="selectProfile('role','individual',this)">一般社員・スタッフ</div>
+        <div class="profile-option" onclick="selectProfile('role','leader',this)">チームリード・マネージャー</div>
+        <div class="profile-option" onclick="selectProfile('role','executive',this)">経営者・起業家</div>
+      </div>
+    </div>
+
+    <div class="profile-question">
+      <div class="profile-question-label">Q2 · LIFE STAGE</div>
+      <div class="profile-question-text">今の生活状況に近いものは？</div>
+      <div class="profile-options" id="profile-life">
+        <div class="profile-option" onclick="selectProfile('life','childcare',this)">子育て中</div>
+        <div class="profile-option" onclick="selectProfile('life','caregiving',this)">介護中</div>
+        <div class="profile-option" onclick="selectProfile('life','student',this)">学生</div>
+        <div class="profile-option" onclick="selectProfile('life','none',this)">特になし</div>
+        <div class="profile-option" onclick="selectProfile('life','other',this)">その他</div>
+      </div>
+    </div>
+
+    <div class="profile-question">
+      <div class="profile-question-label">Q3 · URGENCY</div>
+      <div class="profile-question-text">取り組みたいタイムラインは？</div>
+      <div class="profile-options" id="profile-urgency">
+        <div class="profile-option" onclick="selectProfile('urgency','now',this)">今すぐ取り組みたい</div>
+        <div class="profile-option" onclick="selectProfile('urgency','longterm',this)">中長期で鍛えていきたい</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="profile-proceed">
+    <button class="btn btn-primary btn-lg" id="profile-proceed-btn" onclick="startDiagnostic()" disabled
+            style="opacity:.4;cursor:not-allowed">
+      カードを選ぶ →
+    </button>
+    <div style="font-size:.78rem;color:var(--muted);margin-top:.7rem;min-height:1.2em" id="profile-proceed-hint"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SCREEN 3: CARD SELECTION
+══════════════════════════════════ -->
+<section id="s-cards" class="screen">
+  <div class="cards-header">
+    <div class="cards-header-left">
+      <div class="cards-header-title">Challenge Cards</div>
+      <div class="cards-header-sub">CAREER DEVELOPMENT · 54 CARDS</div>
+    </div>
+    <div class="selection-counter">
+      <div class="counter-label" id="counter-label" style="font-size:.85rem;font-weight:600;color:var(--gold)">0 枚選択中</div>
+    </div>
+  </div>
+
+
+  <div class="cards-grid" id="cards-grid"></div>
+
+  <div class="action-bar">
+    <div class="action-bar-hint" id="action-hint">当てはまるカードを<strong>何枚でも</strong>選んでください</div>
+    <button class="btn btn-primary" id="result-btn" onclick="submitResponse()" disabled
+            style="opacity:.4;cursor:not-allowed">
+      送信する
+    </button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SCREEN 3: RESULT
+══════════════════════════════════ -->
+<section id="s-result" class="screen">
+  <div class="result-header">
+    <h2>Your Compass Focus</h2>
+    <p>PENTAGON COMPASS ANALYSIS</p>
+  </div>
+
+  <div id="profile-badge" style="display:none;text-align:center;padding:.2rem 1rem 0"></div>
+
+  <!-- Selected 3 cards recap -->
+  <div class="selected-recap" id="selected-recap"></div>
+
+  <!-- Pentagon chart -->
+  <div class="pentagon-section">
+    <h3>Pentagon Compass — Spirit の分布</h3>
+    <p class="penta-sub" id="penta-sub-text">選んだカードが示す Spirit の分布</p>
+    <div class="pentagon-wrap">
+      <svg id="pentagon-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="pentagon-legend" id="pentagon-legend"></div>
+    </div>
+  </div>
+
+  <!-- Skill distribution chart -->
+  <div class="pentagon-section" id="skill-chart-section">
+    <h3>Skill の分布</h3>
+    <p class="penta-sub" id="skill-sub-text">選んだカードが示す 10 Skills の内訳</p>
+    <div id="skill-chart"></div>
+  </div>
+
+  <!-- Focus recommendation -->
+  <div id="focus-section-container"></div>
+
+  <!-- Actions — participant (hidden; admin only shows this screen) -->
+  <div class="result-actions" id="result-actions-admin">
+    <button class="btn btn-secondary" onclick="backToAdminList()">← 一覧に戻る</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SCREEN: COMPLETE (participant)
+══════════════════════════════════ -->
+<section id="s-complete" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center">
+    <div style="max-width:460px;width:100%">
+      <img src="logo.png" alt="SAMURAI in You" class="logo-img logo-md" style="margin-bottom:.4rem">
+      <h2 style="font-family:var(--font-b);font-size:2rem;font-weight:600;color:var(--cream);margin-bottom:.8rem">
+        ご回答ありがとうございました
+      </h2>
+      <div style="width:50px;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:.8rem auto 1.2rem"></div>
+      <p style="color:var(--cream2);line-height:1.9;margin-bottom:2rem">
+        カードの選択が完了しました。<br>
+        ファシリテーターが結果をもとに<br>フィードバックをお届けします。
+      </p>
+      <p style="font-size:.82rem;color:var(--muted);font-style:italic">
+        — 稽古は今日から始まります —
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SCREEN: ADMIN LOGIN
+══════════════════════════════════ -->
+<section id="s-admin-login" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem">
+    <div style="max-width:380px;width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-lg);padding:2.5rem 2rem;box-shadow:var(--shadow);position:relative;overflow:hidden">
+      <div style="position:absolute;top:-1px;left:20%;right:20%;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)"></div>
+      <div style="text-align:center;margin-bottom:1.8rem">
+        <div style="font-size:.68rem;letter-spacing:.25em;color:var(--muted);margin-bottom:.4rem">ADMINISTRATOR</div>
+        <h2 style="font-family:var(--font-b);font-size:1.7rem;font-weight:600">管理者ログイン</h2>
+      </div>
+      <div style="margin-bottom:1.2rem">
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:.5rem;letter-spacing:.1em">PIN コード</label>
+        <input id="admin-pin-input" class="admin-pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••"
+          onkeydown="if(event.key==='Enter')checkAdminPin()">
+        <div id="admin-pin-error" style="font-size:.76rem;color:var(--red);margin-top:.4rem;min-height:1.2em"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:.8rem" onclick="checkAdminPin()">ログイン</button>
+      <div style="text-align:center;margin-top:1rem">
+        <a href="#" onclick="event.preventDefault();showScreen('s-intro')"
+           style="font-size:.72rem;color:var(--muted);text-decoration:none">← 参加者画面に戻る</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SCREEN: ADMIN LIST
+══════════════════════════════════ -->
+<section id="s-admin-list" class="screen">
+  <div style="max-width:660px;margin:0 auto;padding:2rem 1.5rem 4rem">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.8rem">
+      <div>
+        <div style="font-size:.68rem;letter-spacing:.22em;color:var(--muted)">ADMINISTRATOR</div>
+        <h2 style="font-family:var(--font-b);font-size:1.8rem;font-weight:600">回答一覧</h2>
+      </div>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <span id="admin-count" style="font-size:.8rem;color:var(--muted);padding:.3rem .7rem;border-radius:100px;background:var(--bg2)">0件</span>
+        <button class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem" onclick="renderAdminList()">🔄 更新</button>
+        <button class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;color:var(--red);border-color:rgba(139,40,40,.3)" onclick="clearAdminData()">削除</button>
+      </div>
+    </div>
+    <div id="admin-list-body">
+      <div style="text-align:center;padding:3rem;color:var(--muted)">読み込み中...</div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ════════════════════════════════════
+   FIREBASE
+════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyC1qm7kUjSRk7QRwxK-W7bH1q-pqH3lklU",
+  authDomain: "samurai-compass.firebaseapp.com",
+  projectId: "samurai-compass",
+  storageBucket: "samurai-compass.firebasestorage.app",
+  messagingSenderId: "502771859953",
+  appId: "1:502771859953:web:89e801832fdd42c6cb0450"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ════════════════════════════════════
+   DATA — 54 CHALLENGE CARDS
+════════════════════════════════════ */
+const SPIRITS = {
+  jiko:  { name:'🌿 自己鍛錬',     en:'SELF-CULTIVATION', color:'#2d7a3a', bg:'rgba(45,122,58,.12)' },
+  flex:  { name:'🐦 柔軟な適応力', en:'FLEXIBILITY',       color:'#2563a8', bg:'rgba(37,99,168,.12)' },
+  strat: { name:'🔥 戦略的思考',   en:'STRATEGIC THINKING',color:'#c94a20', bg:'rgba(201,74,32,.12)' },
+  sei:   { name:'🌀 誠実さ',       en:'INTEGRITY',         color:'#7b3bb5', bg:'rgba(123,59,181,.12)' },
+  hei:   { name:'☁️ 平常心',       en:'EQUANIMITY',        color:'#4a7a8a', bg:'rgba(74,122,138,.12)' },
+};
+
+const SPIRIT_MESSAGES = {
+  hei: {
+    focus: '平常心 — Equanimity',
+    message: 'あなたが今最も向き合っているのは、<strong>心の安定と自己認識</strong>です。\n感情の波に流されず、プレッシャーの中でも軸を保つ力——それが「平常心」の稽古です。\n日々の状況を客観的に観察し、心身のバランスを整えることから始めましょう。'
+  },
+  jiko: {
+    focus: '自己鍛錬 — Self-Cultivation',
+    message: 'あなたが今最も向き合っているのは、<strong>自己の成長と可能性の開花</strong>です。\n自分の資質を育て、動機を保ち、自分自身の師になること——それが「自己鍛錬」の稽古です。\n自分を信じる力と、地道な積み重ねを大切にしましょう。'
+  },
+  flex: {
+    focus: '柔軟な適応力 — Flexibility',
+    message: 'あなたが今最も向き合っているのは、<strong>変化への適応と効率的な行動</strong>です。\n固定観念を手放し、新しい状況に柔軟に対応すること——それが「有構無構」の稽古です。\n形を変える勇気と、リソースを最大活用する智恵を鍛えましょう。'
+  },
+  strat: {
+    focus: '戦略的思考 — Strategic Thinking',
+    message: 'あなたが今最も向き合っているのは、<strong>判断力と全体を見通す眼</strong>です。\n目先の動きではなく、全体を観察し、最適なタイミングで動くこと——それが「観見」と「打つと当たる」の稽古です。\n情報を整理し、本質を見抜く力を磨きましょう。'
+  },
+  sei: {
+    focus: '誠実さ — Integrity',
+    message: 'あなたが今最も向き合っているのは、<strong>関係性とリズムのバランス</strong>です。\n仕事・家族・自分——すべての関係を誠実に調和させること——それが「陰陽の足」と「拍子」の稽古です。\n各役割への誠実な関わりが、深い信頼と安定をもたらします。'
+  },
+};
+
+const CARDS = [
+  {id:1,  ja:'仕事と生活のバランスを保ちながら、キャリアの成功を定義しようとしている', en:"Struggling to define career success while maintaining work-life balance", spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:2,  ja:'キャリアの次のステップが見えない', en:"Struggling to define what's next in their career", spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:3,  ja:'職場のプレッシャーと精神的な疲労に苦しんでいる', en:'Struggling with workplace pressure and mental fatigue', spirit:'hei',  skill:'PSYCHOSOMATIC', skillJa:'心身一如'},
+  {id:4,  ja:'育児・介護と仕事の両立に圧倒されている', en:'Struggling with the overwhelming demands of childcare/caregiving and work', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:5,  ja:'業務が忙しくて新しいスキルを学ぶ時間がない', en:'Struggling to find time to learn new skills due to work demands', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+  {id:6,  ja:'急速に変化する業界で時代に乗り遅れないようにしている', en:'Struggling to stay relevant in a rapidly changing industry', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:7,  ja:'インポスター症候群や自己不信に悩んでいる', en:'Struggling with imposter syndrome or self-doubt', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:8,  ja:'困難な時期にモチベーションを保てない', en:'Struggling with motivation during challenging times', spirit:'jiko', skill:'ATTUNEMENT', skillJa:'嗜む'},
+  {id:9,  ja:'難しい同僚や職場の対立に苦しんでいる', en:'Struggling with difficult colleagues or workplace conflicts', spirit:'sei',  skill:'TIMING', skillJa:'拍子'},
+  {id:10, ja:'職場のストレスと燃え尽き症候群に悩んでいる', en:'Struggling with workplace stress and burnout', spirit:'hei',  skill:'PSYCHOSOMATIC', skillJa:'心身一如'},
+  {id:11, ja:'責任が増える中でチームの協力関係を維持できない', en:'Struggling to maintain team collaboration while increasing job responsibilities', spirit:'strat', skill:'PERSPECTIVE', skillJa:'観見'},
+  {id:12, ja:'業界のトレンドについていけているか不安を感じている', en:'Feeling uncertain about whether they are staying updated with industry trends', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:13, ja:'日々の仕事に意味を見出せない', en:'Feeling disconnected from the meaning of daily work', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:14, ja:'従来の考え方から抜け出せない', en:'Feeling stuck in conventional thinking', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:15, ja:'個人の関係よりも仕事を優先するプレッシャーを感じている', en:'Feeling pressure to prioritize work over personal relationships', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:16, ja:'パートナーとの家事分担が不平等だと感じている', en:'Feeling an unequal distribution of household responsibilities between partners', spirit:'sei',  skill:'TIMING', skillJa:'拍子'},
+  {id:17, ja:'仕事のせいで子供や家族から疎遠になっている', en:'Feeling disconnected from their children or family due to work commitments', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:18, ja:'職場で過小評価・認められていないと感じている', en:'Feeling undervalued or unrecognized at work', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:19, ja:'休息や休暇を取ることに罪悪感を感じる', en:'Feeling guilty when taking breaks or time off', spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:20, ja:'自分のキャリア目標と会社の期待の間で板挟みになっている', en:'Feeling torn between personal career goals and company expectations', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:21, ja:'硬直したキャリアパスから抜け出せない', en:'Feeling stuck in a rigid career path', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:22, ja:'常に責任に圧倒されている', en:'Feeling overwhelmed by responsibilities constantly', spirit:'hei',  skill:'PSYCHOSOMATIC', skillJa:'心身一如'},
+  {id:23, ja:'学びに投資したいが時間がない', en:'Wanting to invest in learning but lacking time', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+  {id:24, ja:'キャリアを進めながら家族を優先したい', en:'Wanting to prioritize family while continuing to advance in their career', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:25, ja:'資格取得を目指しているが勉強時間を確保できない', en:'Wanting to earn professional certifications but unable to allocate study time', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+  {id:26, ja:'家族との時間を増やしたいが勤務時間を減らせない', en:'Wanting to spend more time with family but unable to reduce work hours', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:27, ja:'従来のキャリアパスから抜け出したいが方法がわからない', en:'Wanting to break free from traditional career paths but unsure how', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:28, ja:'ワークライフバランスを重視するメンターを求めているが見つからない', en:'Wanting mentors with work-life balance values but finding none', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:29, ja:'会社や役割を去りたいが踏み切れない', en:'Wanting to leave a company or role but feeling hesitant', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:30, ja:'語学力を上げたいが実践の機会がない', en:'Wanting to improve language skills but lacking practical opportunities', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+  {id:31, ja:'仕事と生活のより良い統合を望んでいる', en:'Wanting better work-life integration', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:32, ja:'ワークライフバランスを保ちながら効果的に学ぶ方法を求めている', en:'Wanting effective ways to study while managing work-life balance', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+  {id:33, ja:'仕事の柔軟性を求めているが家族の責任がある', en:'Wanting more flexibility in their job but challenged by family responsibilities', spirit:'sei',  skill:'TIMING', skillJa:'拍子'},
+  {id:34, ja:'不確実性からキャリアの決断が難しい', en:'Difficulty making career decisions due to uncertainty', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:35, ja:'リーダーシップの役割で自己主張が難しい', en:'Difficulty asserting oneself in leadership roles', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:36, ja:'同僚との効果的なコミュニケーションが難しい', en:'Difficulty maintaining effective communication with colleagues', spirit:'sei',  skill:'TIMING', skillJa:'拍子'},
+  {id:37, ja:'勤務時間外に仕事から切り離すことが難しい', en:'Difficulty detaching from work after hours', spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:38, ja:'キャリアチェンジやリスクへの恐れを克服できない', en:'Difficult to overcome the fear of career change or taking risks', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:39, ja:'金銭的な懸念から自己啓発に投資できない', en:'Difficult to invest in self-development due to financial concerns', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:40, ja:'効果的なストレス解消法が見つからない', en:'Difficult to find effective ways to relieve stress', spirit:'hei',  skill:'PSYCHOSOMATIC', skillJa:'心身一如'},
+  {id:41, ja:'パートナーのキャリアと自分のキャリアの目標のバランスが難しい', en:"Difficult to balance their career aspirations with their partner's career", spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:42, ja:'キャリアの成長と家族・チームメンバーのサポートのバランスが難しい', en:'Difficult to balance career growth with supporting family or team members', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:43, ja:'柔軟な働き方についてマネージャーの理解を得られない', en:'Difficult to gain understanding from managers regarding flexible work', spirit:'sei',  skill:'TIMING', skillJa:'拍子'},
+  {id:44, ja:'キャリア成長に不可欠なスキルを特定できない', en:'Difficult to determine which skills are essential for career growth', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:45, ja:'個人の野心と外部からの期待の間で引き裂かれている', en:'Torn between personal ambition and external expectations', spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:46, ja:'多様性と包括性の取り組みが限られていてバランスが難しい', en:'Limited diversity and inclusion initiatives making balance harder', spirit:'strat', skill:'PERSPECTIVE', skillJa:'観見'},
+  {id:47, ja:'リモートや時短勤務の利用が評価に影響するという不安がある', en:'Concern that using remote or flextime options may lead to negative evaluations', spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:48, ja:'ワークライフバランスを考えすぎてストレスを増やしている', en:'Overthinking work-life balance to the point of creating additional stress', spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:49, ja:'感情の起伏が仕事のパフォーマンスに影響している', en:'Emotional ups and downs affecting work performance', spirit:'hei',  skill:'PSYCHOSOMATIC', skillJa:'心身一如'},
+  {id:50, ja:'仕事と家庭の責任に圧倒されて自己ケアの時間がない', en:'Overwhelmed by responsibilities at both work and home, leaving no time for self-care', spirit:'jiko', skill:'ATTUNEMENT', skillJa:'嗜む'},
+  {id:51, ja:'AIとデジタルトランスフォーメーションの進歩についていけない不安がある', en:'Concerned about keeping up with AI and digital transformation advancements', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:52, ja:'育休取得後のキャリアに不安がある', en:'Uncertain about career prospects after taking maternity/paternity leave', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:53, ja:'柔軟なキャリアへの移行に必要な貯蓄額が不明', en:'Unclear how much savings are needed to transition into a more flexible career', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:54, ja:'仕事の責任を果たしながら経済的安定を築く方法がわからない', en:'Unsure how to build financial security while managing work responsibilities', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+];
+
+/* ════════════════════════════════════
+   STATE
+════════════════════════════════════ */
+const ADMIN_PIN = '1234'; // 管理者PINコード（変更可）
+
+let selected = new Set();
+let profile = { role: null, life: null, urgency: null };
+
+/* ════════════════════════════════════
+   SCREEN TRANSITIONS
+════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  el.scrollTop = 0;
+  window.scrollTo(0,0);
+}
+
+function showCards() {
+  showScreen('s-profile');
+}
+
+function backToCards() {
+  showScreen('s-cards');
+}
+
+function resetAll() {
+  selected.clear();
+  profile = { role: null, life: null, urgency: null };
+  document.querySelectorAll('.profile-option').forEach(o => o.classList.remove('selected'));
+  checkProfileReady();
+  updateCounter();
+  renderCards(CARDS);
+  showScreen('s-intro');
+}
+
+/* ════════════════════════════════════
+   PROFILE
+════════════════════════════════════ */
+function selectProfile(key, val, el) {
+  profile[key] = val;
+  document.querySelectorAll(`#profile-${key} .profile-option`).forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  checkProfileReady();
+}
+
+function checkProfileReady() {
+  const ready = profile.role && profile.life && profile.urgency;
+  const btn = document.getElementById('profile-proceed-btn');
+  const hint = document.getElementById('profile-proceed-hint');
+  if (ready) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    hint.textContent = '準備ができました';
+    hint.style.color = 'var(--gold)';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '.4';
+    btn.style.cursor = 'not-allowed';
+    hint.textContent = '';
+    hint.style.color = 'var(--muted)';
+  }
+}
+
+function startDiagnostic() {
+  if (!profile.role || !profile.life || !profile.urgency) return;
+  renderCards(CARDS);
+  showScreen('s-cards');
+}
+
+/* ════════════════════════════════════
+   RENDER CARDS
+════════════════════════════════════ */
+function renderCards(cards) {
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+  cards.forEach(card => {
+    const isSel = selected.has(card.id);
+    const div = document.createElement('div');
+    div.className = 'challenge-card' + (isSel ? ' selected' : '');
+    div.dataset.spirit = card.spirit;
+    div.dataset.id = card.id;
+    div.innerHTML = `
+      <div class="card-check">
+        <svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,6 5,9 10,3"/>
+        </svg>
+      </div>
+      <div class="card-num" style="margin-bottom:.4rem">#${card.id}</div>
+      <div class="card-ja">${card.ja}</div>
+    `;
+    div.addEventListener('click', () => toggleCard(card.id));
+    grid.appendChild(div);
+  });
+}
+
+function toggleCard(id) {
+  if (selected.has(id)) {
+    selected.delete(id);
+  } else {
+    selected.add(id);
+  }
+  updateCounter();
+  document.querySelectorAll('.challenge-card').forEach(el => {
+    const cid = parseInt(el.dataset.id);
+    el.classList.toggle('selected', selected.has(cid));
+  });
+}
+
+function updateCounter() {
+  const n = selected.size;
+  document.getElementById('counter-label').textContent = `${n} 枚選択中`;
+  const btn = document.getElementById('result-btn');
+  const hint = document.getElementById('action-hint');
+  if (n >= 1) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    hint.innerHTML = `<strong style="color:var(--gold)">${n}枚</strong>選択中 — 選び終わったら「送信する」を押してください`;
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '.4';
+    btn.style.cursor = 'not-allowed';
+    hint.innerHTML = '当てはまるカードを<strong>何枚でも</strong>選んでください';
+  }
+}
+
+/* ════════════════════════════════════
+   FILTER
+════════════════════════════════════ */
+function filterCards(spirit, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = spirit === 'all' ? CARDS : CARDS.filter(c => c.spirit === spirit);
+  renderCards(filtered);
+}
+
+/* ════════════════════════════════════
+   PARTICIPANT SUBMIT
+════════════════════════════════════ */
+async function submitResponse() {
+  if (selected.size < 1) return;
+
+  const chosen = CARDS.filter(c => selected.has(c.id));
+  const counts = { jiko:0, flex:0, strat:0, sei:0, hei:0 };
+  chosen.forEach(c => counts[c.spirit]++);
+  const total = chosen.length;
+
+  const skillCounts = {};
+  chosen.forEach(c => {
+    if (!skillCounts[c.skill]) skillCounts[c.skill] = { count:0, skillJa:c.skillJa, spirit:c.spirit };
+    skillCounts[c.skill].count++;
+  });
+
+  const topSpirit = Object.keys(counts).sort((a,b) => counts[b]-counts[a])[0];
+
+  const submission = {
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    profile: { ...profile },
+    selectedCards: Array.from(selected),
+    counts, skillCounts, total, topSpirit
+  };
+
+  try {
+    await db.collection('submissions').add(submission);
+    showScreen('s-complete');
+  } catch(e) {
+    console.error('送信エラー:', e);
+    alert('送信に失敗しました。通信状況を確認して再度お試しください。');
+  }
+}
+
+/* ════════════════════════════════════
+   ADMIN
+════════════════════════════════════ */
+function checkAdminPin() {
+  const input = document.getElementById('admin-pin-input').value;
+  const err = document.getElementById('admin-pin-error');
+  if (input === ADMIN_PIN) {
+    err.textContent = '';
+    document.getElementById('admin-pin-input').value = '';
+    renderAdminList();
+    showScreen('s-admin-list');
+  } else {
+    err.textContent = 'PINコードが正しくありません';
+    document.getElementById('admin-pin-input').value = '';
+  }
+}
+
+async function renderAdminList() {
+  const container = document.getElementById('admin-list-body');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
+
+  const ROLE_LBL    = { individual:'一般社員・スタッフ', leader:'チームリード', executive:'経営者・起業家' };
+  const LIFE_LBL    = { childcare:'子育て中', caregiving:'介護中', student:'学生', none:'特になし', other:'その他' };
+  const URGENCY_LBL = { now:'今すぐ', longterm:'中長期' };
+
+  try {
+    const snapshot = await db.collection('submissions').orderBy('timestamp','desc').get();
+    const all = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    document.getElementById('admin-count').textContent = `${all.length}件`;
+
+    if (all.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center;padding:3rem;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r)">
+          まだ回答がありません
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = all.map(s => {
+      const dt = s.timestamp?.toDate ? s.timestamp.toDate() : new Date();
+      const dateStr = `${dt.getMonth()+1}/${dt.getDate()} ${dt.getHours()}:${String(dt.getMinutes()).padStart(2,'0')}`;
+      const topS = SPIRITS[s.topSpirit] || SPIRITS.hei;
+      const roleLabel    = ROLE_LBL[s.profile?.role] || '—';
+      const lifeLabel    = LIFE_LBL[s.profile?.life] || '—';
+      const urgencyLabel = URGENCY_LBL[s.profile?.urgency] || '—';
+      return `
+        <div class="admin-row" onclick="showAdminDetail('${s.id}')">
+          <div style="flex:1">
+            <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">${dateStr}</div>
+            <div style="font-size:.9rem;font-weight:600;margin-bottom:.4rem">${roleLabel} · ${lifeLabel} · ${urgencyLabel}</div>
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+              <span style="font-size:.72rem;padding:.18rem .55rem;border-radius:100px;background:${topS.bg};color:${topS.color};border:1px solid ${topS.color}40;font-weight:600">${topS.name}</span>
+              <span style="font-size:.72rem;color:var(--muted)">${s.total}枚選択</span>
+            </div>
+          </div>
+          <div style="color:var(--muted);font-size:1.3rem;margin-left:.8rem">›</div>
+        </div>
+      `;
+    }).join('');
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--red)">読み込みに失敗しました。再度「更新」を押してください。</div>`;
+  }
+}
+
+async function showAdminDetail(id) {
+  try {
+    const doc = await db.collection('submissions').doc(id).get();
+    if (!doc.exists) return;
+    const sub = { id: doc.id, ...doc.data() };
+    selected = new Set(sub.selectedCards);
+    profile = sub.profile || { role: null, life: null, urgency: null };
+    showResult();
+  } catch(e) {
+    console.error(e);
+    alert('データの読み込みに失敗しました。');
+  }
+}
+
+function backToAdminList() {
+  renderAdminList();
+  showScreen('s-admin-list');
+}
+
+async function clearAdminData() {
+  if (!confirm('すべての回答データを削除しますか？この操作は元に戻せません。')) return;
+  try {
+    const snapshot = await db.collection('submissions').get();
+    const batch = db.batch();
+    snapshot.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    renderAdminList();
+  } catch(e) {
+    console.error(e);
+    alert('削除に失敗しました。');
+  }
+}
+
+/* ════════════════════════════════════
+   RESULT (admin use only)
+════════════════════════════════════ */
+function showResult() {
+  if (selected.size < 1) return;
+
+  const chosen = CARDS.filter(c => selected.has(c.id));
+
+  // Count spirits
+  const counts = { jiko:0, flex:0, strat:0, sei:0, hei:0 };
+  chosen.forEach(c => counts[c.spirit]++);
+  const total = chosen.length;
+
+  // Skill別集計
+  const skillCounts = {};
+  chosen.forEach(c => {
+    if (!skillCounts[c.skill]) skillCounts[c.skill] = { count:0, skillJa:c.skillJa, spirit:c.spirit };
+    skillCounts[c.skill].count++;
+  });
+  const skillRanked = Object.entries(skillCounts).sort((a,b) => b[1].count - a[1].count);
+
+  // Recap — Spirit & Skill 集計サマリー
+  const recap = document.getElementById('selected-recap');
+  const spiritOrder = ['hei','jiko','flex','strat','sei'];
+  recap.innerHTML = `
+    <div style="grid-column:1/-1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.2rem">
+      <div style="font-size:.75rem;letter-spacing:.15em;color:var(--muted);margin-bottom:.7rem">Spirit の分布 — ${total}枚</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+        ${spiritOrder.filter(k => counts[k] > 0).map(k => {
+          const s = SPIRITS[k];
+          const pct = Math.round(counts[k] / total * 100);
+          return `<div style="display:flex;align-items:center;gap:.45rem;background:${s.bg};border:1px solid ${s.color}40;border-radius:8px;padding:.35rem .75rem">
+            <span style="font-size:.82rem">${s.name.split(' ')[0]}</span>
+            <span style="font-size:.8rem;font-weight:600;color:${s.color}">${s.name.split(' ').slice(1).join(' ')}</span>
+            <span style="font-size:.72rem;color:${s.color};font-weight:700;opacity:.85">${counts[k]}枚 ${pct}%</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin-bottom:.8rem"></div>
+      <div style="font-size:.75rem;letter-spacing:.15em;color:var(--muted);margin-bottom:.6rem">Skill の分布</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+        ${skillRanked.map(([skill, d]) => {
+          const s = SPIRITS[d.spirit];
+          const pct = Math.round(d.count / total * 100);
+          return `<div style="display:flex;align-items:center;gap:.4rem;background:${s.bg};border:1px solid ${s.color}30;border-radius:6px;padding:.28rem .65rem">
+            <span style="font-size:.78rem;font-weight:700;color:${s.color}">${skill}</span>
+            <span style="font-size:.72rem;color:${s.color};opacity:.75">· ${d.skillJa}</span>
+            <span style="font-size:.7rem;color:${s.color};font-weight:700;opacity:.85">${d.count}枚</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  // Profile badge
+  const ROLE_LABELS    = { individual:'一般社員・スタッフ', leader:'チームリード', executive:'経営者・起業家' };
+  const LIFE_LABELS    = { childcare:'子育て中', caregiving:'介護中', student:'学生', none:'特になし', other:'その他' };
+  const URGENCY_LABELS = { now:'今すぐ取り組む', longterm:'中長期で鍛える' };
+  const badge = document.getElementById('profile-badge');
+  if (profile.role) {
+    const chips = [profile.role, profile.life, profile.urgency]
+      .filter(Boolean)
+      .map(v => {
+        const label = ROLE_LABELS[v] || LIFE_LABELS[v] || URGENCY_LABELS[v] || v;
+        return `<span style="font-size:.73rem;padding:.28rem .7rem;border-radius:100px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(160,120,40,.3)">${label}</span>`;
+      }).join('');
+    badge.innerHTML = `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem;margin-bottom:1rem">${chips}</div>`;
+    badge.style.display = 'block';
+  }
+
+  // Pentagon subtitle — 枚数を動的に
+  document.getElementById('penta-sub-text').textContent = `選んだ ${total}枚のカードが示す Spirit の分布`;
+  document.getElementById('skill-sub-text').textContent = `選んだ ${total}枚のカードが示す 10 Skills の内訳`;
+
+  // Pentagon SVG
+  drawPentagon(counts, total);
+
+  // Pentagon Legend
+  const legend = document.getElementById('pentagon-legend');
+  const maxCount = Math.max(...Object.values(counts));
+  legend.innerHTML = spiritOrder.map(k => {
+    const s = SPIRITS[k];
+    const c = counts[k];
+    const pct = total > 0 ? Math.round(c / total * 100) : 0;
+    const isTop = c === maxCount && c > 0;
+    return `
+      <div class="legend-item ${isTop ? 'highlight' : ''}">
+        <div class="legend-dot" style="background:${s.color}"></div>
+        <div class="legend-name">${s.name}<br><small style="color:var(--muted);font-size:.7rem">${s.en}</small></div>
+        <div class="legend-count" style="color:${c > 0 ? s.color : 'var(--muted)'}">${c > 0 ? pct + '%' : '—'}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Skill distribution chart
+  drawSkillChart(skillCounts, total);
+
+  // Focus recommendation
+  renderFocus(counts, chosen, total, skillCounts);
+
+  showScreen('s-result');
+}
+
+/* ─── Skill Bar Chart ─── */
+function drawSkillChart(skillCounts, total) {
+  const container = document.getElementById('skill-chart');
+
+  // 全10スキルを定義（Spirit順に並べる）
+  const ALL_SKILLS = [
+    { skill:'OBJECTIVITY',   skillJa:'虚の心',    spirit:'hei'   },
+    { skill:'PSYCHOSOMATIC', skillJa:'心身一如',   spirit:'hei'   },
+    { skill:'ATTUNEMENT',    skillJa:'嗜む',      spirit:'jiko'  },
+    { skill:'CULTIVATION',   skillJa:'資質器量',   spirit:'jiko'  },
+    { skill:'ADAPTABILITY',  skillJa:'有構無構',   spirit:'flex'  },
+    { skill:'OPTIMIZATION',  skillJa:'二刀一',     spirit:'flex'  },
+    { skill:'DISCERNMENT',   skillJa:'打つと当たる', spirit:'strat' },
+    { skill:'PERSPECTIVE',   skillJa:'観見',       spirit:'strat' },
+    { skill:'RHYTHM',        skillJa:'陰陽の足',   spirit:'sei'   },
+    { skill:'TIMING',        skillJa:'拍子',       spirit:'sei'   },
+  ];
+
+  const maxSkillCount = Math.max(...ALL_SKILLS.map(s => (skillCounts[s.skill]?.count || 0)), 1);
+
+  container.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:.55rem;padding:.2rem 0">
+      ${ALL_SKILLS.map(({ skill, skillJa, spirit }) => {
+        const count = skillCounts[skill]?.count || 0;
+        const pct = Math.round(count / total * 100);
+        const barWidth = Math.round(count / maxSkillCount * 100);
+        const s = SPIRITS[spirit];
+        const active = count > 0;
+        return `
+          <div style="display:grid;grid-template-columns:170px 1fr 52px;align-items:center;gap:.8rem;opacity:${active ? 1 : 0.35}">
+            <div style="text-align:right">
+              <span style="font-size:.8rem;font-weight:${active ? 700 : 400};color:${active ? s.color : 'var(--muted)'}">${skill}</span>
+              <span style="font-size:.72rem;color:${active ? s.color : 'var(--muted)'};opacity:.75"> · ${skillJa}</span>
+            </div>
+            <div style="height:14px;background:rgba(0,0,0,.05);border-radius:7px;overflow:hidden">
+              <div style="height:100%;width:${barWidth}%;background:${active ? s.color : 'transparent'};border-radius:7px;transition:width .5s ease;min-width:${active ? 4 : 0}px"></div>
+            </div>
+            <div style="font-size:.78rem;font-weight:700;color:${active ? s.color : 'var(--muted)'}">
+              ${active ? `${count}枚 <span style="font-weight:400;font-size:.7rem">${pct}%</span>` : '—'}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:.5rem">
+      ${['hei','jiko','flex','strat','sei'].map(k => {
+        const s = SPIRITS[k];
+        return `<div style="display:flex;align-items:center;gap:.3rem">
+          <div style="width:8px;height:8px;border-radius:50%;background:${s.color}"></div>
+          <span style="font-size:.7rem;color:${s.color};font-weight:600">${s.name}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* ─── Pentagon SVG ─── */
+function drawPentagon(counts, total) {
+  const svg = document.getElementById('pentagon-svg');
+  svg.innerHTML = '';
+
+  const cx = 150, cy = 150, R = 110;
+  const axes = [
+    { key:'hei',   angle: -90 },
+    { key:'strat', angle: -90 + 72 },
+    { key:'sei',   angle: -90 + 144 },
+    { key:'flex',  angle: -90 + 216 },
+    { key:'jiko',  angle: -90 + 288 },
+  ];
+
+  function pt(angle, r) {
+    const rad = angle * Math.PI / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+
+  // Background rings
+  [0.2, 0.4, 0.6, 0.8, 1.0].forEach(frac => {
+    const points = axes.map(a => pt(a.angle, R * frac));
+    const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points', points.map(p => `${p.x},${p.y}`).join(' '));
+    poly.setAttribute('fill', 'none');
+    poly.setAttribute('stroke', 'rgba(160,120,40,.12)');
+    poly.setAttribute('stroke-width', '1');
+    svg.appendChild(poly);
+  });
+
+  // Axis lines
+  axes.forEach(a => {
+    const p = pt(a.angle, R);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+    line.setAttribute('x2', p.x); line.setAttribute('y2', p.y);
+    line.setAttribute('stroke', 'rgba(160,120,40,.15)');
+    line.setAttribute('stroke-width', '1');
+    svg.appendChild(line);
+  });
+
+  // Data polygon — パーセンテージベース
+  const dataPoints = axes.map(a => {
+    const pct = total > 0 ? counts[a.key] / total : 0;
+    const r = pct > 0 ? pct * R : R * 0.04;
+    return pt(a.angle, r);
+  });
+  const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+  poly.setAttribute('points', dataPoints.map(p => `${p.x},${p.y}`).join(' '));
+  poly.setAttribute('fill', 'rgba(160,120,40,.18)');
+  poly.setAttribute('stroke', '#a07828');
+  poly.setAttribute('stroke-width', '2');
+  poly.setAttribute('stroke-linejoin', 'round');
+  svg.appendChild(poly);
+
+  // Data dots + spirit labels
+  axes.forEach(a => {
+    const pct = total > 0 ? counts[a.key] / total : 0;
+    const r = pct > 0 ? pct * R : R * 0.04;
+    const dp = pt(a.angle, r);
+    const spirit = SPIRITS[a.key];
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx', dp.x); circle.setAttribute('cy', dp.y);
+    circle.setAttribute('r', pct > 0 ? '5' : '3');
+    circle.setAttribute('fill', pct > 0 ? spirit.color : 'rgba(160,120,40,.3)');
+    circle.setAttribute('stroke', '#fff');
+    circle.setAttribute('stroke-width', '1.5');
+    svg.appendChild(circle);
+
+    const lp = pt(a.angle, R + 22);
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', lp.x); text.setAttribute('y', lp.y);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('font-size', '10');
+    text.setAttribute('font-family', 'Inter, sans-serif');
+    text.setAttribute('font-weight', pct > 0 ? '600' : '400');
+    text.setAttribute('fill', pct > 0 ? spirit.color : '#9a8a70');
+    const emoji = spirit.name.split(' ')[0];
+    const shortName = spirit.name.split(' ').slice(1).join('');
+    text.textContent = emoji + ' ' + shortName;
+    svg.appendChild(text);
+  });
+}
+
+/* ════════════════════════════════════
+   PROFILE CONTEXT MESSAGES
+════════════════════════════════════ */
+const PROFILE_ROLE_CONTEXT = {
+  individual: {
+    hei:  '一人で全てを背負わず、自分のペースを守ることが長期のパフォーマンスにつながります。',
+    jiko: '自分への投資は、誰にも奪えない資産です。小さな積み重ねから始めましょう。',
+    flex: '個人として変化に適応するスピードは、あなた自身が決められます。',
+    strat:'自分のキャリアの舵を取るのは、あなた自身です。判断の軸を磨きましょう。',
+    sei:  '仕事・家族・自分の3つのリズムを意識的に整えることが鍵です。',
+  },
+  leader: {
+    hei:  'チームの心理的安全は、リーダー自身の平常心から生まれます。まず自分を整えてください。',
+    jiko: 'リーダーとしての成長は、チーム全体の成長に直結します。自己鍛錬を怠らないでください。',
+    flex: 'チームを変化に適応させるには、リーダーが先に形を手放す姿を見せることが必要です。',
+    strat:'部下の動きと全体の方向を同時に観る力——観見のスキルを磨くときです。',
+    sei:  'チームへの誠実な関わりと、家族・自分のリズムを両立させることがあなたの課題です。',
+  },
+  executive: {
+    hei:  '経営者の平常心は、組織全体の安定に直結します。あなたの軸が、チームの軸になります。',
+    jiko: '経営者としての自己鍛錬は孤独な道です。しかしその積み重ねが組織の底力になります。',
+    flex: '市場の変化に組織として適応するために、まず経営者自身が形を変える覚悟を持ちましょう。',
+    strat:'経営判断の質は、情報の量ではなく洞察の深さで決まります。観見の力を研ぎ澄ましましょう。',
+    sei:  '組織・家族・自分——すべての関係に誠実であり続けることが、長期の信頼をつくります。',
+  },
+};
+
+const PROFILE_LIFE_CONTEXT = {
+  childcare:  '子育てという道場が、あなたの稽古の場でもあります。',
+  caregiving: '介護という重荷の中でも、自分自身を失わないための稽古が必要です。',
+  student:    '学びの時期だからこそ、軸を作る稽古が一生の土台になります。',
+  none:        null,
+  other:       null,
+};
+
+const PROFILE_URGENCY_CONTEXT = {
+  now:      '今週のうちに、一つだけ具体的なアクションを選んで実践してみましょう。',
+  longterm: '焦らず、21日間の稽古として継続的に取り組むことで、確かな変化が生まれます。',
+};
+
+function getContextualMessage(spiritKey) {
+  const base = SPIRIT_MESSAGES[spiritKey].message.replace(/\n/g, '<br>');
+  const parts = [base];
+  const roleMsg = profile.role && PROFILE_ROLE_CONTEXT[profile.role]?.[spiritKey];
+  if (roleMsg) parts.push(`<span style="color:var(--gold);font-weight:500">${roleMsg}</span>`);
+  const lifeMsg = profile.life && PROFILE_LIFE_CONTEXT[profile.life];
+  if (lifeMsg) parts.push(`<em style="color:var(--muted)">${lifeMsg}</em>`);
+  const urgencyMsg = profile.urgency && PROFILE_URGENCY_CONTEXT[profile.urgency];
+  if (urgencyMsg) parts.push(`<strong>${urgencyMsg}</strong>`);
+  return parts.join('<br><br>');
+}
+
+/* ─── Focus Section ─── */
+function renderFocus(counts, chosen, total, skillCounts) {
+  const container = document.getElementById('focus-section-container');
+
+  const ranked = Object.keys(counts)
+    .filter(k => counts[k] > 0)
+    .sort((a, b) => counts[b] - counts[a]);
+
+  if (ranked.length === 0) return;
+
+  const topCount = counts[ranked[0]];
+  const coLeaders = ranked.filter(k => counts[k] === topCount);
+
+  // Spirit内のSkill集計を返すヘルパー
+  function skillsForSpirit(spiritKey) {
+    return Object.entries(skillCounts)
+      .filter(([, d]) => d.spirit === spiritKey)
+      .sort((a, b) => b[1].count - a[1].count);
+  }
+
+  // PRIMARY FOCUS (1位)
+  const primarySection = coLeaders.map(key => {
+    const spirit = SPIRITS[key];
+    const pct = Math.round(counts[key] / total * 100);
+    const spiritSkills = skillsForSpirit(key);
+    const skillDetail = spiritSkills.map(([skill, d]) =>
+      `<div style="display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:rgba(255,255,255,.06);border-radius:8px;border:1px solid ${spirit.color}40">
+        <div>
+          <div style="font-size:.85rem;font-weight:700;color:${spirit.color}">${skill} <span style="font-weight:400;font-size:.8rem">· ${d.skillJa}</span></div>
+        </div>
+        <div style="margin-left:auto;font-size:.8rem;font-weight:700;color:${spirit.color}">${d.count}枚</div>
+      </div>`
+    ).join('');
+    return `
+      <div class="focus-section focus-spirit-${key}" style="margin-bottom:1rem">
+        <div class="focus-label">PRIMARY FOCUS — ${pct}%（${counts[key]}枚）</div>
+        <div class="focus-primary-spirit" style="color:${spirit.color}">
+          ${spirit.name}
+          <span class="spirit-en">${spirit.en}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;margin:1rem 0">${skillDetail}</div>
+        <div class="focus-message">${getContextualMessage(key)}</div>
+      </div>
+    `;
+  }).join('');
+
+  // SECONDARY (2位以下)
+  const secondary = ranked.filter(k => !coLeaders.includes(k));
+  const secondarySection = secondary.length > 0 ? `
+    <div class="multi-focus" style="margin-top:.5rem">
+      <h3 style="font-size:1rem;margin-bottom:.8rem">その他の注目エリア</h3>
+      <div class="multi-spirit-list">
+        ${secondary.map(k => {
+          const s = SPIRITS[k];
+          const pct = Math.round(counts[k] / total * 100);
+          const spiritSkills = skillsForSpirit(k);
+          const skillTags = spiritSkills.map(([skill, d]) =>
+            `<span style="font-size:.72rem;font-weight:600;color:${s.color};background:${s.bg};border-radius:4px;padding:.1rem .4rem">${skill} · ${d.skillJa} ×${d.count}</span>`
+          ).join(' ');
+          return `
+            <div class="multi-spirit-item" style="flex-direction:column;align-items:flex-start;gap:.4rem">
+              <div style="display:flex;align-items:center;gap:.6rem;width:100%">
+                <span class="multi-spirit-icon">${s.name.split(' ')[0]}</span>
+                <div class="multi-spirit-info">
+                  <div class="multi-spirit-name" style="color:${s.color}">${s.name.split(' ').slice(1).join(' ')}</div>
+                  <div class="multi-spirit-skill">${s.en}</div>
+                </div>
+                <span style="font-size:.8rem;font-weight:700;color:${s.color};margin-left:auto">${pct}%（${counts[k]}枚）</span>
+              </div>
+              ${skillTags ? `<div style="display:flex;flex-wrap:wrap;gap:.3rem;padding-left:2rem">${skillTags}</div>` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  container.innerHTML = primarySection + secondarySection;
+}
+
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  updateCounter();
+  // URLハッシュが #admin なら管理者ログイン画面へ
+  if (location.hash === '#admin') {
+    showScreen('s-admin-login');
+  }
+});
+</script>
+</body>
+</html>
