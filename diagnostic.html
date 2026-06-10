@@ -11,6 +11,9 @@
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init('JiYOgiT7R9hyZ3wVs');</script>
 <style>
 :root {
   --bg:       #1a1a1f;
@@ -1303,6 +1306,8 @@ async function submitResponse() {
 
   try {
     await db.collection('submissions').add(submission);
+    // EmailJS 通知
+    emailjs.send('service_1dicjgi', 'template_bhxtn8c').catch(e => console.warn('メール送信エラー:', e));
     showScreen('s-complete');
   } catch(e) {
     console.error('送信エラー:', e);
