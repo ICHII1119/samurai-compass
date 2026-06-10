@@ -1439,13 +1439,13 @@ function showResult() {
   const recap = document.getElementById('selected-recap');
   const spiritOrder = ['hei','jiko','flex','strat','sei'];
   recap.innerHTML = `
-    <div style="grid-column:1/-1;background:#5a5a72;border:1px solid rgba(201,168,76,.5);border-radius:var(--r);padding:1.1rem 1.2rem">
+    <div style="grid-column:1/-1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.2rem">
       <div style="font-size:.75rem;letter-spacing:.15em;color:var(--muted);margin-bottom:.7rem">Spirit の分布 — ${total}枚</div>
       <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
         ${spiritOrder.filter(k => counts[k] > 0).map(k => {
           const s = SPIRITS[k];
           const pct = Math.round(counts[k] / total * 100);
-          return `<div style="display:flex;align-items:center;gap:.45rem;background:${s.bg.replace('0.15','0.45')};border:1px solid ${s.color}aa;border-radius:8px;padding:.35rem .75rem">
+          return `<div style="display:flex;align-items:center;gap:.45rem;background:${s.bg};border:1px solid ${s.color}40;border-radius:8px;padding:.35rem .75rem">
             <span style="font-size:.82rem">${s.name.split(' ')[0]}</span>
             <span style="font-size:.8rem;font-weight:600;color:${s.color}">${s.name.split(' ').slice(1).join(' ')}</span>
             <span style="font-size:.72rem;color:${s.color};font-weight:700;opacity:.85">${counts[k]}枚 ${pct}%</span>
@@ -1458,7 +1458,7 @@ function showResult() {
         ${skillRanked.map(([skill, d]) => {
           const s = SPIRITS[d.spirit];
           const pct = Math.round(d.count / total * 100);
-          return `<div style="display:flex;align-items:center;gap:.4rem;background:${s.bg.replace('0.15','0.45')};border:1px solid ${s.color}aa;border-radius:6px;padding:.28rem .65rem">
+          return `<div style="display:flex;align-items:center;gap:.4rem;background:${s.bg};border:1px solid ${s.color}30;border-radius:6px;padding:.28rem .65rem">
             <span style="font-size:.78rem;font-weight:700;color:${s.color}">${skill}</span>
             <span style="font-size:.72rem;color:${s.color};opacity:.75">· ${d.skillJa}</span>
             <span style="font-size:.7rem;color:${s.color};font-weight:700;opacity:.85">${d.count}枚</span>
