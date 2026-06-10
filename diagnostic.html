@@ -455,8 +455,8 @@ body::before {
   margin-bottom:2rem;
 }
 .recap-card {
-  background:var(--bg3);
-  border:1.5px solid var(--border);
+  background:#f5f0e6;
+  border:1.5px solid rgba(154,117,32,.3);
   border-radius:var(--r);
   padding:.9rem;
   position:relative;
@@ -473,8 +473,8 @@ body::before {
 .recap-card[data-spirit="sei"]::before   { background:var(--c-sei) }
 .recap-card[data-spirit="hei"]::before   { background:var(--c-hei) }
 
-.recap-num { font-size:.72rem; color:var(--muted); margin-bottom:.3rem }
-.recap-ja { font-size:.82rem; color:var(--cream); line-height:1.6 }
+.recap-num { font-size:.72rem; color:#7a6840; margin-bottom:.3rem }
+.recap-ja { font-size:.82rem; color:#2a1f10; line-height:1.6 }
 .recap-skill {
   margin-top:.5rem;
   font-size:.68rem; font-weight:600;
@@ -488,8 +488,8 @@ body::before {
 
 /* Pentagon Chart */
 .pentagon-section {
-  background:var(--bg3);
-  border:1px solid var(--border);
+  background:#f5f0e6;
+  border:1px solid rgba(154,117,32,.3);
   border-radius:var(--r-lg);
   padding:2rem 1.5rem;
   margin-bottom:1.5rem;
@@ -498,11 +498,11 @@ body::before {
 .pentagon-section h3 {
   font-family:var(--font-b);
   font-size:1.2rem; font-weight:600;
-  color:var(--cream);
+  color:#2a1f10;
   margin-bottom:.3rem;
 }
 .pentagon-section .penta-sub {
-  font-size:.78rem; color:var(--muted);
+  font-size:.78rem; color:#7a6840;
   margin-bottom:1.5rem;
 }
 .pentagon-wrap {
@@ -527,13 +527,13 @@ body::before {
   transition:.2s;
 }
 .legend-item.highlight {
-  background:var(--gold-dim);
-  border:1px solid var(--border);
+  background:rgba(154,117,32,.12);
+  border:1px solid rgba(154,117,32,.3);
 }
 .legend-dot {
   width:10px; height:10px; border-radius:50%; flex-shrink:0;
 }
-.legend-name { font-size:.82rem; color:var(--cream); line-height:1.4 }
+.legend-name { font-size:.82rem; color:#2a1f10; line-height:1.4 }
 .legend-count {
   margin-left:auto;
   font-size:.75rem; font-weight:700;
@@ -556,7 +556,7 @@ body::before {
 }
 
 .focus-label {
-  font-size:.72rem; letter-spacing:.25em; color:var(--muted);
+  font-size:.72rem; letter-spacing:.25em; color:#7a6840;
   margin-bottom:.5rem;
 }
 .focus-primary-spirit {
@@ -584,24 +584,24 @@ body::before {
   border:2px solid currentColor;
 }
 .focus-message {
-  font-size:.92rem; color:var(--cream2);
+  font-size:.92rem; color:#3a2a1a;
   line-height:1.8;
   margin-top:1rem;
   padding-top:1rem;
-  border-top:1px solid rgba(0,0,0,.06);
+  border-top:1px solid rgba(0,0,0,.1);
 }
 
 /* Spirit-specific colors for focus section */
-.focus-spirit-jiko  { background:var(--c-jiko-bg);  color:var(--c-jiko) }
-.focus-spirit-flex  { background:var(--c-flex-bg);  color:var(--c-flex) }
-.focus-spirit-strat { background:var(--c-strat-bg); color:var(--c-strat) }
-.focus-spirit-sei   { background:var(--c-sei-bg);   color:var(--c-sei) }
-.focus-spirit-hei   { background:var(--c-hei-bg);   color:var(--c-hei) }
+.focus-spirit-jiko  { background:#eef7f0; color:var(--c-jiko);  border:1px solid rgba(74,170,90,.3) }
+.focus-spirit-flex  { background:#eef2fa; color:var(--c-flex);  border:1px solid rgba(74,136,216,.3) }
+.focus-spirit-strat { background:#fdf0ec; color:var(--c-strat); border:1px solid rgba(232,96,64,.3) }
+.focus-spirit-sei   { background:#f5eefa; color:var(--c-sei);   border:1px solid rgba(160,96,224,.3) }
+.focus-spirit-hei   { background:#eef5f8; color:var(--c-hei);   border:1px solid rgba(96,160,184,.3) }
 
 /* Multi-spirit result (1+1+1 split) */
 .multi-focus {
-  background:var(--bg2);
-  border:1px solid var(--border);
+  background:#f5f0e6;
+  border:1px solid rgba(154,117,32,.3);
   border-radius:var(--r-lg);
   padding:1.8rem;
   margin-bottom:1.5rem;
@@ -609,7 +609,7 @@ body::before {
 .multi-focus h3 {
   font-family:var(--font-b);
   font-size:1.2rem; font-weight:600;
-  color:var(--cream);
+  color:#2a1f10;
   margin-bottom:1rem;
 }
 .multi-spirit-list {
@@ -618,14 +618,14 @@ body::before {
 .multi-spirit-item {
   display:flex; align-items:center; gap:1rem;
   padding:.9rem 1.1rem;
-  background:var(--bg3);
+  background:rgba(255,255,255,.6);
   border-radius:10px;
-  border:1px solid var(--border);
+  border:1px solid rgba(154,117,32,.2);
 }
 .multi-spirit-icon { font-size:1.5rem }
 .multi-spirit-info { flex:1 }
-.multi-spirit-name { font-weight:600; font-size:.9rem; color:var(--cream) }
-.multi-spirit-skill { font-size:.75rem; color:var(--muted); margin-top:.15rem }
+.multi-spirit-name { font-weight:600; font-size:.9rem; color:#2a1f10 }
+.multi-spirit-skill { font-size:.75rem; color:#7a6840; margin-top:.15rem }
 
 /* Actions */
 .result-actions {
