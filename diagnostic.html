@@ -739,6 +739,20 @@ body::before {
   font-weight: 600;
   box-shadow: 0 0 0 3px rgba(160,120,40,.1);
 }
+.profile-text-input {
+  width: 100%;
+  padding: .65rem 1rem;
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  font-size: .95rem;
+  color: var(--cream);
+  font-family: var(--font);
+  outline: none;
+  transition: border-color .2s;
+}
+.profile-text-input:focus { border-color: var(--gold) }
+.profile-text-input::placeholder { color: var(--muted) }
 .profile-proceed {
   margin-top: 2rem;
   max-width: 560px;
@@ -854,6 +868,18 @@ body::before {
   </div>
 
   <div class="profile-questions">
+
+    <div class="profile-question">
+      <div class="profile-question-label">YOUR NAME</div>
+      <div class="profile-question-text" style="margin-bottom:.7rem">ニックネームを入力してください</div>
+      <input type="text" class="profile-text-input" id="input-nickname" placeholder="例：Tsugu" oninput="updateTextProfile()" maxlength="30">
+    </div>
+
+    <div class="profile-question">
+      <div class="profile-question-label">EMAIL</div>
+      <div class="profile-question-text" style="margin-bottom:.7rem">メールアドレスを入力してください</div>
+      <input type="email" class="profile-text-input" id="input-email" placeholder="例：your@email.com" oninput="updateTextProfile()" maxlength="80">
+    </div>
 
     <div class="profile-question">
       <div class="profile-question-label">Q1 · ROLE</div>
@@ -1145,7 +1171,7 @@ const CARDS = [
 const ADMIN_PIN = '1234'; // 管理者PINコード（変更可）
 
 let selected = new Set();
-let profile = { role: null, life: null, urgency: null };
+let profile = { nickname: '', email: '', role: null, life: null, urgency: null };
 
 /* ════════════════════════════════════
    SCREEN TRANSITIONS
@@ -1168,7 +1194,9 @@ function backToCards() {
 
 function resetAll() {
   selected.clear();
-  profile = { role: null, life: null, urgency: null };
+  profile = { nickname: '', email: '', role: null, life: null, urgency: null };
+  document.getElementById('input-nickname').value = '';
+  document.getElementById('input-email').value = '';
   document.querySelectorAll('.profile-option').forEach(o => o.classList.remove('selected'));
   checkProfileReady();
   updateCounter();
@@ -1186,8 +1214,14 @@ function selectProfile(key, val, el) {
   checkProfileReady();
 }
 
+function updateTextProfile() {
+  profile.nickname = document.getElementById('input-nickname').value.trim();
+  profile.email    = document.getElementById('input-email').value.trim();
+  checkProfileReady();
+}
+
 function checkProfileReady() {
-  const ready = profile.role && profile.life && profile.urgency;
+  const ready = profile.nickname && profile.role && profile.life && profile.urgency;
   const btn = document.getElementById('profile-proceed-btn');
   const hint = document.getElementById('profile-proceed-hint');
   if (ready) {
@@ -1365,7 +1399,9 @@ async function renderAdminList() {
         <div class="admin-row" onclick="showAdminDetail('${s.id}')">
           <div style="flex:1">
             <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">${dateStr}</div>
-            <div style="font-size:.9rem;font-weight:600;margin-bottom:.4rem">${roleLabel} · ${lifeLabel} · ${urgencyLabel}</div>
+            <div style="font-size:.95rem;font-weight:700;color:var(--cream);margin-bottom:.1rem">${s.profile?.nickname || '（名前なし）'}</div>
+            <div style="font-size:.75rem;color:var(--cream2);margin-bottom:.35rem">${s.profile?.email || ''}</div>
+            <div style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">${roleLabel} · ${lifeLabel} · ${urgencyLabel}</div>
             <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
               <span style="font-size:.72rem;padding:.18rem .55rem;border-radius:100px;background:${topS.bg};color:${topS.color};border:1px solid ${topS.color}40;font-weight:600">${topS.name}</span>
               <span style="font-size:.72rem;color:var(--muted)">${s.total}枚選択</span>
