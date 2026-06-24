@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a1f">
+<title>SAMURAI Compass — 簡易診断</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #1a1a1f;
+  --bg2:      #222228;
+  --bg3:      #2a2a32;
+  --gold:     #c9a84c;
+  --gold2:    #e8c060;
+  --gold-dim: rgba(201,168,76,.15);
+  --cream:    #f0ece0;
+  --cream2:   #c8b090;
+  --muted:    #7a7060;
+  --border:   rgba(201,168,76,.2);
+  --beige:    #f5f0e6;
+  --beige2:   #ede8dc;
+  --brown:    #2a1f10;
+  --brown2:   #7a6840;
+  --r:        14px;
+  --r-lg:     22px;
+  --font:     'Inter', -apple-system, sans-serif;
+  --font-b:   'Cormorant Garamond', serif;
+
+  --c-jiko:    #4aaa5a;
+  --c-jiko-bg: rgba(74,170,90,.18);
+  --c-flex:    #4a88d8;
+  --c-flex-bg: rgba(74,136,216,.18);
+  --c-strat:   #e86040;
+  --c-strat-bg:rgba(232,96,64,.18);
+  --c-sei:     #a060e0;
+  --c-sei-bg:  rgba(160,96,224,.18);
+  --c-hei:     #60a0b8;
+  --c-hei-bg:  rgba(96,160,184,.18);
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+html { -webkit-text-size-adjust:100%; font-size:16px }
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--font);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SCREENS ── */
+.screen { display:none }
+.screen.active { display:block }
+
+/* ══════════════════════════
+   SCREEN 1: INTRO
+══════════════════════════ */
+#s-intro {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem 3rem;
+  text-align: center;
+}
+#s-intro.active { display: flex }
+
+.intro-logo {
+  width: 120px;
+  margin-bottom: 1.5rem;
+  -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 44%, black 52%, transparent 80%);
+  mask-image: radial-gradient(ellipse 88% 82% at 50% 44%, black 52%, transparent 80%);
+}
+
+.intro-title {
+  font-family: var(--font-b);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: .05em;
+  margin-bottom: .3rem;
+}
+.intro-sub {
+  font-size: .72rem;
+  letter-spacing: .22em;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.intro-card {
+  background: var(--beige);
+  border-radius: var(--r-lg);
+  padding: 1.8rem 1.5rem;
+  margin-bottom: 2rem;
+  max-width: 400px;
+  width: 100%;
+  text-align: left;
+}
+.intro-card-title {
+  font-family: var(--font-b);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--brown);
+  margin-bottom: .8rem;
+}
+.intro-card p {
+  font-size: .88rem;
+  color: var(--brown2);
+  line-height: 1.8;
+  margin-bottom: .6rem;
+}
+.intro-card p:last-child { margin-bottom: 0 }
+.intro-step {
+  display: flex;
+  align-items: flex-start;
+  gap: .7rem;
+  margin-bottom: .5rem;
+}
+.intro-step-num {
+  width: 22px; height: 22px;
+  background: var(--gold);
+  color: #fff;
+  border-radius: 50%;
+  font-size: .72rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: .1rem;
+}
+.intro-step-text {
+  font-size: .88rem;
+  color: var(--brown);
+  line-height: 1.6;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  gap: .5rem;
+  border: none; cursor: pointer;
+  font-family: var(--font);
+  font-weight: 600;
+  border-radius: 100px;
+  transition: all .2s;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--gold);
+  color: #1a1208;
+  padding: .9rem 2.4rem;
+  font-size: 1rem;
+  letter-spacing: .05em;
+  box-shadow: 0 4px 18px rgba(201,168,76,.35);
+}
+.btn-primary:active { transform: scale(.97) }
+.btn-lg { width: 100%; max-width: 320px; padding: 1rem 2rem; font-size: 1.05rem }
+
+.intro-note {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-top: 1rem;
+}
+
+/* ══════════════════════════
+   SCREEN 2: CARDS
+══════════════════════════ */
+#s-cards {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: 120px;
+}
+
+.cards-header {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: .9rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.cards-header-title {
+  font-family: var(--font-b);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--gold);
+}
+.cards-header-sub {
+  font-size: .65rem;
+  letter-spacing: .15em;
+  color: var(--muted);
+}
+.counter-badge {
+  background: var(--gold-dim);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: .3rem .8rem;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--gold);
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: center;
+}
+
+.cards-intro {
+  padding: 1rem 1.2rem .5rem;
+  font-size: .83rem;
+  color: var(--cream2);
+  line-height: 1.7;
+  border-bottom: 1px solid var(--border);
+}
+
+.cards-list {
+  padding: .8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+
+.lite-card {
+  background: var(--beige);
+  border: 2px solid transparent;
+  border-radius: var(--r);
+  padding: .9rem 1rem .9rem 3rem;
+  cursor: pointer;
+  position: relative;
+  transition: all .18s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lite-card:active { transform: scale(.985) }
+.lite-card.selected {
+  border-color: var(--gold);
+  background: #fdf8ee;
+}
+
+.lite-card-check {
+  position: absolute;
+  left: .85rem; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px;
+  border: 2px solid rgba(154,117,32,.4);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .18s;
+  background: #fff;
+  flex-shrink: 0;
+}
+.lite-card.selected .lite-card-check {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.lite-card-check svg { opacity: 0; transition: opacity .15s }
+.lite-card.selected .lite-card-check svg { opacity: 1 }
+
+.lite-card-text {
+  font-size: .88rem;
+  color: var(--brown);
+  line-height: 1.65;
+}
+
+/* Footer action bar */
+.cards-footer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: .9rem 1.2rem;
+  padding-bottom: calc(.9rem + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  z-index: 10;
+}
+.cards-hint {
+  font-size: .75rem;
+  color: var(--muted);
+  text-align: center;
+}
+.cards-submit {
+  background: var(--gold);
+  color: #1a1208;
+  border: none;
+  border-radius: 100px;
+  padding: .85rem 2.5rem;
+  font-size: .95rem;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  width: 100%;
+  max-width: 320px;
+  transition: all .2s;
+  box-shadow: 0 4px 16px rgba(201,168,76,.3);
+}
+.cards-submit:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ══════════════════════════
+   SCREEN 3: RESULT
+══════════════════════════ */
+#s-result {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0 0 3rem;
+}
+
+.result-hero {
+  padding: 2.5rem 1.5rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.result-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  opacity: .06;
+  font-size: 12rem;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.result-eyebrow {
+  font-size: .68rem;
+  letter-spacing: .25em;
+  color: var(--muted);
+  margin-bottom: .5rem;
+}
+.result-spirit-name {
+  font-family: var(--font-b);
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: .25rem;
+}
+.result-spirit-en {
+  font-size: .8rem;
+  letter-spacing: .2em;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.result-spirit-desc {
+  font-size: .9rem;
+  line-height: 1.85;
+  color: var(--cream2);
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.result-section {
+  margin: 0 1rem 1rem;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.section-beige {
+  background: var(--beige);
+  padding: 1.4rem 1.3rem;
+}
+.section-label {
+  font-size: .65rem;
+  letter-spacing: .22em;
+  color: var(--brown2);
+  margin-bottom: .5rem;
+}
+.section-title {
+  font-family: var(--font-b);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--brown);
+  margin-bottom: .7rem;
+}
+.section-body {
+  font-size: .88rem;
+  line-height: 1.85;
+  color: #3a2a1a;
+}
+
+.tip-box {
+  background: rgba(201,168,76,.12);
+  border: 1.5px solid rgba(201,168,76,.35);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin-top: .8rem;
+  display: flex;
+  gap: .7rem;
+  align-items: flex-start;
+}
+.tip-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: .05rem }
+.tip-text { font-size: .85rem; line-height: 1.75; color: var(--brown) }
+
+.program-section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin: 0 1rem 1rem;
+  padding: 1.4rem 1.3rem;
+}
+.program-label {
+  font-size: .65rem;
+  letter-spacing: .22em;
+  color: var(--muted);
+  margin-bottom: .5rem;
+}
+.program-title {
+  font-family: var(--font-b);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: .7rem;
+}
+.program-body {
+  font-size: .88rem;
+  line-height: 1.85;
+  color: var(--cream2);
+}
+.program-points {
+  margin-top: .8rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.program-point {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+  font-size: .84rem;
+  color: var(--cream2);
+  line-height: 1.6;
+}
+.program-point-icon {
+  color: var(--gold);
+  font-size: .9rem;
+  flex-shrink: 0;
+  margin-top: .1rem;
+}
+
+.cta-section {
+  margin: 0 1rem;
+  text-align: center;
+}
+.cta-btn {
+  display: block;
+  width: 100%;
+  background: var(--gold);
+  color: #1a1208;
+  border: none;
+  border-radius: 100px;
+  padding: 1.05rem;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: .03em;
+  box-shadow: 0 6px 24px rgba(201,168,76,.4);
+  transition: all .2s;
+  margin-bottom: .8rem;
+}
+.cta-btn:active { transform: scale(.97) }
+.cta-note {
+  font-size: .74rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.retry-btn {
+  display: inline-block;
+  margin-top: .8rem;
+  font-size: .78rem;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font);
+}
+
+/* Spirit color themes for result hero */
+.spirit-hei  { background: linear-gradient(160deg, #0f1a1f 0%, #1a2830 100%) }
+.spirit-jiko { background: linear-gradient(160deg, #0f1a12 0%, #162418 100%) }
+.spirit-flex { background: linear-gradient(160deg, #0f1220 0%, #141c2e 100%) }
+.spirit-strat{ background: linear-gradient(160deg, #1f0f0a 0%, #2a1510 100%) }
+.spirit-sei  { background: linear-gradient(160deg, #180f22 0%, #22123a 100%) }
+
+.spirit-hei  .result-spirit-name { color: var(--c-hei) }
+.spirit-jiko .result-spirit-name { color: var(--c-jiko) }
+.spirit-flex .result-spirit-name { color: var(--c-flex) }
+.spirit-strat .result-spirit-name { color: var(--c-strat) }
+.spirit-sei  .result-spirit-name { color: var(--c-sei) }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════
+     SCREEN 1: INTRO
+══════════════════════════ -->
+<section id="s-intro" class="screen active">
+  <img src="logo.png" alt="SAMURAI in You" class="intro-logo">
+  <div class="intro-title">Compass</div>
+  <div class="intro-sub">QUICK DIAGNOSTIC</div>
+
+  <div class="intro-card">
+    <div class="intro-card-title">あなたの「軸」を見つける3分間</div>
+    <div class="intro-step">
+      <div class="intro-step-num">1</div>
+      <div class="intro-step-text">15枚のカードの中から、<strong>今の自分に当てはまるもの</strong>をすべて選んでください</div>
+    </div>
+    <div class="intro-step">
+      <div class="intro-step-num">2</div>
+      <div class="intro-step-text">あなたの Pentagon Compass の<strong>フォーカスポイント</strong>が見えてきます</div>
+    </div>
+    <div class="intro-step">
+      <div class="intro-step-num">3</div>
+      <div class="intro-step-text">結果と合わせて<strong>今日から使えるTIP</strong>をお届けします</div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary btn-lg" onclick="startDiagnostic()">診断をはじめる</button>
+  <div class="intro-note">所要時間：約3分 / 選択式のみ</div>
+</section>
+
+<!-- ══════════════════════════
+     SCREEN 2: CARD SELECTION
+══════════════════════════ -->
+<section id="s-cards" class="screen">
+  <div class="cards-header">
+    <div>
+      <div class="cards-header-title">Challenge Cards</div>
+      <div class="cards-header-sub">QUICK · 15 CARDS</div>
+    </div>
+    <div class="counter-badge" id="counter">0 枚選択</div>
+  </div>
+
+  <div class="cards-intro">
+    <strong style="color:var(--cream)">今の自分に当てはまるもの</strong>をすべて選んでください。<br>
+    正直に、直感で選ぶほど精度が上がります。
+  </div>
+
+  <div class="cards-list" id="cards-list"></div>
+
+  <div class="cards-footer">
+    <div class="cards-hint" id="cards-hint">当てはまるカードを選んでください</div>
+    <button class="cards-submit" id="submit-btn" onclick="showResult()" disabled>
+      結果を見る →
+    </button>
+  </div>
+</section>
+
+<!-- ══════════════════════════
+     SCREEN 3: RESULT
+══════════════════════════ -->
+<section id="s-result" class="screen">
+  <div class="result-hero" id="result-hero">
+    <div class="result-eyebrow">YOUR COMPASS FOCUS</div>
+    <div class="result-spirit-name" id="result-spirit-name">—</div>
+    <div class="result-spirit-en" id="result-spirit-en">—</div>
+    <div class="result-spirit-desc" id="result-spirit-desc"></div>
+  </div>
+
+  <div class="result-section">
+    <div class="section-beige">
+      <div class="section-label">TODAY'S TIP</div>
+      <div class="section-title" id="tip-title"></div>
+      <div class="section-body" id="tip-body"></div>
+      <div class="tip-box">
+        <div class="tip-icon">⚔️</div>
+        <div class="tip-text" id="tip-action"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="program-section">
+    <div class="program-label">SAMURAI in You PROGRAM</div>
+    <div class="program-title" id="program-title"></div>
+    <div class="program-body" id="program-body"></div>
+    <div class="program-points" id="program-points"></div>
+  </div>
+
+  <div class="cta-section">
+    <a href="#" id="cta-btn" class="cta-btn">
+      プログラムの詳細を見る →
+    </a>
+    <div class="cta-note">
+      SAMURAI in You の月額プログラムで、<br>この稽古を生涯続けましょう。
+    </div>
+    <button class="retry-btn" onclick="resetAll()">もう一度診断する</button>
+  </div>
+</section>
+
+<script>
+/* ════════════════════════════════════
+   CARDS DATA (15枚厳選)
+════════════════════════════════════ */
+const CARDS = [
+  // 平常心 (hei)
+  { id:1,  spirit:'hei',  text:'仕事と生活のバランスを大切にしながら、自分にとってのキャリアの成功を模索している。' },
+  { id:10, spirit:'hei',  text:'職場のストレスや疲れがたまってつらいと感じることがある。' },
+  { id:48, spirit:'hei',  text:'仕事と生活のバランスを考えすぎて、かえってストレスを感じている。' },
+  // 自己鍛錬 (jiko)
+  { id:2,  spirit:'jiko', text:'キャリアの次のステップをどう考えるべきか悩んでいる。' },
+  { id:7,  spirit:'jiko', text:'自分に自信が持てなかったり、「自分にはふさわしくないのでは」と感じたりすることがある。' },
+  { id:13, spirit:'jiko', text:'毎日の仕事に意味を感じられず、なんとなく違和感を覚えている。' },
+  // 柔軟な適応力 (flex)
+  { id:6,  spirit:'flex', text:'変化の激しい業界の中で、自分のスキルや知識をアップデートし続けることに不安を感じている。' },
+  { id:14, spirit:'flex', text:'考え方が固定されてしまい、新しい発想が浮かばないと感じている。' },
+  { id:27, spirit:'flex', text:'従来のキャリアの枠を超えたいが、どうすればよいかわからない。' },
+  // 戦略的思考 (strat)
+  { id:20, spirit:'strat',text:'自分のキャリア目標と会社の期待との間で悩んでいる。' },
+  { id:34, spirit:'strat',text:'将来の不確実性のため、キャリアの決断が難しいと感じている。' },
+  { id:44, spirit:'strat',text:'キャリアの成長や柔軟な働き方に必要なスキルを見極めるのが難しいと感じている。' },
+  // 誠実さ (sei)
+  { id:4,  spirit:'sei',  text:'育児や介護と仕事の両立に負担を感じている。' },
+  { id:15, spirit:'sei',  text:'仕事を優先しなければならず、プライベートな人間関係がおろそかになっていると感じている。' },
+  { id:17, spirit:'sei',  text:'仕事が忙しく、子どもや家族とのつながりが薄れていると感じている。' },
+];
+
+/* カードをシャッフル表示 */
+const DISPLAY_ORDER = [...CARDS].sort(() => Math.random() - 0.5);
+
+/* ════════════════════════════════════
+   SPIRIT CONTENT
+════════════════════════════════════ */
+const SPIRITS = {
+  hei: {
+    name: '平常心',
+    en: 'EQUANIMITY',
+    heroClass: 'spirit-hei',
+    desc: 'あなたは今、内側に「静けさ」を求めています。侍は戦場でも平常心を保ちました。感情の嵐の中でも揺れない「一本の軸」を持つことが、あなたのテーマです。',
+    tipTitle: '心の重心を取り戻す',
+    tipBody: 'バランスを考えすぎると、かえって不安が増します。侍の教えは「均衡」ではなく「軸を持つ」こと。外の状況が変わっても、内側の重心は動かない——それが平常心です。',
+    tipAction: '今日の朝、30秒だけ目を閉じて「今の自分の重心はどこにあるか」を確認してみてください。',
+    programTitle: 'SAMURAI in You での稽古',
+    programBody: 'どんな状況でも同じ自分でいられる「平常心」を、カードと稽古を通じて体で学びます。',
+    programPoints: [
+      '「感情の波」を観察する稽古',
+      '日常の中で「軸」を見つけるワーク',
+      '同道者と共に21日間の実践',
+    ],
+  },
+  jiko: {
+    name: '自己鍛錬',
+    en: 'SELF-MASTERY',
+    heroClass: 'spirit-jiko',
+    desc: 'あなたは今、自分自身と深く向き合う時期にあります。侍は生涯、己を磨き続けました。「まだ完成していない」ことは弱さではなく、成長の証です。',
+    tipTitle: '自分を磨く一歩',
+    tipBody: '自信は「できる」から生まれるのではありません。「昨日の自分より一歩進んだ」という感覚から育ちます。宮本武蔵は言いました——「千日の稽古を鍛とし、万日の稽古を錬とす」。',
+    tipAction: '今日一日の終わりに「今日の自分はどうだったか」を一言だけ書いてみてください。',
+    programTitle: 'SAMURAI in You での稽古',
+    programBody: '自己鍛錬のカードと21日間の実践で、自己認識を深め、ぶれない自信の根を育てます。',
+    programPoints: [
+      '自分の「強み」を発見するワーク',
+      'インポスター感覚を手放す稽古',
+      '毎朝のMastery Card実践',
+    ],
+  },
+  flex: {
+    name: '柔軟な適応力',
+    en: 'ADAPTABILITY',
+    heroClass: 'spirit-flex',
+    desc: 'あなたは今、変化の波の中にいます。宮本武蔵は「有構無構（形あって形なし）」を説きました。今の形に固執せず、状況に応じて自在に変わることが、あなたの強みになります。',
+    tipTitle: '形を手放す勇気',
+    tipBody: '変化への不安は、「今の自分」を守ろうとするサインです。しかし侍は知っていた——形を手放すことで、より大きな力が生まれると。変化は脅威ではなく、稽古の機会です。',
+    tipAction: '今週、「いつものやり方」を一つだけ意図的に変えてみてください。小さなことで十分です。',
+    programTitle: 'SAMURAI in You での稽古',
+    programBody: '有構無構の稽古を通じて、変化を恐れず、むしろ楽しめる「適応する体質」をつくります。',
+    programPoints: [
+      '「思い込みの形」に気づくワーク',
+      '変化を実験として捉える稽古',
+      '新しい視点を取り入れる実践',
+    ],
+  },
+  strat: {
+    name: '戦略的思考',
+    en: 'STRATEGIC MIND',
+    heroClass: 'spirit-strat',
+    desc: 'あなたは今、選択と決断の岐路に立っています。侍は「観見（かんけん）」——相手全体を観る目を持っていました。目の前だけでなく、全体の流れを読む力を磨く時です。',
+    tipTitle: '全体を観る眼を持つ',
+    tipBody: '迷いは、見えている範囲が狭すぎるサインかもしれません。一歩引いて全体を観る——その瞬間に、答えは現れます。答えは現場にあります。頭の中ではなく。',
+    tipAction: '迷ったときは「5年後の自分は、今日の決断をどう見るか」を問いかけてみてください。',
+    programTitle: 'SAMURAI in You での稽古',
+    programBody: '戦略的思考の稽古を通じて、短期と長期を同時に見る「鳥の目」と「虫の目」を育てます。',
+    programPoints: [
+      '「観見」の視点を磨くワーク',
+      '決断の軸を明確にする稽古',
+      '現場から答えを見つける実践',
+    ],
+  },
+  sei: {
+    name: '誠実さ',
+    en: 'INTEGRITY',
+    heroClass: 'spirit-sei',
+    desc: 'あなたは今、仕事と大切な人との間で引き裂かれています。侍は鎧を脱いでも同じ人間でした。仕事でも家庭でも「同じ自分」でいられる軸を取り戻すことが、あなたのテーマです。',
+    tipTitle: '一本の軸で生きる',
+    tipBody: '「仕事の自分」と「家での自分」に分裂して生きることが、現代人の消耗の根源です。侍は400年前に、すでにこの問いを解いていた——バランスではなく、軸を持つことで。',
+    tipAction: '今日、大切な人に「ありがとう」を言葉で伝えてみてください。小さな誠実さから始まります。',
+    programTitle: 'SAMURAI in You での稽古',
+    programBody: '誠実さの稽古を通じて、すべての場面で同じ軸から行動できる「一本の人間」を目指します。',
+    programPoints: [
+      '「役割の分裂」を手放すワーク',
+      '家庭と仕事に同じ軸を持つ稽古',
+      '大切な人との関係を深める実践',
+    ],
+  },
+};
+
+/* ════════════════════════════════════
+   STATE
+════════════════════════════════════ */
+let selected = new Set();
+
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+function startDiagnostic() {
+  renderCards();
+  showScreen('s-cards');
+}
+
+function renderCards() {
+  const list = document.getElementById('cards-list');
+  list.innerHTML = '';
+  DISPLAY_ORDER.forEach(card => {
+    const div = document.createElement('div');
+    div.className = 'lite-card';
+    div.dataset.id = card.id;
+    div.innerHTML = `
+      <div class="lite-card-check">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+             stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,6 5,9 10,3"/>
+        </svg>
+      </div>
+      <div class="lite-card-text">${card.text}</div>
+    `;
+    div.addEventListener('click', () => toggleCard(card.id, div));
+    list.appendChild(div);
+  });
+}
+
+function toggleCard(id, el) {
+  if (selected.has(id)) {
+    selected.delete(id);
+    el.classList.remove('selected');
+  } else {
+    selected.add(id);
+    el.classList.add('selected');
+  }
+  updateCounter();
+}
+
+function updateCounter() {
+  const n = selected.size;
+  document.getElementById('counter').textContent = `${n} 枚選択`;
+  const btn = document.getElementById('submit-btn');
+  const hint = document.getElementById('cards-hint');
+  if (n >= 1) {
+    btn.disabled = false;
+    hint.innerHTML = `<strong style="color:var(--gold)">${n}枚</strong>選択中 — 選び終わったら「結果を見る」を押してください`;
+  } else {
+    btn.disabled = true;
+    hint.textContent = '当てはまるカードを選んでください';
+  }
+}
+
+function showResult() {
+  if (selected.size < 1) return;
+
+  /* Spirit集計 */
+  const counts = { hei:0, jiko:0, flex:0, strat:0, sei:0 };
+  CARDS.forEach(c => { if (selected.has(c.id)) counts[c.spirit]++ });
+
+  /* 最多Spirit */
+  const topSpirit = Object.keys(counts).sort((a,b) => counts[b]-counts[a])[0];
+  const s = SPIRITS[topSpirit];
+
+  /* Hero */
+  const hero = document.getElementById('result-hero');
+  hero.className = 'result-hero ' + s.heroClass;
+  document.getElementById('result-spirit-name').textContent = s.name;
+  document.getElementById('result-spirit-en').textContent = s.en;
+  document.getElementById('result-spirit-desc').textContent = s.desc;
+
+  /* TIP */
+  document.getElementById('tip-title').textContent = s.tipTitle;
+  document.getElementById('tip-body').textContent = s.tipBody;
+  document.getElementById('tip-action').textContent = s.tipAction;
+
+  /* Program */
+  document.getElementById('program-title').textContent = s.programTitle;
+  document.getElementById('program-body').textContent = s.programBody;
+  document.getElementById('program-points').innerHTML = s.programPoints.map(p =>
+    `<div class="program-point">
+      <span class="program-point-icon">◆</span>
+      <span>${p}</span>
+    </div>`
+  ).join('');
+
+  showScreen('s-result');
+  window.scrollTo(0, 0);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function resetAll() {
+  selected.clear();
+  showScreen('s-intro');
+}
+</script>
+</body>
+</html>
