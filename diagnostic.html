@@ -1824,7 +1824,182 @@ function renderFocus(counts, chosen, total, skillCounts) {
     </div>
   ` : '';
 
-  container.innerHTML = primarySection + secondarySection;
+  const samuraiSection = renderSamuraiMatch(counts, total);
+  container.innerHTML = primarySection + secondarySection + samuraiSection;
+}
+
+/* ════════════════════════════════════
+   SAMURAI MATCHING
+════════════════════════════════════ */
+const SAMURAI_DB = {
+  jiko: [
+    {
+      name: '宮本武蔵',
+      en: 'Miyamoto Musashi',
+      years: '1584–1645',
+      emoji: '⚔️',
+      tagline: '剣と書と枯山水——すべてが道だった',
+      profile: `孤高の剣聖。13歳で初めて真剣勝負を行い、60余度の決闘で一度も敗れなかった。\n五輪書を著し「千日の稽古を鍛とし、万日の稽古を錬とす」と説いた。晩年は枯山水・鷹・髑髏など多くの芸術作品を残し、剣術に留まらず「すべての道を一つの道として生きる」精神を体現した。`,
+      quote: '千日の稽古を鍛とし、万日の稽古を錬とす。',
+      match: 'あなたのように自己の成長を愚直に積み重ねる姿勢は、武蔵が「地の書」で説いた「地道な鍛錬こそが土台」という教えに通じます。',
+    },
+    {
+      name: '上杉謙信',
+      en: 'Uesugi Kenshin',
+      years: '1530–1578',
+      emoji: '🐉',
+      tagline: '義の将——領土ではなく、自己の完成を求めた',
+      profile: `「越後の龍」と称された戦国最強の武将の一人。生涯独身を貫き、毘沙門天への帰依を深め、禁欲的な修行を続けた。\n武田信玄との川中島合戦では、自ら槍を手に先頭で戦った。領土拡大よりも「義」と「自己の完成」を優先し、晩年も質素な生活を送った。`,
+      quote: '義に勝つことより、義に生きることを求めよ。',
+      match: '自己を磨くことで周囲に影響を与えるあなたの姿勢は、謙信が説いた「義」——すなわち内なる正しさから行動する姿勢と重なります。',
+    },
+  ],
+  flex: [
+    {
+      name: '豊臣秀吉',
+      en: 'Toyotomi Hideyoshi',
+      years: '1537–1598',
+      emoji: '🐒',
+      tagline: '形を捨て続けた男——農民から天下人へ',
+      profile: `最下層の農民の子として生まれ、信長の草履取りから天下統一を成し遂げた。\n状況に合わせて常に自分の「型」を変え続けた。戦では機略を重んじ、外交では笑顔と柔軟な交渉で敵を味方につけた。「有構無構」の体現者——どんな立場にも全力で適応し続けた一生だった。`,
+      quote: '人は変われる。変われない人間などいない。',
+      match: '固定観念を手放し、状況に応じて自分を変化させるあなたの力は、秀吉が一生をかけて実践した「形を持たない」強さと重なります。',
+    },
+    {
+      name: '伊達政宗',
+      en: 'Date Masamune',
+      years: '1567–1636',
+      emoji: '🦅',
+      tagline: '独眼竜——敗れても、常に次の手を打った',
+      profile: `幼少期に疱瘡で右目を失いながら、奥州を制した「独眼竜」。関ヶ原・大坂の陣で西軍・豊臣方への接近を図りつつ、最終的に徳川の世に生き残った。\n西洋との交易にいち早く目を向け、慶長遣欧使節を派遣。時代の変化を読み、常に次の選択肢を用意し続けた適応の人。`,
+      quote: '生き残ることが最大の戦略である。',
+      match: '変化の中でも自分を失わず、状況を読んで柔軟に動くあなたの力は、政宗が時代の荒波を生き抜いた「適応の知恵」と共鳴します。',
+    },
+  ],
+  strat: [
+    {
+      name: '徳川家康',
+      en: 'Tokugawa Ieyasu',
+      years: '1543–1616',
+      emoji: '🐢',
+      tagline: '鳴かぬなら鳴くまで待とうホトトギス——260年の礎',
+      profile: `幼少期は人質として過ごし、今川・武田・織田・豊臣の巨大な権力に翻弄された。しかし敗れるたびに「待つ」ことを選択し、関ヶ原の勝利で天下を掌握した。\n「己を責めよ、人を責めるな」と説き、感情より理性・短期より長期を優先した。その判断が250年以上続く江戸幕府の礎となった。`,
+      quote: '人の一生は重荷を負うて遠き道を行くがごとし。急ぐべからず。',
+      match: '長期的な視点で状況を分析し、最善の一手を選ぶあなたの判断力は、家康が一生かけて磨いた「戦略的忍耐」と重なります。',
+    },
+    {
+      name: '黒田官兵衛',
+      en: 'Kuroda Kanbei',
+      years: '1546–1604',
+      emoji: '🦊',
+      tagline: '戦国最高の軍師——現場の答えを見抜く洞察力',
+      profile: `豊臣秀吉の軍師として数々の戦略を立案し、「天下人を二人作った男」と評された。\n有岡城に幽閉された1年間も心を折らず、解放後すぐに秀吉の軍師に復帰。「現場を見よ、答えは現場にある」という思想で戦略を立て続けた。晩年は剃髪して如水と号し、戦略の人生を悟りの中に終えた。`,
+      quote: '必要なのは情報ではなく、洞察である。',
+      match: '情報を素早く統合し、相手の動きを先読みするあなたの力は、官兵衛が磨き続けた「観見の智慧」——見えないものを見る眼と重なります。',
+    },
+  ],
+  sei: [
+    {
+      name: '大石内蔵助',
+      en: 'Oishi Kuranosuke',
+      years: '1659–1703',
+      emoji: '🌸',
+      tagline: '47人を束ねた誠実な意志——義士の長',
+      profile: `赤穂藩の筆頭家老として、主君浅野内匠頭の仇を討つため四十七士を率いた。\n討ち入りまでの2年間、仲間の信頼を裏切ることなく、同時に幕府の監視を欺きながら計画を遂行した。討ち入り後、全員が潔く切腹した「誠実な一貫性」は、300年経った今も日本人の精神に刻まれている。`,
+      quote: '誠実さとは、見ている人がいなくても同じ行動をとることだ。',
+      match: '誰が見ていなくても自分の信念を貫くあなたの誠実さは、内蔵助が仲間と誓い合い最後まで守り続けた「義の心」と重なります。',
+    },
+    {
+      name: '直江兼続',
+      en: 'Naoe Kanetsugu',
+      years: '1560–1619',
+      emoji: '❤️',
+      tagline: '兜に「愛」——義と情の武将',
+      profile: `上杉景勝の腹心として、兜の前立てに「愛」の一文字を掲げた武将。これは愛染明王・愛宕権現への帰依を示すとされるが、戦場に「愛」という文字を掲げた点が象徴的だ。\n関ヶ原後、大幅な領地削減（120万石→30万石）を受け入れながらも、家臣・領民への誠実な姿勢を崩さなかった。「義と情」を両立させた人格者として称えられる。`,
+      quote: '義に生き、情に誠実に——それが武士の本道である。',
+      match: '人との約束を大切にし、関係性に誠実に向き合うあなたの姿勢は、兼続が兜に掲げた「愛」——誠実な関わりこそが力の源泉という信念と共鳴します。',
+    },
+  ],
+  hei: [
+    {
+      name: '柳生宗矩',
+      en: 'Yagyū Munenori',
+      years: '1571–1646',
+      emoji: '☁️',
+      tagline: '剣は殺すためにあらず——「活人剣」の境地',
+      profile: `徳川将軍家の剣術指南役を務め、「兵法家伝書」を著した。「剣は殺すためではなく、活かすためにある（活人剣）」と説き、剣術を超えた心の哲学を展開した。\n「平常心是道」——日常の心こそが剣の道であるという境地を体現。戦場でも、政務でも、常に揺れない心の軸を持つことを生涯の稽古とした。`,
+      quote: '平常心是道——日常の心こそが道である。',
+      match: 'プレッシャーの中でも揺れない軸を持つあなたの姿勢は、宗矩が剣術を通じて辿り着いた「平常心是道」——どんな状況でも同じ心でいることの境地と重なります。',
+    },
+    {
+      name: '山本常朝',
+      en: 'Yamamoto Tsunetomo',
+      years: '1659–1719',
+      emoji: '📜',
+      tagline: '葉隠——侍の平常心を言語化した人',
+      profile: `佐賀藩士として主君鍋島光茂に仕え、主君の死後も殉死せず、出家して山中に隠遁した。\n武士の心得を口述し、それが「葉隠」としてまとめられた。「武士道とは死ぬことと見つけたり」の言葉で知られるが、その本質は「死を覚悟することで初めて、今この瞬間の行動が純粋になる」という平常心の哲学だ。`,
+      quote: '武士道とは死ぬことと見つけたり——その覚悟の先に、真の平常心がある。',
+      match: '感情の波に左右されず、今この瞬間に集中するあなたの力は、常朝が葉隠で説いた「覚悟が生む平常心」——一瞬一瞬を完全に生きる姿勢と重なります。',
+    },
+  ],
+};
+
+function renderSamuraiMatch(counts, total) {
+  const ranked = Object.keys(counts)
+    .filter(k => counts[k] > 0)
+    .sort((a, b) => counts[b] - counts[a]);
+
+  if (ranked.length === 0) return '';
+
+  const topCount = counts[ranked[0]];
+  const topSpirits = ranked.filter(k => counts[k] === topCount);
+  const primaryKey = topSpirits[0];
+  const spirit = SPIRITS[primaryKey];
+  const samurais = SAMURAI_DB[primaryKey] || [];
+
+  if (samurais.length === 0) return '';
+
+  const pct = Math.round(counts[primaryKey] / total * 100);
+
+  const cards = samurais.map((s, i) => `
+    <div style="background:rgba(255,255,255,.85);border:1px solid ${spirit.color}50;border-radius:12px;padding:1.2rem 1.3rem;margin-bottom:.8rem;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${spirit.color}"></div>
+      <div style="display:flex;align-items:flex-start;gap:.85rem;margin-bottom:.75rem">
+        <div style="font-size:2rem;line-height:1">${s.emoji}</div>
+        <div>
+          <div style="font-size:1.05rem;font-weight:800;color:#2a1f10;font-family:'Cormorant Garamond','Zen Antique Soft',serif">${s.name}</div>
+          <div style="font-size:.75rem;color:${spirit.color};font-weight:600;letter-spacing:.08em">${s.en} <span style="color:#9a8a70;font-weight:400">${s.years}</span></div>
+          <div style="font-size:.78rem;color:#6a5a40;margin-top:.25rem;font-style:italic">${s.tagline}</div>
+        </div>
+      </div>
+      <div style="font-size:.82rem;color:#4a3a2a;line-height:1.7;margin-bottom:.8rem;white-space:pre-line">${s.profile}</div>
+      <div style="background:rgba(154,117,32,.08);border-left:3px solid ${spirit.color};padding:.65rem .9rem;border-radius:0 6px 6px 0;margin-bottom:.8rem">
+        <div style="font-size:.7rem;letter-spacing:.15em;color:${spirit.color};font-weight:700;margin-bottom:.25rem">名言</div>
+        <div style="font-size:.85rem;color:#2a1f10;font-style:italic;font-family:'Cormorant Garamond',serif">「${s.quote}」</div>
+      </div>
+      <div style="background:${spirit.color}12;border-radius:8px;padding:.7rem .9rem">
+        <div style="font-size:.7rem;letter-spacing:.15em;color:${spirit.color};font-weight:700;margin-bottom:.3rem">あなたとの共鳴</div>
+        <div style="font-size:.82rem;color:#3a2a1a;line-height:1.6">${s.match}</div>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div style="margin-top:1.5rem;padding:1.2rem 1.2rem 1.4rem;background:linear-gradient(135deg,rgba(154,117,32,.06),rgba(154,117,32,.02));border:1px solid rgba(154,117,32,.25);border-radius:14px">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem">
+        <div style="font-size:1.4rem">⚔️</div>
+        <div>
+          <div style="font-size:.7rem;letter-spacing:.2em;color:var(--gold);font-weight:700">SAMURAI MATCH</div>
+          <div style="font-size:1.05rem;font-weight:800;color:#2a1f10;font-family:'Cormorant Garamond','Zen Antique Soft',serif">あなたと共鳴する侍</div>
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:#7a6840;margin-bottom:1.1rem;line-height:1.6">
+        <strong style="color:${spirit.color}">${spirit.name}（${pct}%）</strong>が最も強いあなたの Spirit。<br>
+        史上の侍の中から、その精神に最も近い人物をお伝えします。
+      </div>
+      ${cards}
+    </div>
+  `;
 }
 
 /* ════════════════════════════════════
