@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#c9a84c">
+<meta name="theme-color" content="#1a1a1f">
 <title>SAMURAI Compass Diagnostic — Career Development</title>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Antique+Soft&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Zen+Old+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -32,8 +34,8 @@
   --r:        14px;
   --r-lg:     22px;
   --tr:       .28s cubic-bezier(.34,1.2,.64,1);
-  --font:     'Inter', -apple-system, sans-serif;
-  --font-b:   'Cormorant Garamond','Zen Antique Soft',serif;
+  --font:     'Open Sans', -apple-system, sans-serif;
+  --font-b:   'Zen Old Mincho', serif;
 
   /* Spirit colors — brighter for dark bg */
   --c-jiko:    #4aaa5a;
@@ -1685,7 +1687,7 @@ function drawPentagon(counts, total) {
     text.setAttribute('text-anchor', 'middle');
     text.setAttribute('dominant-baseline', 'middle');
     text.setAttribute('font-size', '10');
-    text.setAttribute('font-family', 'Inter, sans-serif');
+    text.setAttribute('font-family', "'Open Sans', sans-serif");
     text.setAttribute('font-weight', pct > 0 ? '600' : '400');
     text.setAttribute('fill', pct > 0 ? spirit.color : '#9a8a70');
     const emoji = spirit.name.split(' ')[0];
@@ -1967,7 +1969,7 @@ function renderSamuraiMatch(counts, total) {
       <div style="display:flex;align-items:flex-start;gap:.85rem;margin-bottom:.75rem">
         <div style="font-size:2rem;line-height:1">${s.emoji}</div>
         <div>
-          <div style="font-size:1.05rem;font-weight:800;color:#2a1f10;font-family:'Cormorant Garamond','Zen Antique Soft',serif">${s.name}</div>
+          <div style="font-size:1.05rem;font-weight:800;color:#2a1f10;font-family:'Zen Old Mincho',serif">${s.name}</div>
           <div style="font-size:.75rem;color:${spirit.color};font-weight:600;letter-spacing:.08em">${s.en} <span style="color:#9a8a70;font-weight:400">${s.years}</span></div>
           <div style="font-size:.78rem;color:#6a5a40;margin-top:.25rem;font-style:italic">${s.tagline}</div>
         </div>
@@ -1975,7 +1977,7 @@ function renderSamuraiMatch(counts, total) {
       <div style="font-size:.82rem;color:#4a3a2a;line-height:1.7;margin-bottom:.8rem;white-space:pre-line">${s.profile}</div>
       <div style="background:rgba(154,117,32,.08);border-left:3px solid ${spirit.color};padding:.65rem .9rem;border-radius:0 6px 6px 0;margin-bottom:.8rem">
         <div style="font-size:.7rem;letter-spacing:.15em;color:${spirit.color};font-weight:700;margin-bottom:.25rem">名言</div>
-        <div style="font-size:.85rem;color:#2a1f10;font-style:italic;font-family:'Cormorant Garamond',serif">「${s.quote}」</div>
+        <div style="font-size:.85rem;color:#2a1f10;font-style:italic;font-family:'Zen Old Mincho',serif">「${s.quote}」</div>
       </div>
       <div style="background:${spirit.color}12;border-radius:8px;padding:.7rem .9rem">
         <div style="font-size:.7rem;letter-spacing:.15em;color:${spirit.color};font-weight:700;margin-bottom:.3rem">あなたとの共鳴</div>
@@ -1990,7 +1992,7 @@ function renderSamuraiMatch(counts, total) {
         <div style="font-size:1.4rem">⚔️</div>
         <div>
           <div style="font-size:.7rem;letter-spacing:.2em;color:var(--gold);font-weight:700">SAMURAI MATCH</div>
-          <div style="font-size:1.05rem;font-weight:800;color:#2a1f10;font-family:'Cormorant Garamond','Zen Antique Soft',serif">あなたと共鳴する侍</div>
+          <div style="font-size:1.05rem;font-weight:800;color:#2a1f10;font-family:'Zen Old Mincho',serif">あなたと共鳴する侍</div>
         </div>
       </div>
       <div style="font-size:.78rem;color:#7a6840;margin-bottom:1.1rem;line-height:1.6">
