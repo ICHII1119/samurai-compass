@@ -733,6 +733,32 @@ body {
   font-weight: 600;
   box-shadow: 0 0 0 3px rgba(160,120,40,.1);
 }
+.btn-skip-life {
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  font-size: .78rem;
+  padding: .38rem 1.1rem;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all .2s;
+  margin-top: .3rem;
+}
+.btn-skip-life:hover, .btn-skip-life.active {
+  border-color: var(--muted);
+  color: var(--cream2);
+}
+.life-skip-warning {
+  display: none;
+  font-size: .77rem;
+  color: var(--muted);
+  margin-top: .55rem;
+  padding: .45rem .8rem;
+  background: rgba(160,120,40,.06);
+  border-left: 2px solid rgba(160,120,40,.3);
+  border-radius: 0 4px 4px 0;
+  line-height: 1.5;
+}
 .profile-text-input {
   width: 100%;
   padding: .65rem 1rem;
@@ -884,18 +910,27 @@ body {
         <div class="profile-option" onclick="selectProfile('role','individual',this)">一般社員・スタッフ</div>
         <div class="profile-option" onclick="selectProfile('role','leader',this)">チームリード・マネージャー</div>
         <div class="profile-option" onclick="selectProfile('role','executive',this)">経営者・起業家</div>
+        <div class="profile-option" onclick="selectProfile('role','none',this)">特になし</div>
       </div>
     </div>
 
     <div class="profile-question">
       <div class="profile-question-label">Q2 · LIFE STAGE</div>
-      <div class="profile-question-text">今の生活状況に近いものは？</div>
+      <div class="profile-question-text">今の生活状況に近いものをすべて選んでください（複数可）</div>
       <div class="profile-options" id="profile-life">
-        <div class="profile-option" onclick="selectProfile('life','childcare',this)">子育て中</div>
-        <div class="profile-option" onclick="selectProfile('life','caregiving',this)">介護中</div>
-        <div class="profile-option" onclick="selectProfile('life','student',this)">学生</div>
-        <div class="profile-option" onclick="selectProfile('life','none',this)">特になし</div>
-        <div class="profile-option" onclick="selectProfile('life','other',this)">その他</div>
+        <div class="profile-option" onclick="toggleLife('childcare',this)">子育て中</div>
+        <div class="profile-option" onclick="toggleLife('caregiving',this)">介護中</div>
+        <div class="profile-option" onclick="toggleLife('student',this)">学生</div>
+        <div class="profile-option" onclick="toggleLife('career_change',this)">転職・異動したばかり</div>
+        <div class="profile-option" onclick="toggleLife('independent',this)">独立・起業を検討中</div>
+        <div class="profile-option" onclick="toggleLife('away',this)">単身赴任・遠距離</div>
+        <div class="profile-option" onclick="toggleLife('illness',this)">病気・療養中（自分または家族）</div>
+      </div>
+      <div style="margin-top:.7rem">
+        <button class="btn-skip-life" id="btn-skip-life" onclick="skipLife(this)">回答しない</button>
+      </div>
+      <div class="life-skip-warning" id="life-skip-warning">
+        ※ Q2 を回答しないと、あなたの状況に合わせた診断メッセージの精度が下がります。
       </div>
     </div>
 
@@ -1167,7 +1202,7 @@ const CARDS = [
 const ADMIN_PIN = '1234'; // 管理者PINコード（変更可）
 
 let selected = new Set();
-let profile = { nickname: '', email: '', role: null, life: null, urgency: null };
+let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
 
 /* ════════════════════════════════════
    SCREEN TRANSITIONS
@@ -1190,7 +1225,7 @@ function backToCards() {
 
 function resetAll() {
   selected.clear();
-  profile = { nickname: '', email: '', role: null, life: null, urgency: null };
+  profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
   document.getElementById('input-nickname').value = '';
   document.getElementById('input-email').value = '';
   document.querySelectorAll('.profile-option').forEach(o => o.classList.remove('selected'));
@@ -1210,6 +1245,30 @@ function selectProfile(key, val, el) {
   checkProfileReady();
 }
 
+function toggleLife(val, el) {
+  profile.lifeSkipped = false;
+  document.getElementById('life-skip-warning').style.display = 'none';
+  document.getElementById('btn-skip-life').classList.remove('active');
+  const idx = profile.life.indexOf(val);
+  if (idx === -1) {
+    profile.life.push(val);
+    el.classList.add('selected');
+  } else {
+    profile.life.splice(idx, 1);
+    el.classList.remove('selected');
+  }
+  checkProfileReady();
+}
+
+function skipLife(el) {
+  profile.life = [];
+  profile.lifeSkipped = true;
+  document.querySelectorAll('#profile-life .profile-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('active');
+  document.getElementById('life-skip-warning').style.display = 'block';
+  checkProfileReady();
+}
+
 function updateTextProfile() {
   profile.nickname = document.getElementById('input-nickname').value.trim();
   profile.email    = document.getElementById('input-email').value.trim();
@@ -1217,7 +1276,8 @@ function updateTextProfile() {
 }
 
 function checkProfileReady() {
-  const ready = profile.nickname && profile.role && profile.life && profile.urgency;
+  const lifeAnswered = profile.life.length > 0 || profile.lifeSkipped;
+  const ready = profile.nickname && profile.role && lifeAnswered && profile.urgency;
   const btn = document.getElementById('profile-proceed-btn');
   const hint = document.getElementById('profile-proceed-hint');
   if (ready) {
@@ -1236,7 +1296,7 @@ function checkProfileReady() {
 }
 
 function startDiagnostic() {
-  if (!profile.role || !profile.life || !profile.urgency) return;
+  if (!profile.role || !profile.urgency) return;
   renderCards(CARDS);
   showScreen('s-cards');
 }
@@ -1366,8 +1426,8 @@ async function renderAdminList() {
   const container = document.getElementById('admin-list-body');
   container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
 
-  const ROLE_LBL    = { individual:'一般社員・スタッフ', leader:'チームリード', executive:'経営者・起業家' };
-  const LIFE_LBL    = { childcare:'子育て中', caregiving:'介護中', student:'学生', none:'特になし', other:'その他' };
+  const ROLE_LBL    = { individual:'一般社員・スタッフ', leader:'チームリード', executive:'経営者・起業家', none:'特になし' };
+  const LIFE_LBL    = { childcare:'子育て中', caregiving:'介護中', student:'学生', career_change:'転職・異動', independent:'独立・起業検討中', away:'単身赴任・遠距離', illness:'病気・療養中' };
   const URGENCY_LBL = { now:'今すぐ', longterm:'中長期' };
 
   try {
@@ -1389,7 +1449,8 @@ async function renderAdminList() {
       const dateStr = `${dt.getMonth()+1}/${dt.getDate()} ${dt.getHours()}:${String(dt.getMinutes()).padStart(2,'0')}`;
       const topS = SPIRITS[s.topSpirit] || SPIRITS.hei;
       const roleLabel    = ROLE_LBL[s.profile?.role] || '—';
-      const lifeLabel    = LIFE_LBL[s.profile?.life] || '—';
+      const lifeArr = Array.isArray(s.profile?.life) ? s.profile.life : (s.profile?.life ? [s.profile.life] : []);
+      const lifeLabel = lifeArr.length ? lifeArr.map(v => LIFE_LBL[v] || v).join('・') : (s.profile?.lifeSkipped ? '回答なし' : '—');
       const urgencyLabel = URGENCY_LBL[s.profile?.urgency] || '—';
       return `
         <div class="admin-row" onclick="showAdminDetail('${s.id}')">
@@ -1419,7 +1480,8 @@ async function showAdminDetail(id) {
     if (!doc.exists) return;
     const sub = { id: doc.id, ...doc.data() };
     selected = new Set(sub.selectedCards);
-    profile = sub.profile || { role: null, life: null, urgency: null };
+    profile = sub.profile || { role: null, life: [], lifeSkipped: false, urgency: null };
+    if (!Array.isArray(profile.life)) profile.life = profile.life ? [profile.life] : [];
     showResult();
   } catch(e) {
     console.error(e);
@@ -1501,17 +1563,18 @@ function showResult() {
   `;
 
   // Profile badge
-  const ROLE_LABELS    = { individual:'一般社員・スタッフ', leader:'チームリード', executive:'経営者・起業家' };
-  const LIFE_LABELS    = { childcare:'子育て中', caregiving:'介護中', student:'学生', none:'特になし', other:'その他' };
+  const ROLE_LABELS    = { individual:'一般社員・スタッフ', leader:'チームリード', executive:'経営者・起業家', none:'特になし' };
+  const LIFE_LABELS    = { childcare:'子育て中', caregiving:'介護中', student:'学生', career_change:'転職・異動', independent:'独立・起業検討中', away:'単身赴任・遠距離', illness:'病気・療養中' };
   const URGENCY_LABELS = { now:'今すぐ取り組む', longterm:'中長期で鍛える' };
   const badge = document.getElementById('profile-badge');
   if (profile.role) {
-    const chips = [profile.role, profile.life, profile.urgency]
+    const lifeChips = profile.life.length > 0
+      ? profile.life.map(v => LIFE_LABELS[v] || v)
+      : (profile.lifeSkipped ? ['Q2未回答'] : []);
+    const chips = [ROLE_LABELS[profile.role], ...lifeChips, URGENCY_LABELS[profile.urgency]]
       .filter(Boolean)
-      .map(v => {
-        const label = ROLE_LABELS[v] || LIFE_LABELS[v] || URGENCY_LABELS[v] || v;
-        return `<span style="font-size:.73rem;padding:.28rem .7rem;border-radius:100px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(160,120,40,.3)">${label}</span>`;
-      }).join('');
+      .map(label => `<span style="font-size:.73rem;padding:.28rem .7rem;border-radius:100px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(160,120,40,.3)">${label}</span>`)
+      .join('');
     badge.innerHTML = `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem;margin-bottom:1rem">${chips}</div>`;
     badge.style.display = 'block';
   }
@@ -1719,11 +1782,13 @@ const PROFILE_ROLE_CONTEXT = {
 };
 
 const PROFILE_LIFE_CONTEXT = {
-  childcare:  '子育てという道場が、あなたの稽古の場でもあります。',
-  caregiving: '介護という重荷の中でも、自分自身を失わないための稽古が必要です。',
-  student:    '学びの時期だからこそ、軸を作る稽古が一生の土台になります。',
-  none:        null,
-  other:       null,
+  childcare:     '子育てという道場が、あなたの稽古の場でもあります。',
+  caregiving:    '介護という重荷の中でも、自分自身を失わないための稽古が必要です。',
+  student:       '学びの時期だからこそ、軸を作る稽古が一生の土台になります。',
+  career_change: '新しい環境でこそ、軸の強さが問われます。',
+  independent:   '独立・起業の決断の前に、自分の軸を確認することが最も重要です。',
+  away:          '物理的な距離があっても、誠実さと軸は保つことができます。',
+  illness:       '稽古の形を変えながらも、軸を守ることはできます。',
 };
 
 const PROFILE_URGENCY_CONTEXT = {
@@ -1736,8 +1801,8 @@ function getContextualMessage(spiritKey) {
   const parts = [base];
   const roleMsg = profile.role && PROFILE_ROLE_CONTEXT[profile.role]?.[spiritKey];
   if (roleMsg) parts.push(`<span style="color:var(--gold);font-weight:500">${roleMsg}</span>`);
-  const lifeMsg = profile.life && PROFILE_LIFE_CONTEXT[profile.life];
-  if (lifeMsg) parts.push(`<em style="color:var(--muted)">${lifeMsg}</em>`);
+  const lifeMsgs = profile.life.map(v => PROFILE_LIFE_CONTEXT[v]).filter(Boolean);
+  if (lifeMsgs.length) parts.push(`<em style="color:var(--muted)">${lifeMsgs.join(' ')}</em>`);
   const urgencyMsg = profile.urgency && PROFILE_URGENCY_CONTEXT[profile.urgency];
   if (urgencyMsg) parts.push(`<strong>${urgencyMsg}</strong>`);
   return parts.join('<br><br>');
