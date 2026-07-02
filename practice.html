@@ -139,8 +139,8 @@ body {
   overflow: hidden;
 }
 .stamp-slot.stamped {
-  border-color: transparent;
-  background: var(--red-dim);
+  border-color: var(--gold2);
+  background: var(--gold-dim);
 }
 .stamp-slot.today-slot {
   border-color: var(--gold);
@@ -164,10 +164,8 @@ body {
   font-family: var(--font-b);
   font-size: 1.1rem;
   font-weight: 900;
-  color: var(--red);
+  color: var(--gold);
   line-height: 1;
-  transform: rotate(-8deg);
-  text-shadow: 0 0 8px rgba(139,26,26,.4);
 }
 .stamp-slot.today-slot .stamp-seal-today {
   font-size: .9rem;
@@ -501,7 +499,7 @@ function renderGrid() {
     const dayLabel = `<div class="stamp-day-num">${d}</div>`;
 
     if (isStamped) {
-      el.innerHTML = dayLabel + `<div class="stamp-seal">鍛</div>`;
+      el.innerHTML = dayLabel + `<div class="stamp-seal">練</div>`;
     } else if (isToday) {
       el.innerHTML = dayLabel + `<div style="font-size:.75rem;color:var(--gold);font-weight:600">今日</div>`;
     } else {
