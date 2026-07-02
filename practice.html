@@ -546,7 +546,7 @@ async function submitPractice(day) {
   const entry = {
     day,
     text,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    timestamp: new Date().toISOString(),
     cycle: practiceData.cycle || 1
   };
 
@@ -554,7 +554,8 @@ async function submitPractice(day) {
     await db.collection('practices').doc(userId).set({
       lineUserId: userId,
       cycle: practiceData.cycle || 1,
-      entries: firebase.firestore.FieldValue.arrayUnion(entry)
+      entries: firebase.firestore.FieldValue.arrayUnion(entry),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
     stampedDays.add(day);
