@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAMURAI in You — LINE登録</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a1a1f;
+  --gold: #c9a84c;
+  --cream: #f0ead8;
+  --muted: #7a7060;
+  --font-b: 'Zen Old Mincho', serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0 }
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: -apple-system, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+.logo { width: 60px; height: 60px; object-fit: contain; margin-bottom: 1.2rem }
+.title {
+  font-family: var(--font-b);
+  font-size: 1.2rem;
+  color: var(--gold);
+  letter-spacing: .1em;
+  margin-bottom: .6rem;
+}
+.msg { font-size: .9rem; color: var(--muted); line-height: 1.7 }
+.spinner {
+  width: 28px; height: 28px;
+  border: 2.5px solid rgba(201,168,76,.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 1.5rem auto 0;
+}
+@keyframes spin { to { transform: rotate(360deg) } }
+</style>
+</head>
+<body>
+<div>
+  <img src="logo.png" alt="SAMURAI in You" class="logo">
+  <div class="title">SAMURAI in You</div>
+  <div class="msg">LINEの友だち追加ページへ<br>移動しています...</div>
+  <div class="spinner"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+// ★ LINE Official Account ManagerのベーシックIDに変更してください
+const LINE_ADD_FRIEND_URL = 'https://line.me/R/ti/p/@SAMURAI_BOT_ID';
+
+firebase.initializeApp({
+  apiKey: "AIzaSyC1qm7kUjSRk7QRwxK-W7bH1q-pqH3lklU",
+  authDomain: "samurai-compass.firebaseapp.com",
+  projectId: "samurai-compass",
+  storageBucket: "samurai-compass.firebasestorage.app",
+  messagingSenderId: "502771859953",
+  appId: "1:502771859953:web:89e801832fdd42c6cb0450"
+});
+const db = firebase.firestore();
+
+const source = new URLSearchParams(location.search).get('source') || 'unknown';
+
+async function redirect() {
+  try {
+    await db.collection('join_sources').add({
+      source,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      used: false
+    });
+  } catch(e) {
+    console.warn('Firestore保存エラー:', e);
+  }
+  location.href = LINE_ADD_FRIEND_URL;
+}
+
+redirect();
+</script>
+</body>
+</html>
