@@ -1579,7 +1579,7 @@ async function renderAdminLite() {
     container.innerHTML = docs.map(p => {
       const userId  = p.lineUserId || p.id;
       const profile = nameMap[userId];
-      const name    = profile?.name || '';
+      const name    = p.nickname || profile?.name || '';
       const pic     = profile?.pic  || '';
       const spirit  = p.spirit || '';
       const spiritLabel = spiritNames[spirit] || spirit;

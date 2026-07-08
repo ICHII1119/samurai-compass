@@ -542,7 +542,13 @@ body {
     </div>
   </div>
 
-  <button class="btn btn-primary btn-lg" onclick="startDiagnostic()">診断をはじめる</button>
+  <div style="width:100%;max-width:360px;margin:.8rem auto 0">
+    <input id="nickname-input" type="text" placeholder="ニックネームを入力（任意）"
+      maxlength="20"
+      style="width:100%;padding:.7rem 1rem;border-radius:8px;border:1.5px solid rgba(201,168,76,.3);background:rgba(255,255,255,.04);color:var(--cream);font-size:.95rem;font-family:inherit;outline:none;text-align:center;box-sizing:border-box"
+      onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(201,168,76,.3)'">
+  </div>
+  <button class="btn btn-primary btn-lg" onclick="startDiagnostic()" style="margin-top:.8rem">診断をはじめる</button>
   <div class="intro-note">所要時間：約3分 / 選択式のみ</div>
 </section>
 
@@ -822,8 +828,10 @@ function showResult() {
   /* Firestoreに保存 */
   const params = new URLSearchParams(window.location.search);
   const lineUserId = params.get('lid') || 'anonymous_' + Date.now();
+  const nickname = (document.getElementById('nickname-input')?.value || '').trim();
   db.collection('lite_results').doc(lineUserId).set({
     lineUserId,
+    nickname,
     spirit: topSpirit,
     spiritName: s.name,
     selectedCards: [...selected],
