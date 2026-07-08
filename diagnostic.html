@@ -1090,17 +1090,22 @@ body {
         style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
         ダッシュボード
       </button>
-      <button id="tab-diag" onclick="switchAdminTab('diag')"
+      <button id="tab-lite" onclick="switchAdminTab('lite')"
         style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--gold);background:var(--gold-dim);color:var(--gold);cursor:pointer;font-weight:600">
-        診断一覧
+        入門編一覧
       </button>
       <button id="tab-practice" onclick="switchAdminTab('practice')"
         style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
         振り返り一覧
       </button>
+      <button id="tab-diag" onclick="switchAdminTab('diag')"
+        style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
+        道場編一覧
+      </button>
     </div>
     <div id="admin-dash-body" style="display:none"></div>
-    <div id="admin-list-body">
+    <div id="admin-lite-body"></div>
+    <div id="admin-list-body" style="display:none">
       <div style="text-align:center;padding:3rem;color:var(--muted)">読み込み中...</div>
     </div>
     <div id="admin-practice-body" style="display:none"></div>
@@ -1432,7 +1437,7 @@ function checkAdminPin() {
   if (input === ADMIN_PIN) {
     err.textContent = '';
     document.getElementById('admin-pin-input').value = '';
-    renderAdminList();
+    renderAdminLite();
     showScreen('s-admin-list');
   } else {
     err.textContent = 'PINコードが正しくありません';
@@ -1512,31 +1517,107 @@ function backToAdminList() {
   showScreen('s-admin-list');
 }
 
-let currentAdminTab = 'diag';
+let currentAdminTab = 'lite';
 
 function switchAdminTab(tab) {
   currentAdminTab = tab;
   document.getElementById('admin-dash-body').style.display     = tab === 'dash'     ? 'block' : 'none';
-  document.getElementById('admin-list-body').style.display     = tab === 'diag'     ? 'block' : 'none';
+  document.getElementById('admin-lite-body').style.display     = tab === 'lite'     ? 'block' : 'none';
   document.getElementById('admin-practice-body').style.display = tab === 'practice' ? 'block' : 'none';
+  document.getElementById('admin-list-body').style.display     = tab === 'diag'     ? 'block' : 'none';
 
   const ON  = ';border-color:var(--gold);background:var(--gold-dim);color:var(--gold);font-weight:600';
   const OFF = ';border-color:var(--border);background:transparent;color:var(--muted);font-weight:400';
-  document.getElementById('tab-dash').style.cssText     += tab === 'dash'     ? ON : OFF;
-  document.getElementById('tab-diag').style.cssText     += tab === 'diag'     ? ON : OFF;
-  document.getElementById('tab-practice').style.cssText += tab === 'practice' ? ON : OFF;
+  document.getElementById('tab-dash').style.cssText      += tab === 'dash'     ? ON : OFF;
+  document.getElementById('tab-lite').style.cssText      += tab === 'lite'     ? ON : OFF;
+  document.getElementById('tab-practice').style.cssText  += tab === 'practice' ? ON : OFF;
+  document.getElementById('tab-diag').style.cssText      += tab === 'diag'     ? ON : OFF;
 
   document.getElementById('admin-count').style.display = tab === 'diag' ? '' : 'none';
 
   if (tab === 'dash')     renderAdminDashboard();
-  if (tab === 'diag')     renderAdminList();
+  if (tab === 'lite')     renderAdminLite();
   if (tab === 'practice') renderAdminPractices();
+  if (tab === 'diag')     renderAdminList();
 }
 
 function refreshAdmin() {
   if (currentAdminTab === 'dash')     renderAdminDashboard();
-  else if (currentAdminTab === 'diag') renderAdminList();
-  else                                 renderAdminPractices();
+  else if (currentAdminTab === 'lite') renderAdminLite();
+  else if (currentAdminTab === 'practice') renderAdminPractices();
+  else renderAdminList();
+}
+
+async function renderAdminLite() {
+  const container = document.getElementById('admin-lite-body');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
+  try {
+    const [liteSnap, profileSnap, practiceSnap] = await Promise.all([
+      db.collection('lite_results').get(),
+      db.collection('profiles').get(),
+      db.collection('practices').get()
+    ]);
+
+    if (liteSnap.empty) {
+      container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r)">入門編の受診者はまだいません</div>`;
+      return;
+    }
+
+    const nameMap = {};
+    profileSnap.forEach(d => { if (d.data().displayName) nameMap[d.id] = { name: d.data().displayName, pic: d.data().pictureUrl || '' }; });
+
+    const progressMap = {};
+    practiceSnap.forEach(d => { progressMap[d.id] = (d.data().entries || []).length; });
+
+    const spiritNames  = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
+    const spiritColors = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
+
+    const docs = liteSnap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
+
+    container.innerHTML = docs.map(p => {
+      const userId  = p.lineUserId || p.id;
+      const profile = nameMap[userId];
+      const name    = profile?.name || '';
+      const pic     = profile?.pic  || '';
+      const spirit  = p.spirit || '';
+      const spiritLabel = spiritNames[spirit] || spirit;
+      const color   = spiritColors[spirit] || 'var(--gold)';
+      const recorded = progressMap[userId] || 0;
+      const ts = p.timestamp?.toDate?.();
+      const dateStr = ts ? `${ts.getFullYear()}/${ts.getMonth()+1}/${ts.getDate()}` : '';
+      const now = Date.now();
+      const dayNum = ts ? Math.floor((now - ts.getTime()) / (1000*60*60*24)) + 1 : 0;
+      const phase = dayNum > 21 ? '完了' : dayNum >= 1 ? `Day ${dayNum}` : '';
+      const reportUrl = `report.html?lid=${userId}`;
+
+      return `
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1.1rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.8rem">
+          ${pic
+            ? `<img src="${pic}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(201,168,76,.2)">`
+            : `<div style="width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">侍</div>`}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.92rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${name || `<span style="color:var(--muted);font-size:.78rem">${userId.slice(0,16)}...</span>`}
+            </div>
+            <div style="display:flex;gap:.4rem;align-items:center;margin-top:.25rem;flex-wrap:wrap">
+              <span style="font-size:.72rem;padding:.15rem .55rem;border-radius:100px;background:${color}22;color:${color};border:1px solid ${color}55">${spiritLabel}</span>
+              <span style="font-size:.72rem;color:var(--muted)">${phase}</span>
+              <span style="font-size:.72rem;color:var(--muted)">振り返り ${recorded}/21日</span>
+              ${dateStr ? `<span style="font-size:.68rem;color:var(--muted)">登録 ${dateStr}</span>` : ''}
+            </div>
+          </div>
+          <a href="${reportUrl}" target="_blank"
+             style="flex-shrink:0;font-size:.72rem;padding:.3rem .7rem;border-radius:100px;background:var(--bg3);color:var(--gold);border:1px solid var(--border);text-decoration:none">
+            レポート
+          </a>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `<div style="color:var(--muted);padding:2rem;text-align:center">読み込みに失敗しました</div>`;
+  }
 }
 
 async function renderAdminDashboard() {
