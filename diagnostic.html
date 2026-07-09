@@ -1222,7 +1222,8 @@ const CARDS = [
    STATE
 ════════════════════════════════════ */
 const ADMIN_PIN = '1234'; // 管理者PINコード（変更可）
-const SEND_COMMENT_URL = 'https://sendadmincomment-6wuzckrpiq-uc.a.run.app';
+const SEND_COMMENT_URL    = 'https://sendadmincomment-6wuzckrpiq-uc.a.run.app';
+const SEND_BROADCAST_URL  = 'https://sendbroadcast-6wuzckrpiq-uc.a.run.app';
 
 let selected = new Set();
 let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
@@ -1690,9 +1691,40 @@ async function renderAdminDashboard() {
           </div>`).join('')}
       </div>
       <!-- Spirit分布 -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
         <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">SPIRIT 分布</div>
         ${spiritBars}
+      </div>
+      <!-- 一斉送信 -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem">
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">⚔️ 一斉送信</div>
+        <div style="font-size:.82rem;color:var(--cream2);margin-bottom:1rem;line-height:1.6">
+          LINE登録済みの参加者に、SAMURAI診断 — 入門編への案内メッセージを送ります。<br>
+          各自に個別リンク（<code style="font-size:.75rem;background:var(--bg3);padding:.1rem .3rem;border-radius:3px">lite.html?lid=…</code>）が届きます。
+        </div>
+        <label style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;cursor:pointer">
+          <input type="checkbox" id="broadcast-skip-existing" checked
+            style="width:16px;height:16px;accent-color:var(--gold)">
+          <span style="font-size:.82rem;color:var(--cream2)">診断済みの方は除外する（推奨）</span>
+        </label>
+        <div style="background:var(--bg3);border-radius:var(--r);padding:.9rem;margin-bottom:1rem;font-size:.78rem;color:var(--muted);line-height:1.7;white-space:pre-wrap">⚔️ SAMURAI in You からのご案内
+
+あなたの「軸」となるSAMURAI Spiritを
+SAMURAI診断 — 入門編で見つけてください。
+
+2分でできます。今のあなたのままで
+お答えいただくだけです。
+
+👇 診断をはじめる
+https://ichii1119.github.io/samurai-compass/lite.html?lid=…
+
+稽古に、終わりはない。
+— Still Becoming.</div>
+        <button onclick="executeBroadcast()"
+          style="width:100%;padding:.8rem;background:var(--gold);color:#0a0a10;border:none;border-radius:var(--r);font-weight:700;font-size:.9rem;cursor:pointer;letter-spacing:.05em">
+          一斉送信を実行する
+        </button>
+        <div id="broadcast-result" style="margin-top:.8rem;font-size:.82rem;text-align:center;color:var(--muted)"></div>
       </div>`;
   } catch(e) {
     console.error(e);
@@ -1786,6 +1818,42 @@ async function renderAdminPractices() {
   } catch(e) {
     console.error(e);
     container.innerHTML = `<div style="color:var(--muted);padding:2rem;text-align:center">読み込みに失敗しました</div>`;
+  }
+}
+
+async function executeBroadcast() {
+  const skipExisting = document.getElementById('broadcast-skip-existing')?.checked ?? true;
+  const resultEl = document.getElementById('broadcast-result');
+  const btn = event.currentTarget;
+
+  const confirmed = window.confirm(
+    `一斉送信を実行します。\n\n` +
+    `${skipExisting ? '✅ 診断済みの方は除外します。' : '⚠️ 全員に送信します（診断済み含む）。'}\n\n` +
+    `よろしいですか？`
+  );
+  if (!confirmed) return;
+
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  resultEl.textContent = '';
+
+  try {
+    const res = await fetch(SEND_BROADCAST_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+      body: JSON.stringify({ skipExisting })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    resultEl.style.color = 'var(--gold)';
+    resultEl.textContent = `✅ 送信完了：${data.sent}件送信、${data.skipped}件スキップ${data.errors > 0 ? `、${data.errors}件エラー` : ''}`;
+  } catch(e) {
+    console.error(e);
+    resultEl.style.color = 'var(--red)';
+    resultEl.textContent = '⚠️ 送信に失敗しました：' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '一斉送信を実行する';
   }
 }
 
