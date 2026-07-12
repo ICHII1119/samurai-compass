@@ -1707,7 +1707,12 @@ async function renderAdminDashboard() {
             style="width:16px;height:16px;accent-color:var(--gold)">
           <span style="font-size:.82rem;color:var(--cream2)">診断済みの方は除外する（推奨）</span>
         </label>
-        <div style="background:var(--bg3);border-radius:var(--r);padding:.9rem;margin-bottom:1rem;font-size:.78rem;color:var(--muted);line-height:1.7;white-space:pre-wrap">⚔️ SAMURAI in You からのご案内
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.4rem">
+          送信メッセージ <span style="color:var(--dimmed);font-weight:400">（<code style="font-size:.7rem;background:var(--bg3);padding:.05rem .3rem;border-radius:3px">{URL}</code> は各ユーザーの診断リンクに自動変換されます）</span>
+        </div>
+        <textarea id="broadcast-message"
+          rows="10"
+          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--cream2);font-size:.8rem;padding:.7rem .9rem;resize:vertical;font-family:inherit;line-height:1.7;margin-bottom:.9rem">⚔️ SAMURAI in You からのご案内
 
 あなたの「軸」となるSAMURAI Spiritを
 SAMURAI診断 — 入門編で見つけてください。
@@ -1716,10 +1721,10 @@ SAMURAI診断 — 入門編で見つけてください。
 お答えいただくだけです。
 
 👇 診断をはじめる
-https://ichii1119.github.io/samurai-compass/lite.html?lid=…
+{URL}
 
 稽古に、終わりはない。
-— Still Becoming.</div>
+— Still Becoming.</textarea>
         <button onclick="executeBroadcast()"
           style="width:100%;padding:.8rem;background:var(--gold);color:#0a0a10;border:none;border-radius:var(--r);font-weight:700;font-size:.9rem;cursor:pointer;letter-spacing:.05em">
           一斉送信を実行する
@@ -1837,8 +1842,15 @@ async function renderAdminPractices() {
 
 async function executeBroadcast() {
   const skipExisting = document.getElementById('broadcast-skip-existing')?.checked ?? true;
+  const customMessage = document.getElementById('broadcast-message')?.value.trim();
   const resultEl = document.getElementById('broadcast-result');
   const btn = event.currentTarget;
+
+  if (!customMessage) {
+    resultEl.style.color = 'var(--red)';
+    resultEl.textContent = '⚠️ メッセージを入力してください。';
+    return;
+  }
 
   const confirmed = window.confirm(
     `一斉送信を実行します。\n\n` +
@@ -1855,7 +1867,7 @@ async function executeBroadcast() {
     const res = await fetch(SEND_BROADCAST_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
-      body: JSON.stringify({ skipExisting })
+      body: JSON.stringify({ skipExisting, customMessage })
     });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
