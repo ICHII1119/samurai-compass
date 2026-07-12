@@ -212,6 +212,46 @@ body {
 .entry-text { font-size: .87rem; color: var(--cream2); line-height: 1.7 }
 .entry-empty { font-size: .82rem; color: var(--muted); font-style: italic }
 
+/* ── Practice Diary ── */
+.diary-entry {
+  background: var(--bg2);
+  border: 1px solid rgba(201,168,76,.12);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  gap: .9rem;
+  align-items: flex-start;
+}
+.diary-block { margin-top: .6rem; padding-top: .55rem; border-top: 1px solid rgba(255,255,255,.04) }
+.diary-block-label {
+  font-size: .62rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin-bottom: .3rem;
+}
+.diary-memo-block {
+  margin-top: .6rem;
+  padding: .55rem .7rem;
+  background: rgba(255,255,255,.04);
+  border-radius: 6px;
+  border-left: 2px solid rgba(201,168,76,.25);
+}
+.diary-comment-block {
+  margin-top: .6rem;
+  padding: .55rem .7rem;
+  background: rgba(201,168,76,.07);
+  border-radius: 0 6px 6px 0;
+  border-left: 2px solid var(--gold);
+}
+.diary-comment-label {
+  font-size: .62rem;
+  color: var(--gold);
+  margin-bottom: .25rem;
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+}
+
 /* ── Stamp Grid ── */
 .stamp-summary {
   display: grid;
@@ -323,7 +363,9 @@ async function init() {
 }
 
 function render(lite, practice) {
-  const entries   = (practice?.entries || []).sort((a,b) => a.day - b.day);
+  const entries        = (practice?.entries || []).sort((a,b) => a.day - b.day);
+  const memos          = practice?.memos || {};
+  const adminComments  = practice?.adminComments || [];
   const stampDays = new Set(entries.map(e => e.day));
   const count     = stampDays.size;
   const spirit    = lite?.spirit || null;
@@ -400,31 +442,76 @@ function render(lite, practice) {
       </div>
     </div>
 
-    <!-- Practice Entries -->
-    ${entries.length > 0 ? `
-    <div class="section fade-up">
-      <div class="practice-log">
-        ${entries.map(e => {
-          const ts = e.timestamp ? new Date(e.timestamp) : null;
-          const dateLabel = ts && !isNaN(ts)
-            ? `${ts.getMonth()+1}/${ts.getDate()}`
-            : '';
-          return `
-          <div class="practice-entry">
-            <div class="entry-day">
-              <div class="entry-day-num">DAY</div>
-              <div class="entry-day-label">${e.day}</div>
-            </div>
-            <div class="entry-body">
-              ${dateLabel ? `<div class="entry-date">${dateLabel}</div>` : ''}
-              ${e.text
-                ? `<div class="entry-text">${e.text.replace(/\n/g,'<br>')}</div>`
-                : `<div class="entry-empty">（記録なし）</div>`}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>` : ''}
+    <!-- 稽古日誌 -->
+    ${(() => {
+      // 全日付を収集（振り返り・メモ・コメントいずれかがある日）
+      const allDays = new Set([
+        ...entries.map(e => e.day),
+        ...Object.keys(memos).map(Number),
+        ...adminComments.filter(c => c.day).map(c => c.day)
+      ]);
+      if (allDays.size === 0) return '';
+
+      const sortedDays = [...allDays].sort((a,b) => a - b);
+
+      return `
+      <div class="section fade-up">
+        <div class="section-label">PRACTICE DIARY</div>
+        <div class="section-title">稽古日誌</div>
+        <div class="practice-log">
+          ${sortedDays.map(day => {
+            const entry = entries.find(e => e.day === day);
+            const memo  = memos[String(day)];
+            const comments = adminComments.filter(c => c.day === day);
+            const ts = entry?.timestamp ? new Date(entry.timestamp) : null;
+            const dateLabel = ts && !isNaN(ts)
+              ? `${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}`
+              : '';
+
+            const reflectionHtml = entry
+              ? `<div class="diary-block">
+                   <div class="diary-block-label">振り返り${dateLabel ? `　${dateLabel}` : ''}</div>
+                   ${entry.text
+                     ? `<div class="entry-text">${entry.text.replace(/\n/g,'<br>')}</div>`
+                     : `<div class="entry-empty">（テキストなし）</div>`}
+                 </div>`
+              : '';
+
+            const memoHtml = memo?.text
+              ? `<div class="diary-memo-block">
+                   <div class="diary-block-label">🔒 自分用メモ</div>
+                   <div class="entry-text">${memo.text.replace(/\n/g,'<br>')}</div>
+                 </div>`
+              : '';
+
+            const commentsHtml = comments.map(c => {
+              const ct = c.sentAt?.toDate ? c.sentAt.toDate() : (c.sentAt ? new Date(c.sentAt) : null);
+              const ctStr = ct && !isNaN(ct)
+                ? `${ct.getMonth()+1}/${ct.getDate()} ${String(ct.getHours()).padStart(2,'0')}:${String(ct.getMinutes()).padStart(2,'0')}`
+                : '';
+              return `<div class="diary-comment-block">
+                        <div class="diary-comment-label">
+                          <span>⚔️ ファシリテーターより</span>
+                          ${ctStr ? `<span style="color:var(--muted);font-weight:400">${ctStr}</span>` : ''}
+                        </div>
+                        <div class="entry-text">${c.text.replace(/\n/g,'<br>')}</div>
+                      </div>`;
+            }).join('');
+
+            return `
+            <div class="diary-entry">
+              <div class="entry-day">
+                <div class="entry-day-num">DAY</div>
+                <div class="entry-day-label">${day}</div>
+              </div>
+              <div class="entry-body" style="flex:1">
+                ${reflectionHtml}${memoHtml}${commentsHtml}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    })()}
 
     <!-- Closing -->
     <div class="closing fade-up">

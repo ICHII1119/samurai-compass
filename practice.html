@@ -516,6 +516,8 @@ function renderGrid() {
 
 function renderReflection(day) {
   const area = document.getElementById('reflection-area');
+  const savedMemo = (practiceData.memos || {})[String(day)]?.text || '';
+
   if (stampedDays.has(day)) {
     const entry = (practiceData.entries || []).find(e => e.day === day);
     area.innerHTML = `
@@ -528,7 +530,8 @@ function renderReflection(day) {
       </div>
         <div style="font-weight:600;margin-bottom:.5rem">Day ${day} の稽古を記録しました</div>
         ${entry?.text ? `<div style="font-size:.83rem;color:var(--muted);line-height:1.7;margin-top:.5rem;padding:.6rem .8rem;background:var(--bg3);border-radius:6px">${entry.text}</div>` : ''}
-      </div>`;
+      </div>
+      ${memoBlock(day, savedMemo)}`;
     return;
   }
 
@@ -536,12 +539,54 @@ function renderReflection(day) {
     <div class="reflection-card fade-up">
       <div class="reflection-day-label">DAY ${day} · 今日の気づき</div>
       <div class="reflection-title">稽古の振り返り</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem">ファシリテーターに届きます</div>
       <textarea class="reflection-textarea" id="reflection-text"
         placeholder="今日の稽古から何を感じましたか？どんな小さな気づきでも構いません。" rows="4"></textarea>
       <button class="btn-submit" id="submit-btn" onclick="submitPractice(${day})">
         ⚔️ 稽古を記録する
       </button>
+    </div>
+    ${memoBlock(day, savedMemo)}`;
+}
+
+function memoBlock(day, savedText) {
+  return `
+    <div class="reflection-card fade-up" style="margin-top:1rem;border-color:rgba(201,168,76,.1)">
+      <div class="reflection-day-label">自分用メモ</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem">あなただけが見るメモです。ファシリテーターには届きません。</div>
+      <textarea class="reflection-textarea" id="memo-text" rows="3"
+        placeholder="気づき、感情、アイデア、なんでも。">${savedText}</textarea>
+      <button class="btn-submit" id="memo-btn" onclick="saveMemo(${day})"
+        style="margin-top:.7rem;background:linear-gradient(135deg,#2a3a2a,#3a5a3a)">
+        📝 メモを保存する
+      </button>
+      <div id="memo-result" style="text-align:center;font-size:.8rem;margin-top:.5rem;color:var(--muted)"></div>
     </div>`;
+}
+
+async function saveMemo(day) {
+  const text = document.getElementById('memo-text')?.value ?? '';
+  const btn = document.getElementById('memo-btn');
+  const result = document.getElementById('memo-result');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+  try {
+    await db.collection('practices').doc(userId).set({
+      memos: { [String(day)]: { text, updatedAt: new Date().toISOString() } }
+    }, { merge: true });
+    if (!practiceData.memos) practiceData.memos = {};
+    practiceData.memos[String(day)] = { text };
+    result.style.color = 'var(--gold)';
+    result.textContent = '✓ 保存しました';
+    setTimeout(() => { result.textContent = ''; }, 2500);
+  } catch(e) {
+    console.error(e);
+    result.style.color = 'var(--red)';
+    result.textContent = '保存に失敗しました';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📝 メモを保存する';
+  }
 }
 
 async function submitPractice(day) {
