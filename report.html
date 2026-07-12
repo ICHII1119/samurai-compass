@@ -478,10 +478,16 @@ function render(lite, practice) {
               : '';
 
             const memoHtml = memo?.text
-              ? `<div class="diary-memo-block">
-                   <div class="diary-block-label">🔒 自分用メモ</div>
+              ? (() => {
+                  const mt = memo.updatedAt ? new Date(memo.updatedAt) : null;
+                  const memoTimeStr = mt && !isNaN(mt)
+                    ? `　${mt.getMonth()+1}/${mt.getDate()} ${String(mt.getHours()).padStart(2,'0')}:${String(mt.getMinutes()).padStart(2,'0')}`
+                    : '';
+                  return `<div class="diary-memo-block">
+                   <div class="diary-block-label">🔒 自分用メモ${memoTimeStr}</div>
                    <div class="entry-text">${memo.text.replace(/\n/g,'<br>')}</div>
-                 </div>`
+                 </div>`;
+                })()
               : '';
 
             const commentsHtml = comments.map(c => {

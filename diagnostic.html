@@ -1497,7 +1497,7 @@ async function renderAdminList() {
 
     container.innerHTML = all.map(s => {
       const dt = s.timestamp?.toDate ? s.timestamp.toDate() : new Date();
-      const dateStr = `${dt.getMonth()+1}/${dt.getDate()} ${dt.getHours()}:${String(dt.getMinutes()).padStart(2,'0')}`;
+      const dateStr = `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
       const topS = SPIRITS[s.topSpirit] || SPIRITS.hei;
       const roleLabel    = ROLE_LBL[s.profile?.role] || '—';
       const lifeArr = Array.isArray(s.profile?.life) ? s.profile.life : (s.profile?.life ? [s.profile.life] : []);
@@ -1614,7 +1614,7 @@ async function renderAdminLite() {
       const color   = spiritColors[spirit] || 'var(--gold)';
       const recorded = progressMap[userId] || 0;
       const ts = p.timestamp?.toDate?.();
-      const dateStr = ts ? `${ts.getFullYear()}/${ts.getMonth()+1}/${ts.getDate()}` : '';
+      const dateStr = ts ? `${ts.getFullYear()}/${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
       const now = Date.now();
       const dayNum = ts ? Math.floor((now - ts.getTime()) / (1000*60*60*24)) + 1 : 0;
       const phase = dayNum > 21 ? '完了' : dayNum >= 1 ? `Day ${dayNum}` : '';
