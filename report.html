@@ -334,6 +334,8 @@ function render(lite, practice) {
   const dateStr   = startDate
     ? `${startDate.getFullYear()}年${startDate.getMonth()+1}月${startDate.getDate()}日 開始`
     : '';
+  const dayNum    = startDate ? Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1 : 0;
+  const completed = dayNum > 21;
 
   document.getElementById('report').innerHTML = `
     <!-- Header -->
@@ -348,11 +350,12 @@ function render(lite, practice) {
       <div class="rank-hero-date">${dateStr}</div>
       <div class="rank-badge-large">
         <span class="badge-icon">⚔️</span>
-        <span class="badge-text">十 級 昇格</span>
+        <span class="badge-text">${completed ? '十 級 昇格' : '見 習 い'}</span>
       </div>
       <div class="rank-hero-msg">
-        あなたは続けた。<br>
-        それだけで、すでに侍だ。
+        ${completed
+          ? 'あなたは続けた。<br>それだけで、すでに侍だ。'
+          : '稽古の途上にある。<br>それが、侍のはじまりだ。'}
       </div>
     </div>
 
