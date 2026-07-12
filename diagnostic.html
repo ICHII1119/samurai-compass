@@ -1803,6 +1803,20 @@ async function renderAdminPractices() {
                       <div style="flex:1">
                         ${dateStr ? `<div style="font-size:.65rem;color:var(--muted);margin-bottom:.2rem">${dateStr}</div>` : ''}
                         <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? e.text.replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
+                        ${(() => {
+                          const dayComments = (p.adminComments || []).filter(c => c.day === e.day);
+                          if (dayComments.length === 0) return '';
+                          return dayComments.map(c => {
+                            const ct = c.sentAt?.toDate ? c.sentAt.toDate() : (c.sentAt ? new Date(c.sentAt) : null);
+                            const ctStr = ct && !isNaN(ct) ? `${ct.getMonth()+1}/${ct.getDate()} ${String(ct.getHours()).padStart(2,'0')}:${String(ct.getMinutes()).padStart(2,'0')}` : '';
+                            return `<div style="margin-top:.55rem;padding:.5rem .7rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 6px 6px 0">
+                              <div style="font-size:.62rem;color:var(--gold);margin-bottom:.25rem;display:flex;gap:.5rem;align-items:center">
+                                <span>⚔️ あなたのコメント</span>${ctStr ? `<span style="color:var(--muted)">${ctStr}</span>` : ''}
+                              </div>
+                              <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${c.text.replace(/\n/g,'<br>')}</div>
+                            </div>`;
+                          }).join('');
+                        })()}
                         <div style="margin-top:.6rem;display:flex;gap:.5rem;align-items:flex-end">
                           <textarea placeholder="コメントを送る..." rows="2"
                             style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>
@@ -1873,7 +1887,7 @@ async function sendAdminComment(userId, day, btn) {
     textarea.value = '';
     btn.textContent = '✓ 送信済み';
     btn.style.color = 'var(--gold)';
-    setTimeout(() => { btn.textContent = '送信'; btn.disabled = false; btn.style.color = ''; }, 3000);
+    setTimeout(() => { renderAdminPractices(); }, 800);
   } catch(e) {
     console.error(e);
     btn.textContent = '失敗';
