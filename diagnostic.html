@@ -50,6 +50,32 @@
   --c-hei-bg:  rgba(96,160,184,.15);
 }
 
+/* ── Admin light theme ── */
+body.admin-mode { background: #ede8de; }
+
+#s-admin-list {
+  --bg:        #ede8de;
+  --bg2:       #e4ddd0;
+  --bg3:       #d8d0c0;
+  --gold:      #8a6818;
+  --gold2:     #a07a20;
+  --gold-dim:  rgba(138,104,24,.13);
+  --red:       #b03030;
+  --cream:     #1c1608;
+  --cream2:    #4a3820;
+  --muted:     #7a6848;
+  --dimmed:    #a09070;
+  --border:    rgba(138,104,24,.25);
+  --shadow:    0 2px 10px rgba(0,0,0,.08);
+  --shadow-sm: 0 1px 5px rgba(0,0,0,.05);
+  --c-jiko:    #2e8a3e;
+  --c-flex:    #2a6ab8;
+  --c-strat:   #c04020;
+  --c-sei:     #7040c0;
+  --c-hei:     #3a80a0;
+  background: var(--bg);
+}
+
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
 html { -webkit-text-size-adjust:100%; font-size:16px; scroll-behavior:smooth }
 body {
@@ -1237,6 +1263,7 @@ function showScreen(id) {
   el.classList.add('active');
   el.scrollTop = 0;
   window.scrollTo(0,0);
+  document.body.classList.toggle('admin-mode', id === 's-admin-list');
 }
 
 function showCards() {
