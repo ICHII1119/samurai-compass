@@ -1831,17 +1831,28 @@ async function renderAdminDashboard() {
       <!-- 一斉送信 -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem">
         <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">⚔️ 一斉送信</div>
-        <div style="font-size:.82rem;color:var(--cream2);margin-bottom:1rem;line-height:1.6">
+        <!-- テンプレート選択 -->
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+          <button id="tmpl-btn-diagnostic" onclick="selectBroadcastTemplate('diagnostic')"
+            style="flex:1;padding:.5rem;border-radius:8px;border:1.5px solid var(--gold);background:var(--gold-dim);color:var(--gold);font-size:.78rem;cursor:pointer;font-weight:600">
+            📋 入門編への案内
+          </button>
+          <button id="tmpl-btn-practice" onclick="selectBroadcastTemplate('practice')"
+            style="flex:1;padding:.5rem;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:.78rem;cursor:pointer">
+            🔔 振り返りリマインダー
+          </button>
+        </div>
+        <div id="broadcast-desc" style="font-size:.82rem;color:var(--cream2);margin-bottom:1rem;line-height:1.6">
           LINE登録済みの参加者に、SAMURAI診断 — 入門編への案内メッセージを送ります。<br>
           各自に個別リンク（<code style="font-size:.75rem;background:var(--bg3);padding:.1rem .3rem;border-radius:3px">lite.html?lid=…</code>）が届きます。
         </div>
         <label style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;cursor:pointer">
           <input type="checkbox" id="broadcast-skip-existing" checked
             style="width:16px;height:16px;accent-color:var(--gold)">
-          <span style="font-size:.82rem;color:var(--cream2)">診断済みの方は除外する（推奨）</span>
+          <span id="broadcast-skip-label" style="font-size:.82rem;color:var(--cream2)">診断済みの方は除外する（推奨）</span>
         </label>
         <div style="font-size:.72rem;color:var(--muted);margin-bottom:.4rem">
-          送信メッセージ <span style="color:var(--dimmed);font-weight:400">（<code style="font-size:.7rem;background:var(--bg3);padding:.05rem .3rem;border-radius:3px">{URL}</code> は各ユーザーの診断リンクに自動変換されます）</span>
+          送信メッセージ <span style="font-weight:400">（<code style="font-size:.7rem;background:var(--bg3);padding:.05rem .3rem;border-radius:3px">{URL}</code> は各ユーザーの個別リンクに自動変換されます）</span>
         </div>
         <textarea id="broadcast-message"
           rows="10"
@@ -1858,6 +1869,7 @@ SAMURAI診断 — 入門編で見つけてください。
 
 稽古に、終わりはない。
 — Still Becoming.</textarea>
+        <input type="hidden" id="broadcast-template-type" value="diagnostic">
         <button onclick="executeBroadcast()"
           style="width:100%;padding:.8rem;background:var(--gold);color:#0a0a10;border:none;border-radius:var(--r);font-weight:700;font-size:.9rem;cursor:pointer;letter-spacing:.05em">
           一斉送信を実行する
@@ -2063,9 +2075,62 @@ function togglePracticeCard(userId, headerEl) {
   }
 }
 
+const BROADCAST_TEMPLATES = {
+  diagnostic: {
+    desc: 'LINE登録済みの参加者に、SAMURAI診断 — 入門編への案内メッセージを送ります。<br>各自に個別リンク（<code style="font-size:.75rem;background:var(--bg3);padding:.1rem .3rem;border-radius:3px">lite.html?lid=…</code>）が届きます。',
+    skipLabel: '診断済みの方は除外する（推奨）',
+    message: `⚔️ SAMURAI in You からのご案内
+
+あなたの「軸」となるSAMURAI Spiritを
+SAMURAI診断 — 入門編で見つけてください。
+
+2分でできます。今のあなたのままで
+お答えいただくだけです。
+
+👇 診断をはじめる
+{URL}
+
+稽古に、終わりはない。
+— Still Becoming.`,
+  },
+  practice: {
+    desc: '振り返りをしていない参加者に、稽古の記録を促すメッセージを送ります。<br>各自に個別リンク（<code style="font-size:.75rem;background:var(--bg3);padding:.1rem .3rem;border-radius:3px">practice.html?lid=…</code>）が届きます。',
+    skipLabel: '今週すでに振り返りをした方は除外する（推奨）',
+    message: `⚔️ 今日の稽古、記録しましたか？
+
+一日一行でいい。
+感じたこと、気づいたことを
+そのまま書き留めてください。
+
+積み重ねが、あなたの軸になる。
+
+👇 今日の振り返りをする
+{URL}
+
+稽古に、終わりはない。
+— Still Becoming.`,
+  },
+};
+
+function selectBroadcastTemplate(type) {
+  const tmpl = BROADCAST_TEMPLATES[type];
+  if (!tmpl) return;
+
+  document.getElementById('broadcast-template-type').value = type;
+  document.getElementById('broadcast-desc').innerHTML = tmpl.desc;
+  document.getElementById('broadcast-skip-label').textContent = tmpl.skipLabel;
+  document.getElementById('broadcast-message').value = tmpl.message;
+
+  const ON  = ';border-color:var(--gold);background:var(--gold-dim);color:var(--gold);font-weight:600';
+  const OFF = ';border-color:var(--border);background:transparent;color:var(--muted);font-weight:400';
+  document.getElementById('tmpl-btn-diagnostic').style.cssText += type === 'diagnostic' ? ON : OFF;
+  document.getElementById('tmpl-btn-practice').style.cssText  += type === 'practice'   ? ON : OFF;
+}
+
 async function executeBroadcast() {
   const skipExisting = document.getElementById('broadcast-skip-existing')?.checked ?? true;
   const customMessage = document.getElementById('broadcast-message')?.value.trim();
+  const templateType = document.getElementById('broadcast-template-type')?.value || 'diagnostic';
   const resultEl = document.getElementById('broadcast-result');
   const btn = event.currentTarget;
 
@@ -2090,7 +2155,7 @@ async function executeBroadcast() {
     const res = await fetch(SEND_BROADCAST_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
-      body: JSON.stringify({ skipExisting, customMessage })
+      body: JSON.stringify({ skipExisting, customMessage, templateType })
     });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
