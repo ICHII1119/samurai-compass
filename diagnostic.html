@@ -1107,7 +1107,9 @@ body {
       <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
         <span id="admin-count" style="font-size:.8rem;color:var(--muted);padding:.3rem .7rem;border-radius:100px;background:var(--bg2)">0件</span>
         <button class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem" onclick="refreshAdmin()">🔄 更新</button>
-        <button class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;color:var(--red);border-color:rgba(139,40,40,.3)" onclick="clearAdminData()">削除</button>
+        <button id="btn-select-mode" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;display:none" onclick="toggleSelectMode()">選択</button>
+        <button id="btn-delete-selected" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;color:var(--red);border-color:rgba(139,40,40,.3);display:none" onclick="deleteSelected()">選択削除 (<span id="sel-count">0</span>件)</button>
+        <button id="btn-all-delete" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;color:var(--red);border-color:rgba(139,40,40,.3)" onclick="clearAdminData()">全削除</button>
       </div>
     </div>
     <!-- タブ -->
@@ -1465,6 +1467,8 @@ function checkAdminPin() {
   if (input === ADMIN_PIN) {
     err.textContent = '';
     document.getElementById('admin-pin-input').value = '';
+    document.getElementById('btn-select-mode').style.display = '';
+    document.getElementById('btn-all-delete').style.display  = '';
     renderAdminLite();
     showScreen('s-admin-list');
   } else {
@@ -1546,8 +1550,65 @@ function backToAdminList() {
 }
 
 let currentAdminTab = 'lite';
+let adminSelectMode = false;
+let adminSelectedIds = new Set(); // Firestore doc IDs
+
+function toggleSelectMode() {
+  adminSelectMode = !adminSelectMode;
+  if (!adminSelectMode) adminSelectedIds.clear();
+  updateSelectionUI();
+  refreshAdmin();
+}
+
+function toggleSelectItem(docId) {
+  if (adminSelectedIds.has(docId)) adminSelectedIds.delete(docId);
+  else adminSelectedIds.add(docId);
+  updateSelectionUI();
+}
+
+function updateSelectionUI() {
+  const btn = document.getElementById('btn-select-mode');
+  const btnDel = document.getElementById('btn-delete-selected');
+  const count = document.getElementById('sel-count');
+  if (btn) {
+    btn.textContent = adminSelectMode ? 'キャンセル' : '選択';
+    btn.style.color = adminSelectMode ? 'var(--red)' : '';
+    btn.style.borderColor = adminSelectMode ? 'rgba(139,40,40,.3)' : '';
+  }
+  if (count) count.textContent = adminSelectedIds.size;
+  if (btnDel) btnDel.style.display = adminSelectedIds.size > 0 ? '' : 'none';
+}
+
+async function deleteSelected() {
+  if (adminSelectedIds.size === 0) return;
+  const tab = currentAdminTab;
+  const label = tab === 'lite' ? '入門編参加者' : '振り返り記録';
+  if (!confirm(`選択した ${adminSelectedIds.size} 件の${label}を削除しますか？\nこの操作は元に戻せません。`)) return;
+  try {
+    const batch = db.batch();
+    for (const docId of adminSelectedIds) {
+      if (tab === 'lite') {
+        batch.delete(db.collection('lite_results').doc(docId));
+        batch.delete(db.collection('practices').doc(docId));
+      } else if (tab === 'practice') {
+        batch.delete(db.collection('practices').doc(docId));
+      }
+    }
+    await batch.commit();
+    adminSelectedIds.clear();
+    adminSelectMode = false;
+    updateSelectionUI();
+    refreshAdmin();
+  } catch(e) {
+    console.error(e);
+    alert('削除に失敗しました。');
+  }
+}
 
 function switchAdminTab(tab) {
+  adminSelectedIds.clear();
+  adminSelectMode = false;
+  updateSelectionUI();
   currentAdminTab = tab;
   document.getElementById('admin-dash-body').style.display     = tab === 'dash'     ? 'block' : 'none';
   document.getElementById('admin-lite-body').style.display     = tab === 'lite'     ? 'block' : 'none';
@@ -1562,6 +1623,9 @@ function switchAdminTab(tab) {
   document.getElementById('tab-diag').style.cssText      += tab === 'diag'     ? ON : OFF;
 
   document.getElementById('admin-count').style.display = tab === 'diag' ? '' : 'none';
+  const canSelect = (tab === 'lite' || tab === 'practice');
+  document.getElementById('btn-select-mode').style.display = canSelect ? '' : 'none';
+  document.getElementById('btn-all-delete').style.display  = canSelect ? '' : 'none';
 
   if (tab === 'dash')     renderAdminDashboard();
   if (tab === 'lite')     renderAdminLite();
@@ -1620,8 +1684,11 @@ async function renderAdminLite() {
       const phase = dayNum > 21 ? '完了' : dayNum >= 1 ? `Day ${dayNum}` : '';
       const reportUrl = `report.html?lid=${userId}`;
 
+      const docId = p.id;
+      const isChecked = adminSelectedIds.has(docId);
       return `
-        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1.1rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.8rem">
+        <div style="background:var(--bg2);border:1px solid ${adminSelectMode && isChecked ? 'rgba(139,40,40,.5)' : 'var(--border)'};border-radius:var(--r);padding:.9rem 1.1rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.8rem;transition:border-color .15s">
+          ${adminSelectMode ? `<input type="checkbox" onchange="toggleSelectItem('${docId}')" ${isChecked ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--red);cursor:pointer;flex-shrink:0">` : ''}
           ${pic
             ? `<img src="${pic}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(201,168,76,.2)">`
             : `<div style="width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">侍</div>`}
@@ -1764,6 +1831,22 @@ SAMURAI診断 — 入門編で見つけてください。
   }
 }
 
+/* ── 既読管理（localStorage） ── */
+function getReadState() {
+  try { return JSON.parse(localStorage.getItem('siyen_admin_read') || '{}'); } catch { return {}; }
+}
+function markUserRead(userId, entries) {
+  const state = getReadState();
+  const maxTs = Math.max(...entries.map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0), 0);
+  if (maxTs > 0) state[userId] = maxTs;
+  localStorage.setItem('siyen_admin_read', JSON.stringify(state));
+}
+function getUnreadCount(userId, entries) {
+  const state = getReadState();
+  const seenUntil = state[userId] || 0;
+  return entries.filter(e => e.timestamp && new Date(e.timestamp).getTime() > seenUntil).length;
+}
+
 async function renderAdminPractices() {
   const container = document.getElementById('admin-practice-body');
   container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
@@ -1777,39 +1860,64 @@ async function renderAdminPractices() {
       return;
     }
 
-    // userId → displayName のマップ
     const nameMap = {};
     profileSnap.forEach(d => {
       const data = d.data();
       if (data.displayName) nameMap[d.id] = { name: data.displayName, pic: data.pictureUrl || '' };
     });
 
+    /* 最新投稿日時（新しい順）でユーザーを並べる */
     const docs = practiceSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a,b) => (b.entries?.length||0) - (a.entries?.length||0));
+      .sort((a, b) => {
+        const latestA = Math.max(...(a.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0), 0);
+        const latestB = Math.max(...(b.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0), 0);
+        return latestB - latestA;
+      });
 
     container.innerHTML = docs.map(p => {
-      const entries  = (p.entries || []).sort((a,b) => a.day - b.day);
-      const count    = entries.length;
-      const rank     = p.rank || '見習い';
-      const userId   = p.lineUserId || p.id;
-      const profile  = nameMap[userId];
-      const name     = profile?.name || '';
-      const pic      = profile?.pic  || '';
+      /* エントリも新しい順（Day降順） */
+      const entries   = (p.entries || []).sort((a, b) => {
+        const ta = a.timestamp ? new Date(a.timestamp).getTime() : a.day;
+        const tb = b.timestamp ? new Date(b.timestamp).getTime() : b.day;
+        return tb - ta;
+      });
+      const count     = entries.length;
+      const rank      = p.rank || '見習い';
+      const userId    = p.lineUserId || p.id;
+      const profile   = nameMap[userId];
+      const name      = profile?.name || '';
+      const pic       = profile?.pic  || '';
       const reportUrl = `report.html?lid=${userId}`;
+      const unread    = getUnreadCount(userId, entries);
+
+      /* 最新投稿日時ラベル */
+      const latestEntry = entries[0];
+      const latestTs    = latestEntry?.timestamp ? new Date(latestEntry.timestamp) : null;
+      const latestLabel = latestTs && !isNaN(latestTs)
+        ? `${latestTs.getMonth()+1}/${latestTs.getDate()} ${String(latestTs.getHours()).padStart(2,'0')}:${String(latestTs.getMinutes()).padStart(2,'0')}`
+        : '';
+
+      const pDocId = p.id;
+      const pChecked = adminSelectedIds.has(pDocId);
       return `
-        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem;overflow:hidden">
+        <div id="pcard-${userId}" style="background:var(--bg2);border:1px solid ${adminSelectMode && pChecked ? 'rgba(139,40,40,.5)' : unread > 0 ? 'rgba(201,168,76,.5)' : 'var(--border)'};border-radius:var(--r);margin-bottom:1rem;overflow:hidden">
           <div style="padding:.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;cursor:pointer;border-bottom:1px solid rgba(201,168,76,.08)"
-               onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+               onclick="${adminSelectMode ? '' : `togglePracticeCard('${userId}', this)`}">
             <div style="display:flex;align-items:center;gap:.7rem;flex:1;min-width:0">
+              ${adminSelectMode ? `<input type="checkbox" onchange="toggleSelectItem('${pDocId}')" ${pChecked ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--red);cursor:pointer;flex-shrink:0" onclick="event.stopPropagation()">` : ''}
               ${pic ? `<img src="${pic}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(201,168,76,.2)">` :
                       `<div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">侍</div>`}
-              <div style="min-width:0">
-                <div style="font-size:.93rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                  ${name || `<span style="color:var(--muted);font-size:.8rem">${userId.slice(0,16)}...</span>`}
+              <div style="min-width:0;flex:1">
+                <div style="display:flex;align-items:center;gap:.5rem">
+                  <div style="font-size:.93rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                    ${name || `<span style="color:var(--muted);font-size:.8rem">${userId.slice(0,16)}...</span>`}
+                  </div>
+                  ${unread > 0 ? `<span id="badge-${userId}" style="flex-shrink:0;min-width:18px;height:18px;background:#e05050;color:#fff;border-radius:100px;font-size:.68rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px">${unread}</span>` : `<span id="badge-${userId}"></span>`}
                 </div>
                 <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.2rem">
                   <span style="font-size:.72rem;padding:.15rem .55rem;border-radius:100px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,.3)">${rank}</span>
                   <span style="font-size:.78rem;color:var(--muted)">${count} / 21 日記録</span>
+                  ${latestLabel ? `<span style="font-size:.72rem;color:var(--muted)">最終: ${latestLabel}</span>` : ''}
                 </div>
               </div>
             </div>
@@ -1820,20 +1928,27 @@ async function renderAdminPractices() {
               <span style="color:var(--muted);font-size:1rem">›</span>
             </div>
           </div>
-          <div style="display:none;padding:.8rem 1.1rem">
+          <div id="pdetail-${userId}" style="display:none;padding:.8rem 1.1rem">
             ${entries.length === 0
               ? `<div style="font-size:.83rem;color:var(--muted);padding:.5rem 0">記録なし</div>`
               : entries.map(e => {
                   const ts = e.timestamp ? new Date(e.timestamp) : null;
                   const dateStr = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
+                  const seenUntil = getReadState()[userId] || 0;
+                  const isUnread  = ts && ts.getTime() > seenUntil;
                   return `
-                    <div style="display:flex;gap:.7rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04);align-items:flex-start">
-                      <div style="flex-shrink:0;width:32px;height:32px;background:var(--gold-dim);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1">
+                    <div data-ts="${ts ? ts.getTime() : 0}" ${isUnread ? 'data-unread="1"' : ''}
+                         style="display:flex;gap:.7rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04);align-items:flex-start${isUnread ? ';background:rgba(201,168,76,.04);margin:0 -.8rem;padding-left:.8rem;padding-right:.8rem;border-radius:6px' : ''}">
+                      <div style="flex-shrink:0;width:32px;height:32px;background:${isUnread ? 'rgba(201,168,76,.25)' : 'var(--gold-dim)'};border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;position:relative">
+                        ${isUnread ? `<div class="unread-dot" style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#e05050;border-radius:50%;border:1.5px solid var(--bg2)"></div>` : ''}
                         <span style="font-size:.55rem;color:var(--muted)">DAY</span>
                         <span style="font-size:.78rem;font-weight:600;color:var(--gold)">${e.day}</span>
                       </div>
                       <div style="flex:1">
-                        ${dateStr ? `<div style="font-size:.65rem;color:var(--muted);margin-bottom:.2rem">${dateStr}</div>` : ''}
+                        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem">
+                          ${dateStr ? `<div style="font-size:.65rem;color:var(--muted)">${dateStr}</div>` : ''}
+                          ${isUnread ? `<span class="unread-label" style="font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">未読</span>` : ''}
+                        </div>
                         <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? e.text.replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
                         ${(() => {
                           const dayComments = (p.adminComments || []).filter(c => c.day === e.day);
@@ -1864,6 +1979,42 @@ async function renderAdminPractices() {
   } catch(e) {
     console.error(e);
     container.innerHTML = `<div style="color:var(--muted);padding:2rem;text-align:center">読み込みに失敗しました</div>`;
+  }
+}
+
+function togglePracticeCard(userId, headerEl) {
+  const detail = document.getElementById(`pdetail-${userId}`);
+  const card   = document.getElementById(`pcard-${userId}`);
+  const isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : 'block';
+
+  if (!isOpen) {
+    /* 最新エントリのtimestampを計算してlocalStorageに保存 */
+    let maxTs = 0;
+    detail.querySelectorAll('[data-ts]').forEach(el => {
+      const ts = parseInt(el.dataset.ts || '0');
+      if (ts > maxTs) maxTs = ts;
+    });
+    const state = getReadState();
+    state[userId] = Math.max(state[userId] || 0, maxTs || Date.now());
+    localStorage.setItem('siyen_admin_read', JSON.stringify(state));
+
+    /* バッジとボーダーをリセット */
+    const badge = document.getElementById(`badge-${userId}`);
+    if (badge) badge.innerHTML = '';
+    card.style.borderColor = 'var(--border)';
+
+    /* 未読マーク（ドット・ラベル・背景）を即座に消す */
+    detail.querySelectorAll('[data-unread]').forEach(el => {
+      el.querySelector('.unread-dot')?.remove();
+      el.querySelector('.unread-label')?.remove();
+      el.style.background = '';
+      el.style.margin = '';
+      el.style.paddingLeft = '';
+      el.style.paddingRight = '';
+      el.style.borderRadius = '';
+      el.removeAttribute('data-unread');
+    });
   }
 }
 
@@ -1936,13 +2087,31 @@ async function sendAdminComment(userId, day, btn) {
 }
 
 async function clearAdminData() {
-  if (!confirm('すべての回答データを削除しますか？この操作は元に戻せません。')) return;
+  const tab = currentAdminTab;
+  const label = tab === 'lite' ? 'すべての入門編参加者データ（診断結果・振り返り記録）' :
+                tab === 'practice' ? 'すべての振り返り記録' : 'すべての回答データ';
+  if (!confirm(`${label}を削除しますか？\nこの操作は元に戻せません。`)) return;
   try {
-    const snapshot = await db.collection('submissions').get();
     const batch = db.batch();
-    snapshot.docs.forEach(doc => batch.delete(doc.ref));
+    if (tab === 'lite') {
+      const [liteSnap, practSnap] = await Promise.all([
+        db.collection('lite_results').get(),
+        db.collection('practices').get()
+      ]);
+      liteSnap.docs.forEach(doc => batch.delete(doc.ref));
+      practSnap.docs.forEach(doc => batch.delete(doc.ref));
+    } else if (tab === 'practice') {
+      const practSnap = await db.collection('practices').get();
+      practSnap.docs.forEach(doc => batch.delete(doc.ref));
+    } else {
+      const snapshot = await db.collection('submissions').get();
+      snapshot.docs.forEach(doc => batch.delete(doc.ref));
+    }
     await batch.commit();
-    renderAdminList();
+    adminSelectedIds.clear();
+    adminSelectMode = false;
+    updateSelectionUI();
+    refreshAdmin();
   } catch(e) {
     console.error(e);
     alert('削除に失敗しました。');
