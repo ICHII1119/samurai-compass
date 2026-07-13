@@ -2095,9 +2095,10 @@ async function generateMusashiComment(reflectionText, day, spiritName, btn) {
     btn.style.color = 'var(--gold)';
     setTimeout(() => { btn.textContent = original; btn.disabled = false; btn.style.color = ''; }, 2500);
   } catch(e) {
-    console.error(e);
+    console.error('武蔵BOTエラー:', e);
     btn.textContent = '失敗';
     btn.style.color = 'var(--red)';
+    alert('武蔵BOTエラー:\n' + e.message);
     setTimeout(() => { btn.textContent = original; btn.disabled = false; btn.style.color = ''; }, 3000);
   }
 }
