@@ -2175,7 +2175,7 @@ async function generateMusashiComment(reflectionText, day, spiritName, btn) {
       throw new Error(err.error?.message || res.status);
     }
     const data = await res.json();
-    textarea.value = data.content[0].text.trim();
+    textarea.value = data.content[0].text.trim() + '\n\n— 宮本武蔵BOT';
     textarea.focus();
     btn.innerHTML = '✓ 生成完了';
     btn.style.color = 'var(--gold)';
