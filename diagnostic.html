@@ -1507,8 +1507,11 @@ async function renderAdminList() {
       const lifeArr = Array.isArray(s.profile?.life) ? s.profile.life : (s.profile?.life ? [s.profile.life] : []);
       const lifeLabel = lifeArr.length ? lifeArr.map(v => LIFE_LBL[v] || v).join('・') : (s.profile?.lifeSkipped ? '回答なし' : '—');
       const urgencyLabel = URGENCY_LBL[s.profile?.urgency] || '—';
+      const dChecked = adminSelectedIds.has(s.id);
       return `
-        <div class="admin-row" onclick="showAdminDetail('${s.id}')">
+        <div class="admin-row" style="${adminSelectMode && dChecked ? 'border-color:rgba(139,40,40,.5);' : ''}"
+             onclick="${adminSelectMode ? '' : `showAdminDetail('${s.id}')`}">
+          ${adminSelectMode ? `<input type="checkbox" onchange="toggleSelectItem('${s.id}')" ${dChecked ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--red);cursor:pointer;flex-shrink:0;margin-right:.3rem" onclick="event.stopPropagation()">` : ''}
           <div style="flex:1">
             <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">${dateStr}</div>
             <div style="font-size:.95rem;font-weight:700;color:var(--cream);margin-bottom:.1rem">${s.profile?.nickname || '（名前なし）'}</div>
@@ -1519,7 +1522,7 @@ async function renderAdminList() {
               <span style="font-size:.72rem;color:var(--muted)">${s.total}枚選択</span>
             </div>
           </div>
-          <div style="color:var(--muted);font-size:1.3rem;margin-left:.8rem">›</div>
+          <div style="color:var(--muted);font-size:1.3rem;margin-left:.8rem">${adminSelectMode ? '' : '›'}</div>
         </div>
       `;
     }).join('');
@@ -1592,6 +1595,8 @@ async function deleteSelected() {
         batch.delete(db.collection('practices').doc(docId));
       } else if (tab === 'practice') {
         batch.delete(db.collection('practices').doc(docId));
+      } else if (tab === 'diag') {
+        batch.delete(db.collection('submissions').doc(docId));
       }
     }
     await batch.commit();
@@ -1623,7 +1628,7 @@ function switchAdminTab(tab) {
   document.getElementById('tab-diag').style.cssText      += tab === 'diag'     ? ON : OFF;
 
   document.getElementById('admin-count').style.display = tab === 'diag' ? '' : 'none';
-  const canSelect = (tab === 'lite' || tab === 'practice');
+  const canSelect = (tab === 'lite' || tab === 'practice' || tab === 'diag');
   document.getElementById('btn-select-mode').style.display = canSelect ? '' : 'none';
   document.getElementById('btn-all-delete').style.display  = canSelect ? '' : 'none';
 
