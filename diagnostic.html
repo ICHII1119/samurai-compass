@@ -1112,6 +1112,17 @@ body {
         <button id="btn-all-delete" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;color:var(--red);border-color:rgba(139,40,40,.3)" onclick="clearAdminData()">全削除</button>
       </div>
     </div>
+    <!-- 武蔵BOT APIキー設定バナー -->
+    <div id="musashi-key-banner" style="display:none;margin-bottom:1rem;padding:.8rem 1rem;background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.3);border-radius:var(--r)">
+      <div style="font-size:.75rem;color:var(--gold);margin-bottom:.5rem">⚔️ 武蔵BOT — Anthropic APIキーを設定</div>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <input id="musashi-api-key-input" type="password" placeholder="sk-ant-..." autocomplete="off"
+          style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;font-family:monospace">
+        <button onclick="saveMusashiKey()" style="flex-shrink:0;padding:.4rem .8rem;border-radius:6px;background:var(--gold-dim);border:1px solid rgba(201,168,76,.4);color:var(--gold);font-size:.78rem;cursor:pointer">保存</button>
+        <button id="musashi-key-clear" onclick="clearMusashiKey()" style="flex-shrink:0;padding:.4rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer;display:none">削除</button>
+      </div>
+      <div id="musashi-key-status" style="font-size:.7rem;color:var(--muted);margin-top:.4rem"></div>
+    </div>
     <!-- タブ -->
     <div style="display:flex;gap:.4rem;margin-bottom:1.2rem;border-bottom:1px solid var(--border);padding-bottom:.6rem;flex-wrap:wrap">
       <button id="tab-dash" onclick="switchAdminTab('dash')"
@@ -1469,6 +1480,7 @@ function checkAdminPin() {
     document.getElementById('admin-pin-input').value = '';
     document.getElementById('btn-select-mode').style.display = '';
     document.getElementById('btn-all-delete').style.display  = '';
+    updateMusashiBanner();
     renderAdminLite();
     showScreen('s-admin-list');
   } else {
@@ -1631,6 +1643,8 @@ function switchAdminTab(tab) {
   const canSelect = (tab === 'lite' || tab === 'practice' || tab === 'diag');
   document.getElementById('btn-select-mode').style.display = canSelect ? '' : 'none';
   document.getElementById('btn-all-delete').style.display  = canSelect ? '' : 'none';
+  const banner = document.getElementById('musashi-key-banner');
+  if (banner) banner.style.display = (tab === 'practice') ? '' : 'none';
 
   if (tab === 'dash')     renderAdminDashboard();
   if (tab === 'lite')     renderAdminLite();
@@ -2072,34 +2086,106 @@ async function executeBroadcast() {
   }
 }
 
+/* ── 武蔵BOT APIキー管理 ── */
+function getMusashiKey() {
+  return localStorage.getItem('musashi_api_key') || '';
+}
+function saveMusashiKey() {
+  const input = document.getElementById('musashi-api-key-input');
+  const key = input.value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    document.getElementById('musashi-key-status').textContent = '⚠️ キーは sk-ant- で始まる必要があります';
+    return;
+  }
+  localStorage.setItem('musashi_api_key', key);
+  input.value = '';
+  updateMusashiBanner();
+}
+function clearMusashiKey() {
+  localStorage.removeItem('musashi_api_key');
+  updateMusashiBanner();
+}
+function updateMusashiBanner() {
+  const key = getMusashiKey();
+  const banner = document.getElementById('musashi-key-banner');
+  const status = document.getElementById('musashi-key-status');
+  const clearBtn = document.getElementById('musashi-key-clear');
+  if (!banner) return;
+  if (key) {
+    status.textContent = '✓ APIキー設定済み（sk-ant-....' + key.slice(-4) + '）';
+    status.style.color = 'var(--gold)';
+    clearBtn.style.display = '';
+  } else {
+    status.textContent = 'APIキーを入力して「保存」を押してください';
+    status.style.color = 'var(--muted)';
+    clearBtn.style.display = 'none';
+  }
+}
+
 async function generateMusashiComment(reflectionText, day, spiritName, btn) {
   if (!reflectionText.trim()) {
     alert('振り返りテキストがありません。');
     return;
   }
+  const apiKey = getMusashiKey();
+  if (!apiKey) {
+    alert('APIキーが設定されていません。\n管理画面上部の「⚔️ 武蔵BOT」バナーにキーを入力してください。');
+    document.getElementById('musashi-key-banner').style.display = '';
+    document.getElementById('musashi-api-key-input').focus();
+    return;
+  }
   const textarea = btn.parentElement.parentElement.querySelector('textarea');
-  const original = btn.textContent;
+  const original = btn.innerHTML;
   btn.disabled = true;
   btn.textContent = '生成中...';
   try {
-    const res = await fetch('/api/musashi', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reflection: reflectionText, day, spiritName })
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        system: `あなたは宮本武蔵です。五輪書の著者であり、剣術・兵法の達人として生涯を稽古に捧げた求道者です。
+
+あなたのスタイル：
+- 短く、鋭く、本質を突く言葉で語る（3〜4文以内）
+- 説教や説明ではなく、稽古仲間（同道者）として語りかける
+- 五輪書の哲学（地水火風空）を背景に持ちながら、現代の言葉で
+- 質問で終わることもある（稽古者自身に気づかせる）
+- 「〜です・〜ます」ではなく、武蔵らしい語り口で（「〜だ」「〜ぞ」「〜か」）
+- 決して長くならない。余白を大切に。
+
+禁止事項：
+- 「素晴らしい」「頑張りましたね」などの褒め言葉
+- 「一緒に頑張りましょう」などの馴れ馴れしさ
+- 長い説明や箇条書き`,
+        messages: [{
+          role: 'user',
+          content: `Day ${day}${spiritName ? `（${spiritName}の稽古）` : ''}の振り返りに返答せよ。\n\n【稽古者の振り返り】\n${reflectionText}\n\nこの振り返りを受けて、宮本武蔵として短く応じよ。`
+        }]
+      })
     });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || res.status);
+    }
     const data = await res.json();
-    textarea.value = data.comment;
+    textarea.value = data.content[0].text.trim();
     textarea.focus();
-    btn.textContent = '✓ 生成完了';
+    btn.innerHTML = '✓ 生成完了';
     btn.style.color = 'var(--gold)';
-    setTimeout(() => { btn.textContent = original; btn.disabled = false; btn.style.color = ''; }, 2500);
+    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; btn.style.color = ''; }, 2500);
   } catch(e) {
     console.error('武蔵BOTエラー:', e);
     btn.textContent = '失敗';
     btn.style.color = 'var(--red)';
     textarea.value = '【エラー】' + e.message;
-    setTimeout(() => { btn.textContent = original; btn.disabled = false; btn.style.color = ''; }, 3000);
+    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; btn.style.color = ''; }, 3000);
   }
 }
 
