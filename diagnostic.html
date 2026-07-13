@@ -1738,9 +1738,10 @@ async function renderAdminDashboard() {
   const container = document.getElementById('admin-dash-body');
   container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
   try {
-    const [liteSnap, practiceSnap] = await Promise.all([
+    const [liteSnap, practiceSnap, dojoSnap] = await Promise.all([
       db.collection('lite_results').get(),
-      db.collection('practices').get()
+      db.collection('practices').get(),
+      db.collection('submissions').get()
     ]);
 
     const spiritNames = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
@@ -1789,19 +1790,38 @@ async function renderAdminDashboard() {
         </div>`;
     }).join('');
 
+    const dojoCount = dojoSnap.size;
+
     container.innerHTML = `
       <!-- 統計カード -->
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-bottom:1.5rem">
-        ${[
-          { label:'総参加者',     value: total,          unit:'人' },
-          { label:'稽古中',       value: activeCount,    unit:'人' },
-          { label:'21日完了',     value: completedCount, unit:'人' },
-          { label:'今週の振り返り', value: weeklyRecords,  unit:'件' },
-        ].map(s => `
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center">
-            <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${s.value}</div>
-            <div style="font-size:.65rem;color:var(--muted);margin-top:.3rem">${s.unit} / ${s.label}</div>
-          </div>`).join('')}
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center">
+          <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${total}</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:.3rem">人 / 総参加者</div>
+        </div>
+        <!-- 稽古中（入門編・道場編を分割表示） -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center">
+          <div style="display:flex;justify-content:center;gap:1.2rem;align-items:flex-end">
+            <div>
+              <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${activeCount}</div>
+              <div style="font-size:.6rem;color:var(--muted);margin-top:.2rem">入門編</div>
+            </div>
+            <div style="font-size:1rem;color:var(--border);padding-bottom:.3rem">/</div>
+            <div>
+              <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${dojoCount}</div>
+              <div style="font-size:.6rem;color:var(--muted);margin-top:.2rem">道場編</div>
+            </div>
+          </div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:.4rem">人 / 稽古中</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center">
+          <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${completedCount}</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:.3rem">人 / 21日完了</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center">
+          <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${weeklyRecords}</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:.3rem">件 / 今週の振り返り</div>
+        </div>
       </div>
       <!-- Spirit分布 -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
