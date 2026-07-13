@@ -334,6 +334,11 @@ body {
 <div class="page-header">
   <img src="logo.png" alt="SAMURAI in You" class="logo-img">
   <div class="page-title">稽古の記録</div>
+  <div id="report-link-area" style="margin-top:.7rem;display:none">
+    <a id="report-link" href="#" style="font-size:.75rem;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.35);padding:.3rem .8rem;border-radius:100px;display:inline-block">
+      📜 自分の記録・メモを見る
+    </a>
+  </div>
 </div>
 
 <!-- Loading -->
@@ -435,6 +440,13 @@ async function init() {
   if (!userId) {
     showError('LINEのメッセージからアクセスしてください。');
     return;
+  }
+  /* レポートリンクを設定 */
+  const reportLinkArea = document.getElementById('report-link-area');
+  const reportLink = document.getElementById('report-link');
+  if (reportLinkArea && reportLink) {
+    reportLink.href = `report.html?lid=${userId}`;
+    reportLinkArea.style.display = '';
   }
 
   try {
@@ -663,6 +675,11 @@ function showCompletion() {
         それだけで、すでに侍だ。<br><br>
         道場への入門を果たし、<br>
         修行の道が正式に始まります。
+      </div>
+      <div style="margin-top:1.5rem">
+        <a href="report.html?lid=${userId}" style="display:inline-block;font-size:.85rem;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.4);padding:.55rem 1.4rem;border-radius:100px;background:rgba(201,168,76,.08)">
+          📜 21日間の記録を見る
+        </a>
       </div>
     </div>`;
   document.getElementById('completion-screen').classList.add('visible');
