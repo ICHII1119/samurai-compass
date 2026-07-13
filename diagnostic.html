@@ -1969,11 +1969,17 @@ async function renderAdminPractices() {
                             </div>`;
                           }).join('');
                         })()}
-                        <div style="margin-top:.6rem;display:flex;gap:.5rem;align-items:flex-end">
+                        <div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.4rem">
                           <textarea placeholder="コメントを送る..." rows="2"
-                            style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>
-                          <button onclick="sendAdminComment('${userId}', ${e.day}, this)"
-                            style="flex-shrink:0;padding:.4rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer;white-space:nowrap">送信</button>
+                            style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>
+                          <div style="display:flex;gap:.4rem;justify-content:flex-end">
+                            <button onclick="generateMusashiComment('${e.text || ''}', ${e.day}, '${rank}', this)"
+                              style="padding:.35rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);font-size:.75rem;cursor:pointer;white-space:nowrap">
+                              ⚔️ 武蔵BOT
+                            </button>
+                            <button onclick="sendAdminComment('${userId}', ${e.day}, this)"
+                              style="padding:.35rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer;white-space:nowrap">送信</button>
+                          </div>
                         </div>
                       </div>
                     </div>`;
@@ -2066,8 +2072,38 @@ async function executeBroadcast() {
   }
 }
 
+async function generateMusashiComment(reflectionText, day, spiritName, btn) {
+  if (!reflectionText.trim()) {
+    alert('振り返りテキストがありません。');
+    return;
+  }
+  const textarea = btn.parentElement.parentElement.querySelector('textarea');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+  try {
+    const res = await fetch('/api/musashi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reflection: reflectionText, day, spiritName })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    textarea.value = data.comment;
+    textarea.focus();
+    btn.textContent = '✓ 生成完了';
+    btn.style.color = 'var(--gold)';
+    setTimeout(() => { btn.textContent = original; btn.disabled = false; btn.style.color = ''; }, 2500);
+  } catch(e) {
+    console.error(e);
+    btn.textContent = '失敗';
+    btn.style.color = 'var(--red)';
+    setTimeout(() => { btn.textContent = original; btn.disabled = false; btn.style.color = ''; }, 3000);
+  }
+}
+
 async function sendAdminComment(userId, day, btn) {
-  const textarea = btn.previousElementSibling;
+  const textarea = btn.parentElement.parentElement.querySelector('textarea');
   const message = textarea.value.trim();
   if (!message) return;
   btn.disabled = true;
