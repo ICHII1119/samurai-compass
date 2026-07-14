@@ -1681,27 +1681,42 @@ function selectBroadcastTemplate(type) {
 async function executeBroadcast() {
   const skipExisting = document.getElementById('broadcast-skip-existing')?.checked ?? true;
   const customMessage = document.getElementById('broadcast-message')?.value.trim();
-  const templateType = document.getElementById('broadcast-template-type')?.value || 'diagnostic';
   const resultEl = document.getElementById('broadcast-result');
   const btn = event.currentTarget;
   if (!customMessage) {
     resultEl.style.color = 'var(--red)'; resultEl.textContent = '⚠️ Please enter a message.'; return;
   }
   const confirmed = window.confirm(
-    `Send broadcast?\n\n${skipExisting ? '✅ Excluding those who already completed the diagnostic.' : '⚠️ Sending to everyone (including completed).'}\n\nContinue?`
+    `Send broadcast?\n\n${skipExisting ? '✅ Excluding those who have already started practice.' : '⚠️ Sending to all registered participants.'}\n\nContinue?`
   );
   if (!confirmed) return;
   btn.disabled = true; btn.textContent = 'Sending...'; resultEl.textContent = '';
   try {
-    const res = await fetch(SEND_BROADCAST_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
-      body: JSON.stringify({ skipExisting, customMessage, templateType })
-    });
-    if (!res.ok) throw new Error(await res.text());
-    const data = await res.json();
+    const snap = await db.collection('participants').where('lang', '==', 'en').get();
+    let startedUids = new Set();
+    if (skipExisting) {
+      const practSnap = await db.collection('practices').get();
+      practSnap.docs.forEach(d => startedUids.add(d.id));
+    }
+    let sent = 0, skipped = 0, errors = 0;
+    for (const doc of snap.docs) {
+      const p = doc.data();
+      if (!p.email) { skipped++; continue; }
+      if (skipExisting && startedUids.has(doc.id)) { skipped++; continue; }
+      try {
+        await emailjs.send('service_1dicjgi', 'template_bhxtn8c', {
+          to_email: p.email,
+          to_name:  p.nickname || 'Practitioner',
+          message:  customMessage,
+        });
+        sent++;
+      } catch(e) {
+        console.error('Email error for', p.email, e);
+        errors++;
+      }
+    }
     resultEl.style.color = 'var(--gold)';
-    resultEl.textContent = `✅ Sent: ${data.sent}, skipped: ${data.skipped}${data.errors > 0 ? `, errors: ${data.errors}` : ''}`;
+    resultEl.textContent = `✅ Sent: ${sent}, skipped: ${skipped}${errors > 0 ? `, errors: ${errors}` : ''}`;
   } catch(e) {
     console.error(e); resultEl.style.color = 'var(--red)'; resultEl.textContent = '⚠️ Send failed: ' + e.message;
   } finally {
@@ -1798,12 +1813,24 @@ async function sendAdminComment(userId, day, btn) {
   if (!message) return;
   btn.disabled = true; btn.textContent = 'Sending...';
   try {
-    const res = await fetch(SEND_COMMENT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
-      body: JSON.stringify({ userId, day, message })
-    });
-    if (!res.ok) throw new Error(await res.text());
+    // Save comment to Firestore (shown in participant's report)
+    const comment = { day, text: message, sentAt: firebase.firestore.FieldValue.serverTimestamp() };
+    await db.collection('practices').doc(userId).set(
+      { adminComments: firebase.firestore.FieldValue.arrayUnion(comment) },
+      { merge: true }
+    );
+    // Send email notification via EmailJS
+    const participantDoc = await db.collection('participants').doc(userId).get();
+    if (participantDoc.exists) {
+      const p = participantDoc.data();
+      if (p.email) {
+        await emailjs.send('service_1dicjgi', 'template_bhxtn8c', {
+          to_email: p.email,
+          to_name:  p.nickname || 'Practitioner',
+          message:  message,
+        }).catch(e => console.warn('Email notification error:', e));
+      }
+    }
     textarea.value = ''; btn.textContent = '✓ Sent'; btn.style.color = 'var(--gold)';
     setTimeout(() => { renderAdminPractices(); }, 800);
   } catch(e) {
