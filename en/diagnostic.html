@@ -1106,7 +1106,7 @@ function checkAdminPin() {
     document.getElementById('admin-pin-input').value = '';
     document.getElementById('btn-select-mode').style.display = '';
     document.getElementById('btn-all-delete').style.display  = '';
-    updateMusashiBanner();
+    loadMusashiKeyFromFirestore();
     renderAdminLite();
     showScreen('s-admin-list');
   } else {
@@ -1726,14 +1726,29 @@ async function executeBroadcast() {
 
 /* ── Musashi BOT API Key management ── */
 function getMusashiKey() { return localStorage.getItem('musashi_api_key') || ''; }
-function saveMusashiKey() {
+async function loadMusashiKeyFromFirestore() {
+  try {
+    const doc = await db.collection('config').doc('admin').get();
+    if (doc.exists && doc.data().musashiApiKey) {
+      localStorage.setItem('musashi_api_key', doc.data().musashiApiKey);
+      updateMusashiBanner();
+    }
+  } catch(e) { console.warn('Musashi key load error:', e); }
+}
+async function saveMusashiKey() {
   const input = document.getElementById('musashi-api-key-input');
   const key = input.value.trim();
   if (!key.startsWith('sk-ant-')) { document.getElementById('musashi-key-status').textContent = '⚠️ Key must start with sk-ant-'; return; }
-  localStorage.setItem('musashi_api_key', key);
-  input.value = ''; updateMusashiBanner();
+  try {
+    await db.collection('config').doc('admin').set({ musashiApiKey: key }, { merge: true });
+    localStorage.setItem('musashi_api_key', key);
+    input.value = ''; updateMusashiBanner();
+  } catch(e) { document.getElementById('musashi-key-status').textContent = '⚠️ Save failed: ' + e.message; }
 }
-function clearMusashiKey() { localStorage.removeItem('musashi_api_key'); updateMusashiBanner(); }
+async function clearMusashiKey() {
+  try { await db.collection('config').doc('admin').update({ musashiApiKey: firebase.firestore.FieldValue.delete() }); } catch(e) { console.warn(e); }
+  localStorage.removeItem('musashi_api_key'); updateMusashiBanner();
+}
 function updateMusashiBanner() {
   const key = getMusashiKey();
   const banner = document.getElementById('musashi-key-banner');
