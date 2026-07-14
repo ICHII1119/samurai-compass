@@ -1739,11 +1739,10 @@ async function saveMusashiKey() {
   const input = document.getElementById('musashi-api-key-input');
   const key = input.value.trim();
   if (!key.startsWith('sk-ant-')) { document.getElementById('musashi-key-status').textContent = '⚠️ Key must start with sk-ant-'; return; }
-  try {
-    await db.collection('config').doc('admin').set({ musashiApiKey: key }, { merge: true });
-    localStorage.setItem('musashi_api_key', key);
-    input.value = ''; updateMusashiBanner();
-  } catch(e) { document.getElementById('musashi-key-status').textContent = '⚠️ Save failed: ' + e.message; }
+  localStorage.setItem('musashi_api_key', key);
+  input.value = ''; updateMusashiBanner();
+  db.collection('config').doc('admin').set({ musashiApiKey: key }, { merge: true })
+    .catch(e => console.warn('Firestore save failed (saved to localStorage):', e.message));
 }
 async function clearMusashiKey() {
   try { await db.collection('config').doc('admin').update({ musashiApiKey: firebase.firestore.FieldValue.delete() }); } catch(e) { console.warn(e); }
