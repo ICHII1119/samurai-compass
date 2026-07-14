@@ -2019,7 +2019,7 @@ async function renderAdminPractices() {
                           <textarea placeholder="コメントを送る..." rows="2"
                             style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>
                           <div style="display:flex;gap:.4rem;justify-content:flex-end">
-                            <button onclick="generateMusashiComment('${e.text || ''}', ${e.day}, '${rank}', this)"
+                            <button data-reflection="${(e.text || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-day="${e.day}" data-rank="${rank}" onclick="generateMusashiComment(this.dataset.reflection, +this.dataset.day, this.dataset.rank, this)"
                               style="padding:.35rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);font-size:.75rem;cursor:pointer;white-space:nowrap">
                               ⚔️ 武蔵BOT
                             </button>
