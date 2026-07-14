@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a1f">
+<title>SAMURAI Compass LITE — Quick Diagnostic</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="apple-touch-icon" href="../logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyC1qm7kUjSRk7QRwxK-W7bH1q-pqH3lklU",
+  authDomain: "samurai-compass.firebaseapp.com",
+  projectId: "samurai-compass",
+  storageBucket: "samurai-compass.firebasestorage.app",
+  messagingSenderId: "502771859953",
+  appId: "1:502771859953:web:89e801832fdd42c6cb0450"
+});
+const db = firebase.firestore();
+</script>
+<script src="strings.js"></script>
+<style>
+:root {
+  --bg:       #1a1a1f;
+  --bg2:      #222228;
+  --bg3:      #2a2a32;
+  --gold:     #c9a84c;
+  --gold2:    #e8c060;
+  --gold-dim: rgba(201,168,76,.15);
+  --cream:    #f0ece0;
+  --cream2:   #c8b090;
+  --muted:    #7a7060;
+  --border:   rgba(201,168,76,.2);
+  --beige:    #f5f0e6;
+  --beige2:   #ede8dc;
+  --brown:    #2a1f10;
+  --brown2:   #7a6840;
+  --r:        14px;
+  --r-lg:     22px;
+  --font:     'Open Sans', -apple-system, sans-serif;
+  --font-b:   'Cormorant Garamond', serif;
+
+  --c-jiko:    #4aaa5a;
+  --c-jiko-bg: rgba(74,170,90,.18);
+  --c-flex:    #4a88d8;
+  --c-flex-bg: rgba(74,136,216,.18);
+  --c-strat:   #e86040;
+  --c-strat-bg:rgba(232,96,64,.18);
+  --c-sei:     #a060e0;
+  --c-sei-bg:  rgba(160,96,224,.18);
+  --c-hei:     #60a0b8;
+  --c-hei-bg:  rgba(96,160,184,.18);
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+html { -webkit-text-size-adjust:100%; font-size:16px }
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--font);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  text-align: center;
+}
+
+.screen { display:none }
+.screen.active { display:block }
+
+/* ── INTRO ── */
+#s-intro {
+  min-height:100vh; min-height:100dvh;
+  display:none; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:2.5rem 1.5rem 3rem; text-align:center;
+}
+#s-intro.active { display:flex }
+
+.intro-logo {
+  width:120px; margin-bottom:1.5rem;
+  -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 44%, black 52%, transparent 80%);
+  mask-image: radial-gradient(ellipse 88% 82% at 50% 44%, black 52%, transparent 80%);
+}
+.intro-title { font-family:var(--font-b); font-size:2rem; font-weight:600; color:var(--gold); letter-spacing:.05em; margin-bottom:.3rem }
+.intro-sub   { font-size:.72rem; letter-spacing:.22em; color:var(--muted); margin-bottom:2rem }
+
+.intro-card {
+  background:var(--beige); border-radius:var(--r-lg);
+  padding:1.8rem 1.5rem; margin-bottom:2rem;
+  max-width:400px; width:100%; text-align:left;
+}
+.intro-card-title { font-family:var(--font-b); font-size:1.15rem; font-weight:600; color:var(--brown); margin-bottom:.8rem }
+.intro-step { display:flex; align-items:flex-start; gap:.7rem; margin-bottom:.5rem }
+.intro-step-num {
+  width:22px; height:22px; background:var(--gold); color:#fff;
+  border-radius:50%; font-size:.72rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; margin-top:.1rem;
+}
+.intro-step-text { font-size:.88rem; color:var(--brown); line-height:1.6 }
+
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; border:none; cursor:pointer; font-family:var(--font); font-weight:600; border-radius:100px; transition:all .2s; text-decoration:none }
+.btn-primary { background:var(--gold); color:#1a1208; padding:.9rem 2.4rem; font-size:1rem; letter-spacing:.05em; box-shadow:0 4px 18px rgba(201,168,76,.35) }
+.btn-primary:active { transform:scale(.97) }
+.btn-lg { width:100%; max-width:320px; padding:1rem 2rem; font-size:1.05rem }
+.intro-note { font-size:.75rem; color:var(--muted); margin-top:1rem }
+
+/* ── CARDS ── */
+#s-cards { min-height:100vh; min-height:100dvh; padding-bottom:120px }
+
+.cards-header {
+  position:sticky; top:0; z-index:10;
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  padding:.9rem 1.2rem;
+  display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+}
+.cards-header-title { font-family:var(--font-b); font-size:1.05rem; font-weight:600; color:var(--gold) }
+.cards-header-sub   { font-size:.65rem; letter-spacing:.15em; color:var(--muted) }
+.counter-badge {
+  background:var(--gold-dim); border:1px solid var(--border); border-radius:100px;
+  padding:.3rem .8rem; font-size:.78rem; font-weight:600; color:var(--gold);
+  white-space:nowrap; min-width:70px; text-align:center;
+}
+.cards-intro { padding:1rem 1.2rem .5rem; font-size:.83rem; color:var(--cream2); line-height:1.7; border-bottom:1px solid var(--border) }
+.cards-list  { padding:.8rem 1rem; display:flex; flex-direction:column; gap:.6rem }
+
+.lite-card {
+  background:var(--beige); border:2px solid transparent; border-radius:var(--r);
+  padding:.9rem 1rem .9rem 3rem; cursor:pointer; position:relative;
+  transition:all .18s; -webkit-tap-highlight-color:transparent;
+}
+.lite-card:active { transform:scale(.985) }
+.lite-card.selected { border-color:var(--gold); background:#fdf8ee }
+
+.lite-card-check {
+  position:absolute; left:.85rem; top:50%; transform:translateY(-50%);
+  width:22px; height:22px; border:2px solid rgba(154,117,32,.4); border-radius:6px;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .18s; background:#fff; flex-shrink:0;
+}
+.lite-card.selected .lite-card-check { background:var(--gold); border-color:var(--gold) }
+.lite-card-check svg { opacity:0; transition:opacity .15s }
+.lite-card.selected .lite-card-check svg { opacity:1 }
+.lite-card-text { font-size:.88rem; color:var(--brown); line-height:1.65; text-align:left }
+
+.cards-footer {
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--bg); border-top:1px solid var(--border);
+  padding:.9rem 1.2rem; padding-bottom:calc(.9rem + env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; align-items:center; gap:.4rem; z-index:10;
+}
+.cards-hint { font-size:.75rem; color:var(--muted); text-align:center }
+.cards-submit {
+  background:var(--gold); color:#1a1208; border:none; border-radius:100px;
+  padding:.85rem 2.5rem; font-size:.95rem; font-weight:700; font-family:var(--font);
+  cursor:pointer; width:100%; max-width:320px; transition:all .2s;
+  box-shadow:0 4px 16px rgba(201,168,76,.3);
+}
+.cards-submit:disabled { opacity:.35; cursor:not-allowed; box-shadow:none }
+
+/* ── RESULT ── */
+#s-result { min-height:100vh; min-height:100dvh; padding:0 0 3rem; text-align:left }
+
+.result-hero { padding:2.5rem 1.5rem 2rem; text-align:left; position:relative; overflow:hidden }
+.result-eyebrow { font-size:.68rem; letter-spacing:.25em; color:var(--muted); margin-bottom:.5rem }
+.result-spirit-name { font-family:var(--font-b); font-size:2.6rem; font-weight:700; line-height:1.1; margin-bottom:.25rem }
+.result-spirit-en   { font-size:.8rem; letter-spacing:.2em; color:var(--muted); margin-bottom:1rem }
+.result-spirit-desc { font-size:.9rem; line-height:1.85; color:var(--cream2); max-width:340px }
+
+.result-section { margin:0 1rem 1rem; border-radius:var(--r-lg); overflow:hidden }
+.section-beige  { background:var(--beige); padding:1.4rem 1.3rem }
+.section-label  { font-size:.65rem; letter-spacing:.22em; color:var(--brown2); margin-bottom:.5rem }
+.section-title  { font-family:var(--font-b); font-size:1.1rem; font-weight:600; color:var(--brown); margin-bottom:.7rem }
+.section-body   { font-size:.88rem; line-height:1.85; color:#3a2a1a }
+
+.tip-box {
+  background:rgba(201,168,76,.12); border:1.5px solid rgba(201,168,76,.35);
+  border-radius:10px; padding:1rem 1.1rem; margin-top:.8rem;
+  display:flex; gap:.7rem; align-items:flex-start;
+}
+.tip-icon { font-size:1.3rem; flex-shrink:0; margin-top:.05rem }
+.tip-text { font-size:.85rem; line-height:1.75; color:var(--brown) }
+
+.program-section {
+  background:var(--bg2); border:1px solid var(--border); border-radius:var(--r-lg);
+  margin:0 1rem 1rem; padding:1.4rem 1.3rem;
+}
+.program-label { font-size:.65rem; letter-spacing:.22em; color:var(--muted); margin-bottom:.5rem }
+.program-title { font-family:var(--font-b); font-size:1.1rem; font-weight:600; color:var(--cream); margin-bottom:.7rem }
+.program-body  { font-size:.88rem; line-height:1.85; color:var(--cream2) }
+.program-points { margin-top:.8rem; display:flex; flex-direction:column; gap:.5rem }
+.program-point { display:flex; gap:.6rem; align-items:flex-start; font-size:.84rem; color:var(--cream2); line-height:1.6 }
+.program-point-icon { color:var(--gold); font-size:.9rem; flex-shrink:0; margin-top:.1rem }
+
+/* CTA / Registration */
+.cta-section { margin:0 1rem }
+.cta-label { font-size:.65rem; letter-spacing:.22em; color:var(--muted); margin-bottom:.8rem; padding-top:.5rem }
+
+.email-input {
+  width:100%; padding:.8rem 1rem; border-radius:10px;
+  border:1.5px solid rgba(201,168,76,.3); background:rgba(255,255,255,.04);
+  color:var(--cream); font-size:.95rem; font-family:var(--font);
+  outline:none; box-sizing:border-box; margin-bottom:.6rem;
+}
+.email-input:focus { border-color:var(--gold) }
+.email-note { font-size:.72rem; color:var(--muted); margin-bottom:1rem; line-height:1.6 }
+
+.push-btn {
+  width:100%; border:1.5px solid var(--border); border-radius:100px;
+  padding:.8rem; font-size:.9rem; font-weight:600; font-family:var(--font);
+  cursor:pointer; margin-bottom:.6rem; transition:all .2s;
+  background:rgba(201,168,76,.08); color:var(--gold);
+}
+.push-btn.done { background:rgba(74,170,90,.12); border-color:rgba(74,170,90,.4); color:#4aaa5a }
+.push-btn.denied { background:rgba(255,80,80,.06); border-color:rgba(255,80,80,.3); color:#d06060; font-size:.8rem }
+
+.cta-btn {
+  display:block; width:100%; background:var(--gold); color:#1a1208;
+  border:none; border-radius:100px; padding:1.05rem;
+  font-size:1rem; font-weight:700; font-family:var(--font);
+  cursor:pointer; letter-spacing:.03em;
+  box-shadow:0 6px 24px rgba(201,168,76,.4); transition:all .2s;
+  margin-top:.4rem; margin-bottom:.8rem; text-align:center;
+}
+.cta-btn:active { transform:scale(.97) }
+.cta-btn:disabled { opacity:.5; cursor:not-allowed }
+
+.register-result {
+  font-size:.85rem; text-align:center; padding:.6rem 0;
+  color:var(--gold); line-height:1.7; min-height:1.5rem;
+}
+.register-result.error { color:#c06060 }
+
+.retry-btn {
+  display:inline-block; margin-top:.8rem; font-size:.78rem;
+  color:var(--muted); text-decoration:underline; cursor:pointer;
+  background:none; border:none; font-family:var(--font);
+}
+
+/* Spirit color themes */
+.spirit-hei  { background:linear-gradient(160deg,#0f1a1f 0%,#1a2830 100%) }
+.spirit-jiko { background:linear-gradient(160deg,#0f1a12 0%,#162418 100%) }
+.spirit-flex { background:linear-gradient(160deg,#0f1220 0%,#141c2e 100%) }
+.spirit-strat{ background:linear-gradient(160deg,#1f0f0a 0%,#2a1510 100%) }
+.spirit-sei  { background:linear-gradient(160deg,#180f22 0%,#22123a 100%) }
+
+.spirit-hei  .result-spirit-name { color:var(--c-hei) }
+.spirit-jiko .result-spirit-name { color:var(--c-jiko) }
+.spirit-flex .result-spirit-name { color:var(--c-flex) }
+.spirit-strat .result-spirit-name { color:var(--c-strat) }
+.spirit-sei  .result-spirit-name { color:var(--c-sei) }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: INTRO -->
+<section id="s-intro" class="screen active">
+  <img src="../logo.png" alt="SAMURAI in You" class="intro-logo">
+  <div class="intro-title" id="intro-title"></div>
+  <div class="intro-sub"   id="intro-sub"></div>
+
+  <div class="intro-card">
+    <div class="intro-card-title" id="intro-card-title"></div>
+    <div class="intro-step">
+      <div class="intro-step-num">1</div>
+      <div class="intro-step-text" id="intro-step1"></div>
+    </div>
+    <div class="intro-step">
+      <div class="intro-step-num">2</div>
+      <div class="intro-step-text" id="intro-step2"></div>
+    </div>
+    <div class="intro-step">
+      <div class="intro-step-num">3</div>
+      <div class="intro-step-text" id="intro-step3"></div>
+    </div>
+  </div>
+
+  <div style="width:100%;max-width:360px;margin:.8rem auto 0">
+    <input id="nickname-input" type="text" maxlength="20"
+      style="width:100%;padding:.7rem 1rem;border-radius:8px;border:1.5px solid rgba(201,168,76,.3);background:rgba(255,255,255,.04);color:var(--cream);font-size:.95rem;font-family:inherit;outline:none;text-align:center;box-sizing:border-box"
+      onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(201,168,76,.3)'">
+  </div>
+  <button class="btn btn-primary btn-lg" onclick="startDiagnostic()" style="margin-top:.8rem" id="start-btn"></button>
+  <div class="intro-note" id="intro-note"></div>
+</section>
+
+<!-- SCREEN 2: CARDS -->
+<section id="s-cards" class="screen">
+  <div class="cards-header">
+    <div>
+      <div class="cards-header-title" id="cards-header-title"></div>
+      <div class="cards-header-sub"   id="cards-header-sub"></div>
+    </div>
+    <div class="counter-badge" id="counter">0 selected</div>
+  </div>
+  <div class="cards-intro" id="cards-intro"></div>
+  <div class="cards-list" id="cards-list"></div>
+  <div class="cards-footer">
+    <div class="cards-hint" id="cards-hint"></div>
+    <button class="cards-submit" id="submit-btn" onclick="showResult()" disabled id="submit-cards-btn"></button>
+  </div>
+</section>
+
+<!-- SCREEN 3: RESULT -->
+<section id="s-result" class="screen">
+  <div class="result-hero" id="result-hero">
+    <div class="result-eyebrow" id="result-eyebrow"></div>
+    <div class="result-spirit-name" id="result-spirit-name">—</div>
+    <div class="result-spirit-en"   id="result-spirit-en">—</div>
+    <div class="result-spirit-desc" id="result-spirit-desc"></div>
+  </div>
+
+  <div class="result-section">
+    <div class="section-beige">
+      <div class="section-label">TODAY'S TIP</div>
+      <div class="section-title" id="tip-title"></div>
+      <div class="section-body"  id="tip-body"></div>
+      <div class="tip-box">
+        <div class="tip-icon">⚔️</div>
+        <div class="tip-text" id="tip-action"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="program-section">
+    <div class="program-label" id="program-dojo-label"></div>
+    <div class="program-title" id="program-title"></div>
+    <div class="program-body"  id="program-body"></div>
+    <div class="program-points" id="program-points"></div>
+  </div>
+
+  <!-- Registration (replaces LINE button) -->
+  <div class="cta-section">
+    <div class="cta-label" id="cta-label"></div>
+    <input  id="email-input" type="email" class="email-input" autocomplete="email">
+    <div class="email-note" id="email-note"></div>
+    <button id="push-btn"    class="push-btn" onclick="requestPush()"></button>
+    <button id="register-btn" class="cta-btn" onclick="register()" disabled></button>
+    <div id="register-result" class="register-result"></div>
+    <button class="retry-btn" onclick="resetAll()" id="retry-btn"></button>
+  </div>
+</section>
+
+<script>
+/* ════════════════════════
+   CARD DATA (15 cards — same spirit mapping as Japanese version)
+   Sync: update text in S.lite.cards in strings.js
+════════════════════════ */
+const CARDS = [
+  { id:1,  spirit:'hei',   text: S.lite.cards[0] },
+  { id:10, spirit:'hei',   text: S.lite.cards[1] },
+  { id:48, spirit:'hei',   text: S.lite.cards[2] },
+  { id:2,  spirit:'jiko',  text: S.lite.cards[3] },
+  { id:7,  spirit:'jiko',  text: S.lite.cards[4] },
+  { id:13, spirit:'jiko',  text: S.lite.cards[5] },
+  { id:6,  spirit:'flex',  text: S.lite.cards[6] },
+  { id:14, spirit:'flex',  text: S.lite.cards[7] },
+  { id:27, spirit:'flex',  text: S.lite.cards[8] },
+  { id:20, spirit:'strat', text: S.lite.cards[9] },
+  { id:34, spirit:'strat', text: S.lite.cards[10] },
+  { id:44, spirit:'strat', text: S.lite.cards[11] },
+  { id:4,  spirit:'sei',   text: S.lite.cards[12] },
+  { id:15, spirit:'sei',   text: S.lite.cards[13] },
+  { id:17, spirit:'sei',   text: S.lite.cards[14] },
+];
+
+const DISPLAY_ORDER = [...CARDS].sort(() => Math.random() - 0.5);
+
+/* ════════════════════════
+   FCM VAPID KEY
+   TODO: Replace with your VAPID key from Firebase Console
+   → Project Settings → Cloud Messaging → Web Push certificates → Key pair
+════════════════════════ */
+const VAPID_KEY = 'YOUR_VAPID_KEY_HERE';
+
+/* ════════════════════════
+   STATE
+════════════════════════ */
+let selected  = new Set();
+let fcmToken  = null;
+let pushState = 'idle'; // idle | granted | denied
+
+/* ════════════════════════
+   INIT UI TEXT FROM strings.js
+════════════════════════ */
+function initText() {
+  const L = S.lite;
+  document.getElementById('intro-title').textContent      = L.introTitle;
+  document.getElementById('intro-sub').textContent        = L.introSub;
+  document.getElementById('intro-card-title').textContent = L.introCardTitle;
+  document.getElementById('intro-step1').innerHTML        = L.step1;
+  document.getElementById('intro-step2').innerHTML        = L.step2;
+  document.getElementById('intro-step3').innerHTML        = L.step3;
+  document.getElementById('nickname-input').placeholder   = L.nicknamePlaceholder;
+  document.getElementById('start-btn').textContent        = L.startBtn;
+  document.getElementById('intro-note').textContent       = L.introNote;
+  document.getElementById('cards-header-title').textContent = L.cardsHeaderTitle;
+  document.getElementById('cards-header-sub').textContent   = L.cardsHeaderSub;
+  document.getElementById('cards-intro').innerHTML          = L.cardsIntro;
+  document.getElementById('cards-hint').textContent         = L.cardHintDefault;
+  document.getElementById('submit-btn').textContent         = L.submitBtn;
+  document.getElementById('result-eyebrow').textContent     = L.resultEyebrow;
+  document.getElementById('cta-label').textContent          = L.ctaLabel;
+  document.getElementById('email-input').placeholder        = L.emailPlaceholder;
+  document.getElementById('email-note').textContent         = L.emailNote;
+  document.getElementById('push-btn').textContent           = L.pushBtn;
+  document.getElementById('register-btn').textContent       = L.registerBtn;
+  document.getElementById('retry-btn').textContent          = L.retryBtn;
+  document.getElementById('program-dojo-label').textContent = L.dojoLabel;
+}
+
+/* ════════════════════════
+   USER ID (localStorage UUID, no LINE needed)
+════════════════════════ */
+function getUserId() {
+  let uid = localStorage.getItem('siyen_uid');
+  if (!uid) {
+    uid = 'en_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem('siyen_uid', uid);
+  }
+  return uid;
+}
+
+/* ════════════════════════
+   DIAGNOSTIC FLOW
+════════════════════════ */
+function startDiagnostic() {
+  renderCards();
+  showScreen('s-cards');
+}
+
+function renderCards() {
+  const list = document.getElementById('cards-list');
+  list.innerHTML = '';
+  DISPLAY_ORDER.forEach(card => {
+    const div = document.createElement('div');
+    div.className = 'lite-card';
+    div.innerHTML = `
+      <div class="lite-card-check">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+             stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,6 5,9 10,3"/>
+        </svg>
+      </div>
+      <div class="lite-card-text">${card.text}</div>`;
+    div.addEventListener('click', () => toggleCard(card.id, div));
+    list.appendChild(div);
+  });
+}
+
+function toggleCard(id, el) {
+  selected.has(id) ? selected.delete(id) : selected.add(id);
+  el.classList.toggle('selected', selected.has(id));
+  updateCounter();
+}
+
+function updateCounter() {
+  const n = selected.size;
+  document.getElementById('counter').textContent = S.lite.counterLabel(n);
+  const btn  = document.getElementById('submit-btn');
+  const hint = document.getElementById('cards-hint');
+  if (n >= 1) {
+    btn.disabled = false;
+    hint.innerHTML = S.lite.cardHintSelected(n);
+  } else {
+    btn.disabled = true;
+    hint.textContent = S.lite.cardHintDefault;
+  }
+}
+
+function showResult() {
+  if (selected.size < 1) return;
+
+  const counts = { hei:0, jiko:0, flex:0, strat:0, sei:0 };
+  CARDS.forEach(c => { if (selected.has(c.id)) counts[c.spirit]++ });
+  const topSpirit = Object.keys(counts).sort((a,b) => counts[b]-counts[a])[0];
+  const sp = S.lite.spirits[topSpirit];
+
+  const hero = document.getElementById('result-hero');
+  hero.className = 'result-hero ' + sp.heroClass;
+  document.getElementById('result-spirit-name').textContent = sp.name;
+  document.getElementById('result-spirit-en').textContent   = sp.en;
+  document.getElementById('result-spirit-desc').textContent = sp.desc;
+  document.getElementById('tip-title').textContent   = sp.tipTitle;
+  document.getElementById('tip-body').textContent    = sp.tipBody;
+  document.getElementById('tip-action').textContent  = sp.tipAction;
+  document.getElementById('program-title').textContent = sp.programTitle;
+  document.getElementById('program-body').textContent  = sp.programBody;
+  document.getElementById('program-points').innerHTML  = sp.programPoints.map(p =>
+    `<div class="program-point"><span class="program-point-icon">◆</span><span>${p}</span></div>`
+  ).join('');
+
+  // Enable register button if email is filled
+  document.getElementById('email-input').addEventListener('input', updateRegisterBtn);
+  updateRegisterBtn();
+
+  // Save interim result to Firestore
+  const uid = getUserId();
+  const nickname = (document.getElementById('nickname-input')?.value || '').trim();
+  db.collection('lite_results').doc(uid).set({
+    userId: uid, nickname,
+    spirit: topSpirit, spiritName: sp.name,
+    selectedCards: [...selected], counts,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    source: 'lite_en', lang: 'en'
+  }, { merge: true }).catch(e => console.warn('Firestore error:', e));
+
+  window._topSpirit = topSpirit;
+  showScreen('s-result');
+}
+
+function updateRegisterBtn() {
+  const email = document.getElementById('email-input').value.trim();
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  document.getElementById('register-btn').disabled = !valid;
+}
+
+/* ════════════════════════
+   WEB PUSH (FCM)
+════════════════════════ */
+async function requestPush() {
+  const btn = document.getElementById('push-btn');
+  btn.disabled = true;
+
+  if (!('Notification' in window)) {
+    pushState = 'denied';
+    btn.textContent = S.lite.pushDenied;
+    btn.classList.add('denied');
+    btn.disabled = false;
+    return;
+  }
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      pushState = 'denied';
+      btn.textContent = S.lite.pushDenied;
+      btn.classList.add('denied');
+      btn.disabled = false;
+      return;
+    }
+
+    // Register FCM service worker
+    if (VAPID_KEY !== 'YOUR_VAPID_KEY_HERE') {
+      try {
+        const messaging = firebase.messaging();
+        const reg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+        fcmToken = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+      } catch(e) {
+        console.warn('FCM token error:', e);
+      }
+    }
+
+    pushState = 'granted';
+    btn.textContent = S.lite.pushBtnDone;
+    btn.classList.add('done');
+    btn.disabled = true;
+    updateRegisterBtn();
+  } catch(e) {
+    console.error(e);
+    btn.disabled = false;
+  }
+}
+
+/* ════════════════════════
+   REGISTRATION
+════════════════════════ */
+async function register() {
+  const email = document.getElementById('email-input').value.trim();
+  if (!email) return;
+
+  const btn    = document.getElementById('register-btn');
+  const result = document.getElementById('register-result');
+  btn.disabled = true;
+  btn.textContent = S.lite.registerLoading;
+  result.textContent = '';
+  result.className = 'register-result';
+
+  try {
+    const uid      = getUserId();
+    const nickname = (document.getElementById('nickname-input')?.value || '').trim();
+    const spirit   = window._topSpirit || 'hei';
+
+    await db.collection('participants').doc(uid).set({
+      userId: uid, email, nickname,
+      spirit, lang: 'en',
+      fcmToken: fcmToken || null,
+      pushEnabled: pushState === 'granted',
+      startDate: firebase.firestore.FieldValue.serverTimestamp(),
+      source: 'lite_en',
+      rank: 'apprentice'
+    }, { merge: true });
+
+    result.textContent = S.lite.registerSuccess;
+    btn.textContent = '✓ Welcome';
+
+    // Redirect to Day 1 after 2 seconds
+    setTimeout(() => {
+      window.location.href = `practice.html?uid=${uid}&day=1`;
+    }, 2000);
+
+  } catch(e) {
+    console.error(e);
+    result.textContent = S.lite.registerError;
+    result.classList.add('error');
+    btn.disabled = false;
+    btn.textContent = S.lite.registerBtn;
+  }
+}
+
+/* ════════════════════════
+   UTIL
+════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function resetAll() {
+  selected.clear();
+  showScreen('s-intro');
+}
+
+initText();
+</script>
+</body>
+</html>

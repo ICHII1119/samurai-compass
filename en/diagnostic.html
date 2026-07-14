@@ -1,0 +1,2311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a1f">
+<title>SAMURAI Compass Diagnostic — Career Development</title>
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="apple-touch-icon" href="../logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init('JiYOgiT7R9hyZ3wVs');</script>
+<style>
+:root {
+  --bg:       #1a1a1f;
+  --bg2:      #222228;
+  --bg3:      #2a2a32;
+  --gold:     #c9a84c;
+  --gold2:    #e8c060;
+  --gold-dim: rgba(201,168,76,.15);
+  --red:      #c04848;
+  --cream:    #f0ece0;
+  --cream2:   #c8b090;
+  --muted:    #7a7060;
+  --border:   rgba(201,168,76,.2);
+  --shadow:   0 6px 28px rgba(0,0,0,.5);
+  --shadow-sm:0 2px 10px rgba(0,0,0,.3);
+  --r:        14px;
+  --r-lg:     22px;
+  --tr:       .28s cubic-bezier(.34,1.2,.64,1);
+  --font:     'Open Sans', -apple-system, sans-serif;
+  --font-b:   'Cormorant Garamond', serif;
+
+  --c-jiko:    #4aaa5a;
+  --c-jiko-bg: rgba(74,170,90,.15);
+  --c-flex:    #4a88d8;
+  --c-flex-bg: rgba(74,136,216,.15);
+  --c-strat:   #e86040;
+  --c-strat-bg:rgba(232,96,64,.15);
+  --c-sei:     #a060e0;
+  --c-sei-bg:  rgba(160,96,224,.15);
+  --c-hei:     #60a0b8;
+  --c-hei-bg:  rgba(96,160,184,.15);
+}
+
+body.admin-mode { background: #ede8de; }
+
+#s-admin-list {
+  --bg:        #ede8de;
+  --bg2:       #e4ddd0;
+  --bg3:       #d8d0c0;
+  --gold:      #8a6818;
+  --gold2:     #a07a20;
+  --gold-dim:  rgba(138,104,24,.13);
+  --red:       #b03030;
+  --cream:     #1c1608;
+  --cream2:    #4a3820;
+  --muted:     #7a6848;
+  --dimmed:    #a09070;
+  --border:    rgba(138,104,24,.25);
+  --shadow:    0 2px 10px rgba(0,0,0,.08);
+  --shadow-sm: 0 1px 5px rgba(0,0,0,.05);
+  --c-jiko:    #2e8a3e;
+  --c-flex:    #2a6ab8;
+  --c-strat:   #c04020;
+  --c-sei:     #7040c0;
+  --c-hei:     #3a80a0;
+  background: var(--bg);
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+html { -webkit-text-size-adjust:100%; font-size:16px; scroll-behavior:smooth }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--cream);
+  min-height: 100vh;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.screen { display:none; position:relative; z-index:1; min-height:100vh }
+.screen.active { display:block; animation: fadeUp .4s cubic-bezier(.16,1,.3,1) both }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+
+#s-intro.active {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding: 2.5rem 1.5rem;
+  min-height: 100vh;
+}
+
+.intro-box {
+  width:100%; max-width:520px;
+  background: linear-gradient(160deg, var(--bg3) 0%, var(--bg2) 100%);
+  border:1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 3rem 2.5rem 2.5rem;
+  box-shadow: var(--shadow), 0 0 60px rgba(201,168,76,.08);
+  position:relative; overflow:hidden;
+  text-align: center;
+}
+.intro-box::before {
+  content:'';
+  position:absolute; top:-1px; left:15%; right:15%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+.intro-title {
+  font-family: var(--font-b);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing:.05em;
+  margin-bottom:.3rem;
+}
+.intro-sub {
+  font-size:.8rem;
+  letter-spacing:.25em;
+  color:var(--muted);
+  margin-bottom:1.8rem;
+}
+.intro-desc {
+  font-size:.95rem;
+  color:var(--cream2);
+  line-height:1.8;
+  margin-bottom:.8rem;
+}
+.intro-step {
+  display:flex; flex-direction:column; gap:.6rem;
+  margin:1.6rem 0 2rem;
+  text-align:left;
+}
+.intro-step-item {
+  display:flex; align-items:flex-start; gap:.8rem;
+  background:var(--gold-dim);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:.7rem 1rem;
+}
+.intro-step-num {
+  font-family:var(--font-b);
+  font-size:1.3rem;
+  color:var(--gold2);
+  font-weight:600;
+  line-height:1;
+  flex-shrink:0;
+  padding-top:.1rem;
+}
+.intro-step-text { font-size:.88rem; color:var(--cream); line-height:1.6 }
+.intro-step-text strong { color:var(--gold) }
+
+.ornament {
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent);
+  margin:1.4rem 0; position:relative;
+}
+.ornament::after {
+  content:'◆';
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  background:var(--bg3); color:var(--gold);
+  padding:0 .6rem; font-size:.5rem;
+}
+
+.btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:.5rem;
+  font-family:var(--font);
+  font-size:.9rem; font-weight:600;
+  letter-spacing:.1em;
+  padding:.85rem 2.2rem;
+  border-radius:50px;
+  border:none; cursor:pointer;
+  transition: var(--tr);
+  text-decoration:none;
+}
+.btn-primary {
+  background:linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
+  color:#fff;
+  box-shadow:0 4px 20px rgba(160,120,40,.3);
+}
+.btn-primary:hover {
+  transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(160,120,40,.4);
+}
+.btn-secondary {
+  background:transparent;
+  color:var(--gold);
+  border:1.5px solid var(--border);
+}
+.btn-secondary:hover {
+  background:var(--gold-dim);
+  transform:translateY(-1px);
+}
+.btn-lg { font-size:1rem; padding:1rem 2.8rem }
+
+#s-cards.active {
+  display:flex; flex-direction:column;
+  padding:0;
+}
+
+.cards-header {
+  position:sticky; top:0; z-index:100;
+  background:rgba(26,26,31,.95);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:.8rem 1.5rem;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem;
+}
+.cards-header-left {
+  display:flex; flex-direction:column;
+}
+.cards-header-title {
+  font-family:var(--font-b);
+  font-size:1.15rem;
+  font-weight:600;
+  color:var(--cream);
+}
+.cards-header-sub {
+  font-size:.72rem;
+  letter-spacing:.15em;
+  color:var(--muted);
+}
+.selection-counter {
+  display:flex; align-items:center; gap:.5rem;
+  flex-shrink:0;
+}
+.counter-label {
+  font-size:.8rem;
+  font-weight:600;
+  color:var(--gold);
+  min-width:3.5rem;
+}
+
+.filter-bar {
+  display:flex; gap:.5rem; align-items:center;
+  padding:.6rem 1.5rem;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  border-bottom:1px solid rgba(160,120,40,.1);
+  background:var(--bg);
+}
+.filter-bar::-webkit-scrollbar { display:none }
+.filter-btn {
+  flex-shrink:0;
+  font-size:.75rem;
+  font-weight:600;
+  letter-spacing:.05em;
+  padding:.4rem .9rem;
+  border-radius:20px;
+  border:1.5px solid var(--border);
+  background:transparent;
+  color:var(--cream2);
+  cursor:pointer;
+  transition:.18s ease;
+  white-space:nowrap;
+}
+.filter-btn:hover { background:var(--gold-dim) }
+.filter-btn.active { color:#fff; border-color:transparent; }
+.filter-btn[data-spirit="all"].active  { background:var(--gold) }
+.filter-btn[data-spirit="jiko"].active  { background:var(--c-jiko) }
+.filter-btn[data-spirit="flex"].active  { background:var(--c-flex) }
+.filter-btn[data-spirit="strat"].active { background:var(--c-strat) }
+.filter-btn[data-spirit="sei"].active   { background:var(--c-sei) }
+.filter-btn[data-spirit="hei"].active   { background:var(--c-hei) }
+
+.cards-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap:1rem;
+  padding:1.2rem 1.5rem 2rem;
+  flex:1;
+}
+
+.challenge-card {
+  background:var(--bg3);
+  border:1.5px solid var(--border);
+  border-radius:var(--r);
+  padding:1rem 1.1rem 1rem;
+  cursor:pointer;
+  transition:var(--tr);
+  position:relative;
+  overflow:hidden;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.challenge-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0;
+  height:3px;
+  opacity:.6;
+  transition:.2s;
+}
+.challenge-card[data-spirit="jiko"]::before  { background:var(--c-jiko) }
+.challenge-card[data-spirit="flex"]::before  { background:var(--c-flex) }
+.challenge-card[data-spirit="strat"]::before { background:var(--c-strat) }
+.challenge-card[data-spirit="sei"]::before   { background:var(--c-sei) }
+.challenge-card[data-spirit="hei"]::before   { background:var(--c-hei) }
+
+.challenge-card:hover:not(.disabled) {
+  transform:translateY(-3px);
+  box-shadow:var(--shadow);
+}
+.challenge-card.selected {
+  border-width:2px;
+  box-shadow:0 0 0 3px rgba(160,120,40,.2), var(--shadow);
+}
+.challenge-card[data-spirit="jiko"].selected  { border-color:var(--c-jiko);  box-shadow:0 0 0 3px rgba(45,122,58,.15),var(--shadow) }
+.challenge-card[data-spirit="flex"].selected  { border-color:var(--c-flex);  box-shadow:0 0 0 3px rgba(37,99,168,.15),var(--shadow) }
+.challenge-card[data-spirit="strat"].selected { border-color:var(--c-strat); box-shadow:0 0 0 3px rgba(201,74,32,.15),var(--shadow) }
+.challenge-card[data-spirit="sei"].selected   { border-color:var(--c-sei);   box-shadow:0 0 0 3px rgba(123,59,181,.15),var(--shadow) }
+.challenge-card[data-spirit="hei"].selected   { border-color:var(--c-hei);   box-shadow:0 0 0 3px rgba(74,122,138,.15),var(--shadow) }
+
+.challenge-card.disabled:not(.selected) { opacity:.4; cursor:not-allowed; }
+
+.card-top {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:.5rem;
+}
+.card-num { font-family:var(--font-b); font-size:.8rem; color:var(--muted); font-weight:500; }
+.card-spirit-badge {
+  font-size:.68rem; font-weight:600;
+  padding:.18rem .55rem; border-radius:20px;
+  letter-spacing:.03em;
+  display:flex; align-items:center; gap:.25rem;
+}
+.card-spirit-badge .emoji { font-size:.8rem }
+.challenge-card[data-spirit="jiko"]  .card-spirit-badge { background:var(--c-jiko-bg);  color:var(--c-jiko) }
+.challenge-card[data-spirit="flex"]  .card-spirit-badge { background:var(--c-flex-bg);  color:var(--c-flex) }
+.challenge-card[data-spirit="strat"] .card-spirit-badge { background:var(--c-strat-bg); color:var(--c-strat) }
+.challenge-card[data-spirit="sei"]   .card-spirit-badge { background:var(--c-sei-bg);   color:var(--c-sei) }
+.challenge-card[data-spirit="hei"]   .card-spirit-badge { background:var(--c-hei-bg);   color:var(--c-hei) }
+
+.card-ja { font-size:.88rem; color:var(--cream); line-height:1.65; margin-bottom:.45rem; }
+.card-en { font-size:.72rem; color:var(--muted); line-height:1.5; }
+.card-skill { margin-top:.5rem; font-size:.7rem; font-weight:600; letter-spacing:.08em; color:var(--muted); }
+
+.card-check {
+  position:absolute; top:.7rem; right:.7rem;
+  width:22px; height:22px; border-radius:50%;
+  background:var(--gold);
+  display:none; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(160,120,40,.4);
+}
+.card-check svg { width:12px; height:12px }
+.challenge-card.selected .card-check { display:flex }
+
+.action-bar {
+  position:sticky; bottom:0;
+  background:rgba(26,26,31,.95);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  padding:1rem 1.5rem;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem;
+}
+.action-bar-hint { font-size:.82rem; color:var(--muted); }
+.action-bar-hint strong { color:var(--gold) }
+
+#s-result { padding: 1.5rem; max-width:780px; margin:0 auto; }
+#s-result.active { display:block }
+
+.result-header { text-align:center; padding:2rem 0 1.5rem; }
+.result-header h2 { font-family:var(--font-b); font-size:1.9rem; font-weight:600; color:var(--cream); margin-bottom:.3rem; }
+.result-header p { font-size:.85rem; color:var(--muted); letter-spacing:.15em; }
+
+.selected-recap { display:grid; grid-template-columns:repeat(3, 1fr); gap:.8rem; margin-bottom:2rem; }
+.recap-card {
+  background:#f5f0e6; border:1.5px solid rgba(154,117,32,.3);
+  border-radius:var(--r); padding:.9rem; position:relative; overflow:hidden;
+}
+.recap-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.recap-card[data-spirit="jiko"]::before  { background:var(--c-jiko) }
+.recap-card[data-spirit="flex"]::before  { background:var(--c-flex) }
+.recap-card[data-spirit="strat"]::before { background:var(--c-strat) }
+.recap-card[data-spirit="sei"]::before   { background:var(--c-sei) }
+.recap-card[data-spirit="hei"]::before   { background:var(--c-hei) }
+.recap-num { font-size:.72rem; color:#7a6840; margin-bottom:.3rem }
+.recap-ja  { font-size:.82rem; color:#2a1f10; line-height:1.6 }
+.recap-skill { margin-top:.5rem; font-size:.68rem; font-weight:600; letter-spacing:.07em; }
+.recap-card[data-spirit="jiko"]  .recap-skill { color:var(--c-jiko) }
+.recap-card[data-spirit="flex"]  .recap-skill { color:var(--c-flex) }
+.recap-card[data-spirit="strat"] .recap-skill { color:var(--c-strat) }
+.recap-card[data-spirit="sei"]   .recap-skill { color:var(--c-sei) }
+.recap-card[data-spirit="hei"]   .recap-skill { color:var(--c-hei) }
+
+.pentagon-section {
+  background:#f5f0e6; border:1px solid rgba(154,117,32,.3);
+  border-radius:var(--r-lg); padding:2rem 1.5rem; margin-bottom:1.5rem; text-align:center;
+}
+.pentagon-section h3 { font-family:var(--font-b); font-size:1.2rem; font-weight:600; color:#2a1f10; margin-bottom:.3rem; }
+.pentagon-section .penta-sub { font-size:.78rem; color:#7a6840; margin-bottom:1.5rem; }
+.pentagon-wrap { display:flex; align-items:center; justify-content:center; gap:2rem; flex-wrap:wrap; }
+#pentagon-svg { width:min(280px, 90vw); height:min(280px, 90vw); flex-shrink:0; }
+.pentagon-legend { display:flex; flex-direction:column; gap:.6rem; text-align:left; min-width:180px; }
+.legend-item { display:flex; align-items:center; gap:.6rem; padding:.5rem .8rem; border-radius:8px; transition:.2s; }
+.legend-item.highlight { background:rgba(154,117,32,.12); border:1px solid rgba(154,117,32,.3); }
+.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.legend-name { font-size:.82rem; color:#2a1f10; line-height:1.4 }
+.legend-count { margin-left:auto; font-size:.75rem; font-weight:700; min-width:20px; }
+
+.focus-section {
+  border-radius:var(--r-lg); padding:2rem 1.8rem; margin-bottom:1.5rem;
+  position:relative; overflow:hidden;
+}
+.focus-section::before {
+  content:''; position:absolute; top:-1px; left:15%; right:15%;
+  height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.focus-label { font-size:.72rem; letter-spacing:.25em; color:#7a6840; margin-bottom:.5rem; }
+.focus-primary-spirit { font-family:var(--font-b); font-size:2.4rem; font-weight:600; line-height:1.15; margin-bottom:.3rem; }
+.focus-primary-spirit .spirit-en { font-size:1rem; font-weight:400; color:var(--muted); display:block; letter-spacing:.15em; font-family:var(--font); margin-top:.15rem; }
+.focus-skill-row { display:flex; gap:.6rem; flex-wrap:wrap; margin:1rem 0; }
+.focus-skill-tag { font-size:.8rem; font-weight:600; letter-spacing:.1em; padding:.35rem .9rem; border-radius:20px; border:2px solid currentColor; }
+.focus-message { font-size:.92rem; color:#3a2a1a; line-height:1.8; margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,.1); }
+
+.focus-spirit-jiko  { background:#eef7f0; color:var(--c-jiko);  border:1px solid rgba(74,170,90,.3) }
+.focus-spirit-flex  { background:#eef2fa; color:var(--c-flex);  border:1px solid rgba(74,136,216,.3) }
+.focus-spirit-strat { background:#fdf0ec; color:var(--c-strat); border:1px solid rgba(232,96,64,.3) }
+.focus-spirit-sei   { background:#f5eefa; color:var(--c-sei);   border:1px solid rgba(160,96,224,.3) }
+.focus-spirit-hei   { background:#eef5f8; color:var(--c-hei);   border:1px solid rgba(96,160,184,.3) }
+
+.multi-focus { background:#f5f0e6; border:1px solid rgba(154,117,32,.3); border-radius:var(--r-lg); padding:1.8rem; margin-bottom:1.5rem; }
+.multi-focus h3 { font-family:var(--font-b); font-size:1.2rem; font-weight:600; color:#2a1f10; margin-bottom:1rem; }
+.multi-spirit-list { display:flex; flex-direction:column; gap:.7rem; }
+.multi-spirit-item { display:flex; align-items:center; gap:1rem; padding:.9rem 1.1rem; background:rgba(255,255,255,.6); border-radius:10px; border:1px solid rgba(154,117,32,.2); }
+.multi-spirit-icon { font-size:1.5rem }
+.multi-spirit-info { flex:1 }
+.multi-spirit-name { font-weight:600; font-size:.9rem; color:#2a1f10 }
+.multi-spirit-skill { font-size:.75rem; color:#7a6840; margin-top:.15rem }
+
+.result-actions { display:flex; gap:.8rem; justify-content:center; flex-wrap:wrap; padding:1rem 0 2.5rem; }
+
+@media (max-width: 600px) {
+  .cards-grid { grid-template-columns:1fr 1fr; gap:.7rem; padding:.8rem }
+  .selected-recap { grid-template-columns:1fr }
+  .pentagon-wrap { flex-direction:column; gap:1.2rem }
+  .intro-box { padding:2rem 1.5rem }
+  .intro-title { font-size:1.6rem }
+  .result-header h2 { font-size:1.5rem }
+  .focus-primary-spirit { font-size:1.9rem }
+  .cards-header { padding:.7rem 1rem }
+  .cards-grid { padding:.8rem 1rem 5rem }
+}
+@media (max-width: 400px) {
+  .cards-grid { grid-template-columns:1fr }
+}
+
+#s-profile.active {
+  display:flex; flex-direction:column;
+  align-items:center;
+  padding: 3rem 1.5rem 5rem;
+  min-height: 100vh;
+}
+.profile-header { text-align:center; margin-bottom: 2rem; max-width: 560px; width: 100%; }
+.profile-header h2 { font-family: var(--font-b); font-size: 1.9rem; font-weight: 600; color: var(--cream); margin-bottom: .4rem; }
+.profile-header p { font-size: .8rem; letter-spacing: .18em; color: var(--muted); }
+.profile-questions { display: flex; flex-direction: column; gap: 1.5rem; max-width: 560px; width: 100%; }
+.profile-question {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 1.3rem 1.4rem;
+  box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+}
+.profile-question::before {
+  content:''; position:absolute; top:-1px; left:15%; right:15%;
+  height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.profile-question-label { font-size: .7rem; letter-spacing: .2em; color: var(--muted); margin-bottom: .25rem; }
+.profile-question-text { font-size: .98rem; font-weight: 600; color: var(--cream); margin-bottom: 1rem; }
+.profile-options { display: flex; flex-wrap: wrap; gap: .5rem; }
+.profile-option {
+  padding: .5rem 1rem; border: 1.5px solid var(--border); border-radius: 100px;
+  font-size: .84rem; font-weight: 500; color: var(--cream2); background: transparent;
+  cursor: pointer; transition: all .2s ease; user-select: none;
+}
+.profile-option:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+.profile-option.selected { border-color: var(--gold2); background: var(--gold-dim); color: var(--gold); font-weight: 600; box-shadow: 0 0 0 3px rgba(160,120,40,.1); }
+.btn-skip-life {
+  background: transparent; border: 1px dashed var(--border); color: var(--muted);
+  font-size: .78rem; padding: .38rem 1.1rem; border-radius: 100px;
+  cursor: pointer; transition: all .2s; margin-top: .3rem;
+}
+.btn-skip-life:hover, .btn-skip-life.active { border-color: var(--muted); color: var(--cream2); }
+.life-skip-warning {
+  display: none; font-size: .77rem; color: var(--muted); margin-top: .55rem;
+  padding: .45rem .8rem; background: rgba(160,120,40,.06);
+  border-left: 2px solid rgba(160,120,40,.3); border-radius: 0 4px 4px 0; line-height: 1.5;
+}
+.profile-text-input {
+  width: 100%; padding: .65rem 1rem; background: var(--bg2);
+  border: 1.5px solid var(--border); border-radius: var(--r);
+  font-size: .95rem; color: var(--cream); font-family: var(--font); outline: none; transition: border-color .2s;
+}
+.profile-text-input:focus { border-color: var(--gold) }
+.profile-text-input::placeholder { color: var(--muted) }
+.profile-proceed { margin-top: 2rem; max-width: 560px; width: 100%; text-align: center; }
+
+.admin-row {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 1rem 1.2rem; margin-bottom: .6rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all .2s; box-shadow: var(--shadow-sm);
+}
+.admin-row:hover { border-color: var(--gold); box-shadow: var(--shadow); transform: translateX(3px); }
+.admin-pin-input {
+  width:100%; padding:.75rem 1rem; border:1.5px solid var(--border);
+  border-radius:var(--r); font-size:1.1rem; letter-spacing:.3em;
+  background:var(--bg2); color:var(--cream); outline:none; transition:border-color .2s; text-align:center;
+}
+.admin-pin-input:focus { border-color:var(--gold) }
+
+.logo-img {
+  display:block; margin:0 auto;
+  -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 44%, black 52%, transparent 80%);
+  mask-image:         radial-gradient(ellipse 88% 82% at 50% 44%, black 52%, transparent 80%);
+  pointer-events:none;
+}
+.logo-lg  { width:240px; }
+.logo-md  { width:140px; }
+.logo-sm  { width:100px; }
+
+.hidden { display:none !important }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: INTRO -->
+<section id="s-intro" class="screen active">
+  <div class="intro-box">
+    <div class="logo-area" style="margin-bottom:.6rem">
+      <img src="../logo.png" alt="SAMURAI in You" class="logo-img logo-lg">
+    </div>
+    <div class="intro-title">Compass Diagnostic</div>
+    <div class="ornament"></div>
+    <p class="intro-desc" style="text-align:left">
+      SAMURAI COMPASS reveals which Spirits and Skills are most activated in you right now, based on the challenges you face today — grounded in the teachings of the samurai.
+    </p>
+    <div class="intro-step">
+      <div class="intro-step-item">
+        <span class="intro-step-num">1</span>
+        <span class="intro-step-text">Enter your nickname and email address.</span>
+      </div>
+      <div class="intro-step-item">
+        <span class="intro-step-num">2</span>
+        <span class="intro-step-text">From <strong>54 Challenge Cards</strong>, select all that apply to you right now.</span>
+      </div>
+      <div class="intro-step-item">
+        <span class="intro-step-num">3</span>
+        <span class="intro-step-text">When finished, press the <strong>Submit</strong> button at the bottom right.</span>
+      </div>
+      <div class="intro-step-item">
+        <span class="intro-step-num">4</span>
+        <span class="intro-step-text">Based on your selections, your <strong>facilitator</strong> will share your diagnostic results with you.</span>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="showCards()">Begin →</button>
+    <div style="margin-top:1.8rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <a href="#" onclick="event.preventDefault();showScreen('s-admin-login')"
+         style="font-size:.7rem;letter-spacing:.1em;color:var(--muted);text-decoration:none;opacity:.6">
+        Administrator login
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 2: PROFILE -->
+<section id="s-profile" class="screen">
+  <div class="profile-header">
+    <img src="../logo.png" alt="SAMURAI in You" class="logo-img logo-md" style="margin-bottom:.6rem">
+    <h2>Tell us about yourself</h2>
+    <p>CONTEXT — 3 QUESTIONS</p>
+    <p style="font-size:.85rem;color:var(--cream2);margin-top:.5rem">Please answer all three questions</p>
+  </div>
+
+  <div class="profile-questions">
+
+    <div class="profile-question">
+      <div class="profile-question-label">YOUR NAME</div>
+      <div class="profile-question-text" style="margin-bottom:.7rem">Enter your nickname</div>
+      <input type="text" class="profile-text-input" id="input-nickname" placeholder="e.g. Alex" oninput="updateTextProfile()" maxlength="30">
+    </div>
+
+    <div class="profile-question">
+      <div class="profile-question-label">EMAIL</div>
+      <div class="profile-question-text" style="margin-bottom:.7rem">Enter your email address</div>
+      <input type="email" class="profile-text-input" id="input-email" placeholder="your@email.com" oninput="updateTextProfile()" maxlength="80">
+    </div>
+
+    <div class="profile-question">
+      <div class="profile-question-label">Q1 · ROLE</div>
+      <div class="profile-question-text">What is your current role?</div>
+      <div class="profile-options" id="profile-role">
+        <div class="profile-option" onclick="selectProfile('role','individual',this)">Individual Contributor</div>
+        <div class="profile-option" onclick="selectProfile('role','leader',this)">Team Lead / Manager</div>
+        <div class="profile-option" onclick="selectProfile('role','executive',this)">Executive / Entrepreneur</div>
+        <div class="profile-option" onclick="selectProfile('role','none',this)">Other / Not applicable</div>
+      </div>
+    </div>
+
+    <div class="profile-question">
+      <div class="profile-question-label">Q2 · LIFE STAGE</div>
+      <div class="profile-question-text">Select all that apply to your current life situation (multiple OK)</div>
+      <div class="profile-options" id="profile-life">
+        <div class="profile-option" onclick="toggleLife('childcare',this)">Raising children</div>
+        <div class="profile-option" onclick="toggleLife('caregiving',this)">Caregiving</div>
+        <div class="profile-option" onclick="toggleLife('student',this)">Student</div>
+        <div class="profile-option" onclick="toggleLife('career_change',this)">Recent job / role change</div>
+        <div class="profile-option" onclick="toggleLife('independent',this)">Considering going independent</div>
+        <div class="profile-option" onclick="toggleLife('away',this)">Living apart from family</div>
+        <div class="profile-option" onclick="toggleLife('illness',this)">Managing illness (self or family)</div>
+      </div>
+      <div style="margin-top:.7rem">
+        <button class="btn-skip-life" id="btn-skip-life" onclick="skipLife(this)">Skip this question</button>
+      </div>
+      <div class="life-skip-warning" id="life-skip-warning">
+        Note: Skipping Q2 will reduce the accuracy of your personalized diagnostic message.
+      </div>
+    </div>
+
+    <div class="profile-question">
+      <div class="profile-question-label">Q3 · URGENCY</div>
+      <div class="profile-question-text">What is your intended timeline?</div>
+      <div class="profile-options" id="profile-urgency">
+        <div class="profile-option" onclick="selectProfile('urgency','now',this)">I want to start now</div>
+        <div class="profile-option" onclick="selectProfile('urgency','longterm',this)">I prefer a long-term approach</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="profile-proceed">
+    <button class="btn btn-primary btn-lg" id="profile-proceed-btn" onclick="startDiagnostic()" disabled
+            style="opacity:.4;cursor:not-allowed">
+      Choose Cards →
+    </button>
+    <div style="font-size:.78rem;color:var(--muted);margin-top:.7rem;min-height:1.2em" id="profile-proceed-hint"></div>
+  </div>
+</section>
+
+<!-- SCREEN 3: CARD SELECTION -->
+<section id="s-cards" class="screen">
+  <div class="cards-header">
+    <div class="cards-header-left">
+      <div class="cards-header-title">Challenge Cards</div>
+      <div class="cards-header-sub">CAREER DEVELOPMENT · 54 CARDS</div>
+    </div>
+    <div class="selection-counter">
+      <div class="counter-label" id="counter-label" style="font-size:.85rem;font-weight:600;color:var(--gold)">0 selected</div>
+    </div>
+  </div>
+
+  <div class="cards-grid" id="cards-grid"></div>
+
+  <div class="action-bar">
+    <div class="action-bar-hint" id="action-hint">Select <strong>all cards</strong> that apply to you</div>
+    <button class="btn btn-primary" id="result-btn" onclick="submitResponse()" disabled
+            style="opacity:.4;cursor:not-allowed">
+      Submit
+    </button>
+  </div>
+</section>
+
+<!-- SCREEN: RESULT -->
+<section id="s-result" class="screen">
+  <div class="result-header">
+    <h2>Your Compass Focus</h2>
+    <p>PENTAGON COMPASS ANALYSIS</p>
+  </div>
+
+  <div id="profile-badge" style="display:none;text-align:center;padding:.2rem 1rem 0"></div>
+
+  <div class="selected-recap" id="selected-recap"></div>
+
+  <div class="pentagon-section">
+    <h3>Pentagon Compass — Spirit Distribution</h3>
+    <p class="penta-sub" id="penta-sub-text">Spirit distribution from your selected cards</p>
+    <div class="pentagon-wrap">
+      <svg id="pentagon-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="pentagon-legend" id="pentagon-legend"></div>
+    </div>
+  </div>
+
+  <div class="pentagon-section" id="skill-chart-section">
+    <h3>Skill Distribution</h3>
+    <p class="penta-sub" id="skill-sub-text">10 Skills breakdown from your selected cards</p>
+    <div id="skill-chart"></div>
+  </div>
+
+  <div id="focus-section-container"></div>
+
+  <div class="result-actions" id="result-actions-admin">
+    <button class="btn btn-secondary" onclick="backToAdminList()">← Back to list</button>
+  </div>
+</section>
+
+<!-- SCREEN: COMPLETE -->
+<section id="s-complete" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center">
+    <div style="max-width:460px;width:100%">
+      <img src="../logo.png" alt="SAMURAI in You" class="logo-img logo-md" style="margin-bottom:.4rem">
+      <h2 style="font-family:var(--font-b);font-size:2rem;font-weight:600;color:var(--cream);margin-bottom:.8rem">
+        Thank you for completing the diagnostic
+      </h2>
+      <div style="width:50px;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:.8rem auto 1.2rem"></div>
+      <p style="color:var(--cream2);line-height:1.9;margin-bottom:2rem">
+        Your card selection is complete.<br>
+        Your facilitator will review your results<br>and share personalized feedback with you.
+      </p>
+      <p style="font-size:.82rem;color:var(--muted);font-style:italic">
+        — Your practice begins today —
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN: ADMIN LOGIN -->
+<section id="s-admin-login" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem">
+    <div style="max-width:380px;width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-lg);padding:2.5rem 2rem;box-shadow:var(--shadow);position:relative;overflow:hidden">
+      <div style="position:absolute;top:-1px;left:20%;right:20%;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)"></div>
+      <div style="text-align:center;margin-bottom:1.8rem">
+        <div style="font-size:.68rem;letter-spacing:.25em;color:var(--muted);margin-bottom:.4rem">ADMINISTRATOR</div>
+        <h2 style="font-family:var(--font-b);font-size:1.7rem;font-weight:600">Administrator Login</h2>
+      </div>
+      <div style="margin-bottom:1.2rem">
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:.5rem;letter-spacing:.1em">PIN Code</label>
+        <input id="admin-pin-input" class="admin-pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••"
+          onkeydown="if(event.key==='Enter')checkAdminPin()">
+        <div id="admin-pin-error" style="font-size:.76rem;color:var(--red);margin-top:.4rem;min-height:1.2em"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:.8rem" onclick="checkAdminPin()">Log In</button>
+      <div style="text-align:center;margin-top:1rem">
+        <a href="#" onclick="event.preventDefault();showScreen('s-intro')"
+           style="font-size:.72rem;color:var(--muted);text-decoration:none">← Back to participant screen</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN: ADMIN LIST -->
+<section id="s-admin-list" class="screen">
+  <div style="max-width:660px;margin:0 auto;padding:2rem 1.5rem 4rem">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.8rem">
+      <div>
+        <div style="font-size:.68rem;letter-spacing:.22em;color:var(--muted)">ADMINISTRATOR</div>
+        <h2 style="font-family:var(--font-b);font-size:1.8rem;font-weight:600;color:var(--cream)">Admin Panel</h2>
+      </div>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <span id="admin-count" style="font-size:.8rem;color:var(--muted);padding:.3rem .7rem;border-radius:100px;background:var(--bg2)">0</span>
+        <button class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem" onclick="refreshAdmin()">🔄 Refresh</button>
+        <button id="btn-select-mode" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;display:none" onclick="toggleSelectMode()">Select</button>
+        <button id="btn-delete-selected" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;color:var(--red);border-color:rgba(139,40,40,.3);display:none" onclick="deleteSelected()">Delete Selected (<span id="sel-count">0</span>)</button>
+        <button id="btn-all-delete" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;color:var(--red);border-color:rgba(139,40,40,.3)" onclick="clearAdminData()">Delete All</button>
+      </div>
+    </div>
+    <!-- Musashi BOT API Key Banner -->
+    <div id="musashi-key-banner" style="display:none;margin-bottom:1rem;padding:.8rem 1rem;background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.3);border-radius:var(--r)">
+      <div style="font-size:.75rem;color:var(--gold);margin-bottom:.5rem">⚔️ Musashi BOT — Set Anthropic API Key</div>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <input id="musashi-api-key-input" type="password" placeholder="sk-ant-..." autocomplete="off"
+          style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;font-family:monospace">
+        <button onclick="saveMusashiKey()" style="flex-shrink:0;padding:.4rem .8rem;border-radius:6px;background:var(--gold-dim);border:1px solid rgba(201,168,76,.4);color:var(--gold);font-size:.78rem;cursor:pointer">Save</button>
+        <button id="musashi-key-clear" onclick="clearMusashiKey()" style="flex-shrink:0;padding:.4rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer;display:none">Remove</button>
+      </div>
+      <div id="musashi-key-status" style="font-size:.7rem;color:var(--muted);margin-top:.4rem"></div>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex;gap:.4rem;margin-bottom:1.2rem;border-bottom:1px solid var(--border);padding-bottom:.6rem;flex-wrap:wrap">
+      <button id="tab-dash" onclick="switchAdminTab('dash')"
+        style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
+        Overview
+      </button>
+      <button id="tab-lite" onclick="switchAdminTab('lite')"
+        style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--gold);background:var(--gold-dim);color:var(--gold);cursor:pointer;font-weight:600">
+        Participants
+      </button>
+      <button id="tab-practice" onclick="switchAdminTab('practice')"
+        style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
+        Reflections
+      </button>
+      <button id="tab-diag" onclick="switchAdminTab('diag')"
+        style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
+        Dojo Records
+      </button>
+    </div>
+    <div id="admin-dash-body" style="display:none"></div>
+    <div id="admin-lite-body"></div>
+    <div id="admin-list-body" style="display:none">
+      <div style="text-align:center;padding:3rem;color:var(--muted)">Loading...</div>
+    </div>
+    <div id="admin-practice-body" style="display:none"></div>
+  </div>
+</section>
+
+<script>
+/* ════════════════════════════════════
+   FIREBASE
+════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyC1qm7kUjSRk7QRwxK-W7bH1q-pqH3lklU",
+  authDomain: "samurai-compass.firebaseapp.com",
+  projectId: "samurai-compass",
+  storageBucket: "samurai-compass.firebasestorage.app",
+  messagingSenderId: "502771859953",
+  appId: "1:502771859953:web:89e801832fdd42c6cb0450"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ════════════════════════════════════
+   DATA — 54 CHALLENGE CARDS
+════════════════════════════════════ */
+const SPIRITS = {
+  jiko:  { name:'🌿 Self-Cultivation',   en:'SELF-CULTIVATION',   color:'#2d7a3a', bg:'rgba(45,122,58,.12)' },
+  flex:  { name:'🐦 Adaptability',       en:'ADAPTABILITY',        color:'#2563a8', bg:'rgba(37,99,168,.12)' },
+  strat: { name:'🔥 Strategic Thinking', en:'STRATEGIC THINKING',  color:'#c94a20', bg:'rgba(201,74,32,.12)' },
+  sei:   { name:'🌀 Integrity',          en:'INTEGRITY',           color:'#7b3bb5', bg:'rgba(123,59,181,.12)' },
+  hei:   { name:'☁️ Equanimity',         en:'EQUANIMITY',          color:'#4a7a8a', bg:'rgba(74,122,138,.12)' },
+};
+
+const SPIRIT_MESSAGES = {
+  hei: {
+    focus: 'Equanimity — 平常心',
+    message: 'What you are confronting most right now is <strong>inner stability and self-awareness</strong>.\nThe practice: not to be swept away by emotional waves, but to hold your axis even under pressure — that is Equanimity.\nBegin by observing your situation objectively and working to balance mind and body.'
+  },
+  jiko: {
+    focus: 'Self-Cultivation — 自己鍛錬',
+    message: 'What you are confronting most right now is <strong>personal growth and the unfolding of your potential</strong>.\nNurturing your qualities, sustaining your motivation, becoming your own teacher — that is Self-Cultivation.\nTrust yourself, and cherish the small daily accumulation.'
+  },
+  flex: {
+    focus: 'Adaptability — 柔軟な適応力',
+    message: 'What you are confronting most right now is <strong>adapting to change and acting with efficiency</strong>.\nReleasing fixed ideas and responding to new situations with suppleness — that is the training of "mu-kamae."\nCultivate the courage to change your form, and the wisdom to maximize your resources.'
+  },
+  strat: {
+    focus: 'Strategic Thinking — 戦略的思考',
+    message: 'What you are confronting most right now is <strong>judgment and the ability to see the whole room</strong>.\nNot the immediate move, but observing the whole and acting at the optimal moment — that is "kan-ken" and "utsu to ataru."\nSharpen your power to organize information and perceive the essential truth.'
+  },
+  sei: {
+    focus: 'Integrity — 誠実さ',
+    message: 'What you are confronting most right now is <strong>balance between relationships and rhythm</strong>.\nBringing sincere harmony to work, family, and self — all at once — that is the training of "in-yō no ashi" and "hyōshi."\nSincere engagement with each role brings deep trust and lasting stability.'
+  },
+};
+
+const CARDS = [
+  {id:1,  ja:'仕事と生活のバランスを大切にしながら、自分にとってのキャリアの成功を模索している。', en:"Struggling to define career success while maintaining work-life balance", spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:2,  ja:'キャリアの次のステップをどう考えるべきか悩んでいる。', en:"Struggling to define what's next in their career", spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:3,  ja:'職場のプレッシャーや心の疲れを感じている。', en:'Struggling with workplace pressure and mental fatigue', spirit:'hei',  skill:'PSYCHOSOMATIC', skillJa:'心身一如'},
+  {id:4,  ja:'育児や介護と仕事の両立に負担を感じている。', en:'Struggling with the overwhelming demands of childcare/caregiving and work', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:5,  ja:'仕事が忙しく、新しいスキルを学ぶ時間を確保するのが難しいと感じている。', en:'Struggling to find time to learn new skills due to work demands', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+  {id:6,  ja:'変化の激しい業界の中で、自分のスキルや知識をアップデートし続けることに不安を感じている。', en:'Struggling to stay relevant in a rapidly changing industry', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:7,  ja:'自分に自信が持てなかったり、「自分にはふさわしくないのでは」と感じたりすることがある。', en:'Struggling with imposter syndrome or self-doubt', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:8,  ja:'困難な状況の中で、やる気を保つのが難しいと感じることがある。', en:'Struggling with motivation during challenging times', spirit:'jiko', skill:'ATTUNEMENT', skillJa:'嗜む'},
+  {id:9,  ja:'職場の人間関係や同僚との衝突に悩むことがある。', en:'Struggling with difficult colleagues or workplace conflicts', spirit:'sei',  skill:'TIMING', skillJa:'拍子'},
+  {id:10, ja:'職場のストレスや疲れがたまってつらいと感じることがある。', en:'Struggling with workplace stress and burnout', spirit:'hei',  skill:'PSYCHOSOMATIC', skillJa:'心身一如'},
+  {id:11, ja:'仕事の責任が増える中で、チームワークをうまく保つのが難しいと感じている。', en:'Struggling to maintain team collaboration while increasing job responsibilities', spirit:'strat', skill:'PERSPECTIVE', skillJa:'観見'},
+  {id:12, ja:'業界の最新の動向についていけているか、不安に感じている。', en:'Feeling uncertain about whether they are staying updated with industry trends', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:13, ja:'毎日の仕事に意味を感じられず、なんとなく違和感を覚えている。', en:'Feeling disconnected from the meaning of daily work', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:14, ja:'考え方が固定されてしまい、新しい発想が浮かばないと感じている。', en:'Feeling stuck in conventional thinking', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:15, ja:'仕事を優先しなければならず、プライベートな人間関係がおろそかになっていると感じている。', en:'Feeling pressure to prioritize work over personal relationships', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:16, ja:'パートナーとの家事の負担が公平でないと感じている。', en:'Feeling an unequal distribution of household responsibilities between partners', spirit:'sei',  skill:'TIMING', skillJa:'拍子'},
+  {id:17, ja:'仕事が忙しく、子どもや家族とのつながりが薄れていると感じている。', en:'Feeling disconnected from their children or family due to work commitments', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:18, ja:'職場で自分の価値が認められていない、評価されていないと感じている。', en:'Feeling undervalued or unrecognized at work', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:19, ja:'休憩や休みを取ると罪悪感を感じてしまう。', en:'Feeling guilty when taking breaks or time off', spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:20, ja:'自分のキャリア目標と会社の期待との間で悩んでいる。', en:'Feeling torn between personal career goals and company expectations', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:21, ja:'決められたキャリアの道から抜け出せず、行き詰まりを感じている。', en:'Feeling stuck in a rigid career path', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:22, ja:'常に責任に追われて、圧倒されていると感じている。', en:'Feeling overwhelmed by responsibilities constantly', spirit:'hei',  skill:'PSYCHOSOMATIC', skillJa:'心身一如'},
+  {id:23, ja:'学びに投資したいが、時間が取れないと感じている。', en:'Wanting to invest in learning but lacking time', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+  {id:24, ja:'家族を大切にしながらも、キャリアを前に進めていきたいと考えている。', en:'Wanting to prioritize family while continuing to advance in their career', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:25, ja:'資格を取得したいが、勉強の時間を確保できずにいる。', en:'Wanting to earn professional certifications but unable to allocate study time', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+  {id:26, ja:'家族ともっと過ごしたいが、仕事の時間を減らせずにいる。', en:'Wanting to spend more time with family but unable to reduce work hours', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:27, ja:'従来のキャリアの枠を超えたいが、どうすればよいかわからない。', en:'Wanting to break free from traditional career paths but unsure how', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:28, ja:'仕事と生活のバランスを大切にするメンターやロールモデルを探しているが、なかなか見つからない。', en:'Wanting mentors with work-life balance values but finding none', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:29, ja:'会社や現在の役職を離れたいと思っているが、踏み出せずに迷っている。', en:'Wanting to leave a company or role but feeling hesitant', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:30, ja:'語学力を向上させたいが、実践する機会が少ないと感じている。', en:'Wanting to improve language skills but lacking practical opportunities', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+  {id:31, ja:'仕事と生活のバランスをもっと調和させたいと考えている。', en:'Wanting better work-life integration', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:32, ja:'仕事と生活のバランスを取りながら、効果的に学ぶ方法を探している。', en:'Wanting effective ways to study while managing work-life balance', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+  {id:33, ja:'家庭の責任があるためフルタイムで働くのが難しく、もっと柔軟な働き方を求めている。', en:'Wanting more flexibility in their job but challenged by family responsibilities', spirit:'sei',  skill:'TIMING', skillJa:'拍子'},
+  {id:34, ja:'将来の不確実性のため、キャリアの決断が難しいと感じている。', en:'Difficulty making career decisions due to uncertainty', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:35, ja:'リーダーとして自分の意見や考えをうまく主張するのが難しいと感じている。', en:'Difficulty asserting oneself in leadership roles', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:36, ja:'同僚との効果的なコミュニケーションを維持するのが難しいと感じている。', en:'Difficulty maintaining effective communication with colleagues', spirit:'sei',  skill:'TIMING', skillJa:'拍子'},
+  {id:37, ja:'勤務時間外でも仕事のことを切り離せずにいる。', en:'Difficulty detaching from work after hours', spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:38, ja:'キャリアの変更や新しい挑戦への不安を乗り越えるのが難しいと感じている。', en:'Difficult to overcome the fear of career change or taking risks', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:39, ja:'金銭的な不安があり、自己成長のための投資が難しいと感じている。', en:'Difficult to invest in self-development due to financial concerns', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:40, ja:'効果的なストレス解消法を見つけるのが難しいと感じている。', en:'Difficult to find effective ways to relieve stress', spirit:'hei',  skill:'PSYCHOSOMATIC', skillJa:'心身一如'},
+  {id:41, ja:'自分のキャリアの目標とパートナーのキャリアとのバランスを取るのが難しいと感じている。', en:"Difficult to balance their career aspirations with their partner's career", spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:42, ja:'キャリアの成長と家族やチームメンバーのサポートの両立が難しいと感じている。', en:'Difficult to balance career growth with supporting family or team members', spirit:'sei',  skill:'RHYTHM', skillJa:'陰陽の足'},
+  {id:43, ja:'柔軟な働き方について、上司や同僚の理解を得るのが難しいと感じている。', en:'Difficult to gain understanding from managers regarding flexible work', spirit:'sei',  skill:'TIMING', skillJa:'拍子'},
+  {id:44, ja:'キャリアの成長や柔軟な働き方に必要なスキルを見極めるのが難しいと感じている。', en:'Difficult to determine which skills are essential for career growth', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:45, ja:'自分の夢や目標と周囲の期待との間で迷っている。', en:'Torn between personal ambition and external expectations', spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:46, ja:'ダイバーシティやインクルージョンの取り組みが限られており、バランスの取れた職場環境を作るのが難しいと感じている。', en:'Limited diversity and inclusion initiatives making balance harder', spirit:'strat', skill:'PERSPECTIVE', skillJa:'観見'},
+  {id:47, ja:'リモートワークやフレックスタイムを利用すると、評価が下がるのではないかと不安に感じている。', en:'Concern that using remote or flextime options may lead to negative evaluations', spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:48, ja:'仕事と生活のバランスを考えすぎて、かえってストレスを感じている。', en:'Overthinking work-life balance to the point of creating additional stress', spirit:'hei',  skill:'OBJECTIVITY', skillJa:'虚の心'},
+  {id:49, ja:'感情の浮き沈みが仕事のパフォーマンスに影響を与えている。', en:'Emotional ups and downs affecting work performance', spirit:'hei',  skill:'PSYCHOSOMATIC', skillJa:'心身一如'},
+  {id:50, ja:'仕事と家庭の責任に追われ、自分のための時間が取れずにいる。', en:'Overwhelmed by responsibilities at both work and home, leaving no time for self-care', spirit:'jiko', skill:'ATTUNEMENT', skillJa:'嗜む'},
+  {id:51, ja:'AIやデジタル変革の進化についていけるか不安に感じている。', en:'Concerned about keeping up with AI and digital transformation advancements', spirit:'flex', skill:'ADAPTABILITY', skillJa:'有構無構'},
+  {id:52, ja:'育休後のキャリアの見通しが不透明で、不安に感じている。', en:'Uncertain about career prospects after taking maternity/paternity leave', spirit:'jiko', skill:'CULTIVATION', skillJa:'資質器量'},
+  {id:53, ja:'より柔軟なキャリアに移行するために、どれくらいの貯蓄が必要なのか分からず不安に感じている。', en:'Unclear how much savings are needed to transition into a more flexible career', spirit:'strat', skill:'DISCERNMENT', skillJa:'打つと当たる'},
+  {id:54, ja:'仕事の責任を果たしながら、どのように経済的な安定を築けばよいか分からず悩んでいる。', en:'Unsure how to build financial security while managing work responsibilities', spirit:'flex', skill:'OPTIMIZATION', skillJa:'二刀一'},
+];
+
+/* ════════════════════════════════════
+   STATE
+════════════════════════════════════ */
+const ADMIN_PIN = '1234';
+const SEND_COMMENT_URL   = 'https://sendadmincomment-6wuzckrpiq-uc.a.run.app';
+const SEND_BROADCAST_URL = 'https://sendbroadcast-6wuzckrpiq-uc.a.run.app';
+
+let selected = new Set();
+let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
+
+/* ════════════════════════════════════
+   SCREEN TRANSITIONS
+════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  el.scrollTop = 0;
+  window.scrollTo(0,0);
+  document.body.classList.toggle('admin-mode', id === 's-admin-list');
+}
+
+function showCards() { showScreen('s-profile'); }
+function backToCards() { showScreen('s-cards'); }
+
+function resetAll() {
+  selected.clear();
+  profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
+  document.getElementById('input-nickname').value = '';
+  document.getElementById('input-email').value = '';
+  document.querySelectorAll('.profile-option').forEach(o => o.classList.remove('selected'));
+  checkProfileReady();
+  updateCounter();
+  renderCards(CARDS);
+  showScreen('s-intro');
+}
+
+/* ════════════════════════════════════
+   PROFILE
+════════════════════════════════════ */
+function selectProfile(key, val, el) {
+  profile[key] = val;
+  document.querySelectorAll(`#profile-${key} .profile-option`).forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  checkProfileReady();
+}
+
+function toggleLife(val, el) {
+  profile.lifeSkipped = false;
+  document.getElementById('life-skip-warning').style.display = 'none';
+  document.getElementById('btn-skip-life').classList.remove('active');
+  const idx = profile.life.indexOf(val);
+  if (idx === -1) { profile.life.push(val); el.classList.add('selected'); }
+  else { profile.life.splice(idx, 1); el.classList.remove('selected'); }
+  checkProfileReady();
+}
+
+function skipLife(el) {
+  profile.life = [];
+  profile.lifeSkipped = true;
+  document.querySelectorAll('#profile-life .profile-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('active');
+  document.getElementById('life-skip-warning').style.display = 'block';
+  checkProfileReady();
+}
+
+function updateTextProfile() {
+  profile.nickname = document.getElementById('input-nickname').value.trim();
+  profile.email    = document.getElementById('input-email').value.trim();
+  checkProfileReady();
+}
+
+function checkProfileReady() {
+  const lifeAnswered = profile.life.length > 0 || profile.lifeSkipped;
+  const ready = profile.nickname && profile.role && lifeAnswered && profile.urgency;
+  const btn = document.getElementById('profile-proceed-btn');
+  const hint = document.getElementById('profile-proceed-hint');
+  if (ready) {
+    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+    hint.textContent = 'Ready'; hint.style.color = 'var(--gold)';
+  } else {
+    btn.disabled = true; btn.style.opacity = '.4'; btn.style.cursor = 'not-allowed';
+    hint.textContent = ''; hint.style.color = 'var(--muted)';
+  }
+}
+
+function startDiagnostic() {
+  if (!profile.role || !profile.urgency) return;
+  renderCards(CARDS);
+  showScreen('s-cards');
+}
+
+/* ════════════════════════════════════
+   RENDER CARDS
+════════════════════════════════════ */
+function renderCards(cards) {
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+  cards.forEach(card => {
+    const isSel = selected.has(card.id);
+    const div = document.createElement('div');
+    div.className = 'challenge-card' + (isSel ? ' selected' : '');
+    div.dataset.spirit = card.spirit;
+    div.dataset.id = card.id;
+    div.innerHTML = `
+      <div class="card-check">
+        <svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,6 5,9 10,3"/>
+        </svg>
+      </div>
+      <div class="card-num" style="margin-bottom:.4rem">#${card.id}</div>
+      <div class="card-ja">${card.en}</div>
+    `;
+    div.addEventListener('click', () => toggleCard(card.id));
+    grid.appendChild(div);
+  });
+}
+
+function toggleCard(id) {
+  if (selected.has(id)) selected.delete(id); else selected.add(id);
+  updateCounter();
+  document.querySelectorAll('.challenge-card').forEach(el => {
+    el.classList.toggle('selected', selected.has(parseInt(el.dataset.id)));
+  });
+}
+
+function updateCounter() {
+  const n = selected.size;
+  document.getElementById('counter-label').textContent = `${n} selected`;
+  const btn = document.getElementById('result-btn');
+  const hint = document.getElementById('action-hint');
+  if (n >= 1) {
+    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+    hint.innerHTML = `<strong style="color:var(--gold)">${n}</strong> selected — press "Submit" when done`;
+  } else {
+    btn.disabled = true; btn.style.opacity = '.4'; btn.style.cursor = 'not-allowed';
+    hint.innerHTML = 'Select <strong>all cards</strong> that apply to you';
+  }
+}
+
+/* ════════════════════════════════════
+   FILTER
+════════════════════════════════════ */
+function filterCards(spirit, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = spirit === 'all' ? CARDS : CARDS.filter(c => c.spirit === spirit);
+  renderCards(filtered);
+}
+
+/* ════════════════════════════════════
+   PARTICIPANT SUBMIT
+════════════════════════════════════ */
+async function submitResponse() {
+  if (selected.size < 1) return;
+  const chosen = CARDS.filter(c => selected.has(c.id));
+  const counts = { jiko:0, flex:0, strat:0, sei:0, hei:0 };
+  chosen.forEach(c => counts[c.spirit]++);
+  const total = chosen.length;
+  const skillCounts = {};
+  chosen.forEach(c => {
+    if (!skillCounts[c.skill]) skillCounts[c.skill] = { count:0, skillJa:c.skillJa, spirit:c.spirit };
+    skillCounts[c.skill].count++;
+  });
+  const topSpirit = Object.keys(counts).sort((a,b) => counts[b]-counts[a])[0];
+  const submission = {
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    profile: { ...profile },
+    selectedCards: Array.from(selected),
+    counts, skillCounts, total, topSpirit
+  };
+  try {
+    await db.collection('submissions').add(submission);
+    emailjs.send('service_1dicjgi', 'template_bhxtn8c').catch(e => console.warn('Email error:', e));
+    showScreen('s-complete');
+  } catch(e) {
+    console.error('Submit error:', e);
+    alert('Submission failed. Please check your connection and try again.');
+  }
+}
+
+/* ════════════════════════════════════
+   ADMIN
+════════════════════════════════════ */
+function checkAdminPin() {
+  const input = document.getElementById('admin-pin-input').value;
+  const err = document.getElementById('admin-pin-error');
+  if (input === ADMIN_PIN) {
+    err.textContent = '';
+    document.getElementById('admin-pin-input').value = '';
+    document.getElementById('btn-select-mode').style.display = '';
+    document.getElementById('btn-all-delete').style.display  = '';
+    updateMusashiBanner();
+    renderAdminLite();
+    showScreen('s-admin-list');
+  } else {
+    err.textContent = 'Incorrect PIN';
+    document.getElementById('admin-pin-input').value = '';
+  }
+}
+
+async function renderAdminList() {
+  const container = document.getElementById('admin-list-body');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Loading...</div>';
+
+  const ROLE_LBL    = { individual:'Individual Contributor', leader:'Team Lead / Manager', executive:'Executive / Entrepreneur', none:'Other' };
+  const LIFE_LBL    = { childcare:'Raising children', caregiving:'Caregiving', student:'Student', career_change:'Recent role change', independent:'Considering independence', away:'Living apart from family', illness:'Managing illness' };
+  const URGENCY_LBL = { now:'Start now', longterm:'Long-term approach' };
+
+  try {
+    const snapshot = await db.collection('submissions').orderBy('timestamp','desc').get();
+    const all = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    document.getElementById('admin-count').textContent = `${all.length}`;
+    if (all.length === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r)">No responses yet</div>`;
+      return;
+    }
+    container.innerHTML = all.map(s => {
+      const dt = s.timestamp?.toDate ? s.timestamp.toDate() : new Date();
+      const dateStr = `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+      const topS = SPIRITS[s.topSpirit] || SPIRITS.hei;
+      const roleLabel    = ROLE_LBL[s.profile?.role] || '—';
+      const lifeArr = Array.isArray(s.profile?.life) ? s.profile.life : (s.profile?.life ? [s.profile.life] : []);
+      const lifeLabel = lifeArr.length ? lifeArr.map(v => LIFE_LBL[v] || v).join(' · ') : (s.profile?.lifeSkipped ? '—' : '—');
+      const urgencyLabel = URGENCY_LBL[s.profile?.urgency] || '—';
+      const dChecked = adminSelectedIds.has(s.id);
+      return `
+        <div class="admin-row" style="${adminSelectMode && dChecked ? 'border-color:rgba(139,40,40,.5);' : ''}"
+             onclick="${adminSelectMode ? '' : `showAdminDetail('${s.id}')`}">
+          ${adminSelectMode ? `<input type="checkbox" onchange="toggleSelectItem('${s.id}')" ${dChecked ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--red);cursor:pointer;flex-shrink:0;margin-right:.3rem" onclick="event.stopPropagation()">` : ''}
+          <div style="flex:1">
+            <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">${dateStr}</div>
+            <div style="font-size:.95rem;font-weight:700;color:var(--cream);margin-bottom:.1rem">${s.profile?.nickname || '(no name)'}</div>
+            <div style="font-size:.75rem;color:var(--cream2);margin-bottom:.35rem">${s.profile?.email || ''}</div>
+            <div style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">${roleLabel} · ${lifeLabel} · ${urgencyLabel}</div>
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+              <span style="font-size:.72rem;padding:.18rem .55rem;border-radius:100px;background:${topS.bg};color:${topS.color};border:1px solid ${topS.color}40;font-weight:600">${topS.name}</span>
+              <span style="font-size:.72rem;color:var(--muted)">${s.total} cards selected</span>
+            </div>
+          </div>
+          <div style="color:var(--muted);font-size:1.3rem;margin-left:.8rem">${adminSelectMode ? '' : '›'}</div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--red)">Failed to load. Please click Refresh.</div>`;
+  }
+}
+
+async function showAdminDetail(id) {
+  try {
+    const doc = await db.collection('submissions').doc(id).get();
+    if (!doc.exists) return;
+    const sub = { id: doc.id, ...doc.data() };
+    selected = new Set(sub.selectedCards);
+    profile = sub.profile || { role: null, life: [], lifeSkipped: false, urgency: null };
+    if (!Array.isArray(profile.life)) profile.life = profile.life ? [profile.life] : [];
+    showResult();
+  } catch(e) {
+    console.error(e);
+    alert('Failed to load data.');
+  }
+}
+
+function backToAdminList() { renderAdminList(); showScreen('s-admin-list'); }
+
+let currentAdminTab = 'lite';
+let adminSelectMode = false;
+let adminSelectedIds = new Set();
+
+function toggleSelectMode() {
+  adminSelectMode = !adminSelectMode;
+  if (!adminSelectMode) adminSelectedIds.clear();
+  updateSelectionUI();
+  refreshAdmin();
+}
+
+function toggleSelectItem(docId) {
+  if (adminSelectedIds.has(docId)) adminSelectedIds.delete(docId);
+  else adminSelectedIds.add(docId);
+  updateSelectionUI();
+}
+
+function updateSelectionUI() {
+  const btn = document.getElementById('btn-select-mode');
+  const btnDel = document.getElementById('btn-delete-selected');
+  const count = document.getElementById('sel-count');
+  if (btn) {
+    btn.textContent = adminSelectMode ? 'Cancel' : 'Select';
+    btn.style.color = adminSelectMode ? 'var(--red)' : '';
+    btn.style.borderColor = adminSelectMode ? 'rgba(139,40,40,.3)' : '';
+  }
+  if (count) count.textContent = adminSelectedIds.size;
+  if (btnDel) btnDel.style.display = adminSelectedIds.size > 0 ? '' : 'none';
+}
+
+async function deleteSelected() {
+  if (adminSelectedIds.size === 0) return;
+  const tab = currentAdminTab;
+  const label = tab === 'lite' ? 'Lite participants' : 'reflection records';
+  if (!confirm(`Delete ${adminSelectedIds.size} selected ${label}?\nThis action cannot be undone.`)) return;
+  try {
+    const batch = db.batch();
+    for (const docId of adminSelectedIds) {
+      if (tab === 'lite') {
+        batch.delete(db.collection('lite_results').doc(docId));
+        batch.delete(db.collection('practices').doc(docId));
+      } else if (tab === 'practice') {
+        batch.delete(db.collection('practices').doc(docId));
+      } else if (tab === 'diag') {
+        batch.delete(db.collection('submissions').doc(docId));
+      }
+    }
+    await batch.commit();
+    adminSelectedIds.clear(); adminSelectMode = false;
+    updateSelectionUI(); refreshAdmin();
+  } catch(e) { console.error(e); alert('Deletion failed.'); }
+}
+
+function switchAdminTab(tab) {
+  adminSelectedIds.clear(); adminSelectMode = false; updateSelectionUI();
+  currentAdminTab = tab;
+  document.getElementById('admin-dash-body').style.display     = tab === 'dash'     ? 'block' : 'none';
+  document.getElementById('admin-lite-body').style.display     = tab === 'lite'     ? 'block' : 'none';
+  document.getElementById('admin-practice-body').style.display = tab === 'practice' ? 'block' : 'none';
+  document.getElementById('admin-list-body').style.display     = tab === 'diag'     ? 'block' : 'none';
+
+  const ON  = ';border-color:var(--gold);background:var(--gold-dim);color:var(--gold);font-weight:600';
+  const OFF = ';border-color:var(--border);background:transparent;color:var(--muted);font-weight:400';
+  document.getElementById('tab-dash').style.cssText     += tab === 'dash'     ? ON : OFF;
+  document.getElementById('tab-lite').style.cssText     += tab === 'lite'     ? ON : OFF;
+  document.getElementById('tab-practice').style.cssText += tab === 'practice' ? ON : OFF;
+  document.getElementById('tab-diag').style.cssText     += tab === 'diag'     ? ON : OFF;
+
+  document.getElementById('admin-count').style.display = tab === 'diag' ? '' : 'none';
+  const canSelect = (tab === 'lite' || tab === 'practice' || tab === 'diag');
+  document.getElementById('btn-select-mode').style.display = canSelect ? '' : 'none';
+  document.getElementById('btn-all-delete').style.display  = canSelect ? '' : 'none';
+  const banner = document.getElementById('musashi-key-banner');
+  if (banner) banner.style.display = (tab === 'practice') ? '' : 'none';
+
+  if (tab === 'dash')     renderAdminDashboard();
+  if (tab === 'lite')     renderAdminLite();
+  if (tab === 'practice') renderAdminPractices();
+  if (tab === 'diag')     renderAdminList();
+}
+
+function refreshAdmin() {
+  if (currentAdminTab === 'dash')     renderAdminDashboard();
+  else if (currentAdminTab === 'lite') renderAdminLite();
+  else if (currentAdminTab === 'practice') renderAdminPractices();
+  else renderAdminList();
+}
+
+async function renderAdminLite() {
+  const container = document.getElementById('admin-lite-body');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Loading...</div>';
+  try {
+    const [liteSnap, profileSnap, practiceSnap] = await Promise.all([
+      db.collection('lite_results').get(),
+      db.collection('profiles').get(),
+      db.collection('practices').get()
+    ]);
+    if (liteSnap.empty) {
+      container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r)">No Lite participants yet</div>`;
+      return;
+    }
+    const nameMap = {};
+    profileSnap.forEach(d => { if (d.data().displayName) nameMap[d.id] = { name: d.data().displayName, pic: d.data().pictureUrl || '' }; });
+    const progressMap = {};
+    practiceSnap.forEach(d => { progressMap[d.id] = (d.data().entries || []).length; });
+
+    const spiritNames  = { hei:'Equanimity', jiko:'Self-Cultivation', flex:'Adaptability', strat:'Strategic Thinking', sei:'Integrity' };
+    const spiritColors = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
+
+    const docs = liteSnap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
+
+    container.innerHTML = docs.map(p => {
+      const userId  = p.lineUserId || p.uid || p.id;
+      const prof    = nameMap[userId];
+      const name    = p.nickname || prof?.name || '';
+      const pic     = prof?.pic  || '';
+      const spirit  = p.spirit || '';
+      const spiritLabel = spiritNames[spirit] || spirit;
+      const color   = spiritColors[spirit] || 'var(--gold)';
+      const recorded = progressMap[userId] || 0;
+      const ts = p.timestamp?.toDate?.();
+      const dateStr = ts ? `${ts.getFullYear()}/${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
+      const now = Date.now();
+      const dayNum = ts ? Math.floor((now - ts.getTime()) / (1000*60*60*24)) + 1 : 0;
+      const phase = dayNum > 21 ? 'Complete' : dayNum >= 1 ? `Day ${dayNum}` : '';
+      const reportUrl = `report.html?uid=${userId}`;
+      const docId = p.id;
+      const isChecked = adminSelectedIds.has(docId);
+      return `
+        <div style="background:var(--bg2);border:1px solid ${adminSelectMode && isChecked ? 'rgba(139,40,40,.5)' : 'var(--border)'};border-radius:var(--r);padding:.9rem 1.1rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.8rem;transition:border-color .15s">
+          ${adminSelectMode ? `<input type="checkbox" onchange="toggleSelectItem('${docId}')" ${isChecked ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--red);cursor:pointer;flex-shrink:0">` : ''}
+          ${pic
+            ? `<img src="${pic}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(201,168,76,.2)">`
+            : `<div style="width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">⚔</div>`}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.92rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${name || `<span style="color:var(--muted);font-size:.78rem">${userId.slice(0,16)}...</span>`}
+            </div>
+            <div style="display:flex;gap:.4rem;align-items:center;margin-top:.25rem;flex-wrap:wrap">
+              <span style="font-size:.72rem;padding:.15rem .55rem;border-radius:100px;background:${color}22;color:${color};border:1px solid ${color}55">${spiritLabel}</span>
+              <span style="font-size:.72rem;color:var(--muted)">${phase}</span>
+              <span style="font-size:.72rem;color:var(--muted)">${recorded}/21 reflections</span>
+              ${dateStr ? `<span style="font-size:.68rem;color:var(--muted)">Joined ${dateStr}</span>` : ''}
+            </div>
+          </div>
+          <a href="${reportUrl}" target="_blank"
+             style="flex-shrink:0;font-size:.72rem;padding:.3rem .7rem;border-radius:100px;background:var(--bg3);color:var(--gold);border:1px solid var(--border);text-decoration:none">
+            Report
+          </a>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `<div style="color:var(--muted);padding:2rem;text-align:center">Failed to load</div>`;
+  }
+}
+
+async function renderAdminDashboard() {
+  const container = document.getElementById('admin-dash-body');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Loading...</div>';
+  try {
+    const [liteSnap, practiceSnap, dojoSnap] = await Promise.all([
+      db.collection('lite_results').get(),
+      db.collection('practices').get(),
+      db.collection('submissions').get()
+    ]);
+
+    const spiritNames  = { hei:'Equanimity', jiko:'Self-Cultivation', flex:'Adaptability', strat:'Strategic Thinking', sei:'Integrity' };
+    const spiritColors = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
+
+    const total = liteSnap.size;
+    const spiritCount = { hei:0, jiko:0, flex:0, strat:0, sei:0 };
+    let activeCount = 0, completedCount = 0;
+    const now = Date.now();
+
+    liteSnap.forEach(doc => {
+      const d = doc.data();
+      if (d.spirit) spiritCount[d.spirit] = (spiritCount[d.spirit] || 0) + 1;
+      if (d.timestamp) {
+        const dayNum = Math.floor((now - d.timestamp.toDate().getTime()) / (1000*60*60*24)) + 1;
+        if (dayNum >= 1 && dayNum <= 21) activeCount++;
+        if (dayNum > 21) completedCount++;
+      }
+    });
+
+    const weekStart = now - 7 * 24 * 60 * 60 * 1000;
+    let weeklyRecords = 0;
+    practiceSnap.forEach(doc => {
+      const entries = doc.data().entries || [];
+      entries.forEach(e => { if (e.timestamp && new Date(e.timestamp).getTime() >= weekStart) weeklyRecords++; });
+    });
+
+    const maxSpirit = Math.max(...Object.values(spiritCount), 1);
+    const spiritBars = Object.entries(spiritCount).map(([key, count]) => {
+      const pct = Math.round(count / maxSpirit * 100);
+      const color = spiritColors[key] || 'var(--gold)';
+      return `
+        <div style="margin-bottom:.7rem">
+          <div style="display:flex;justify-content:space-between;margin-bottom:.25rem">
+            <span style="font-size:.8rem;color:var(--cream2)">${spiritNames[key]}</span>
+            <span style="font-size:.8rem;color:var(--muted)">${count}</span>
+          </div>
+          <div style="background:var(--bg3);border-radius:4px;height:8px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${color};border-radius:4px;transition:width .4s"></div>
+          </div>
+        </div>`;
+    }).join('');
+
+    const dojoCount = dojoSnap.size;
+
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-bottom:1.5rem">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center">
+          <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${total}</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:.3rem">Total participants</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center">
+          <div style="display:flex;justify-content:center;gap:1.2rem;align-items:flex-end">
+            <div>
+              <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${activeCount}</div>
+              <div style="font-size:.6rem;color:var(--muted);margin-top:.2rem">Lite</div>
+            </div>
+            <div style="font-size:1rem;color:var(--border);padding-bottom:.3rem">/</div>
+            <div>
+              <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${dojoCount}</div>
+              <div style="font-size:.6rem;color:var(--muted);margin-top:.2rem">Dojo</div>
+            </div>
+          </div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:.4rem">In practice</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center">
+          <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${completedCount}</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:.3rem">21-day complete</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center">
+          <div style="font-size:1.8rem;font-weight:700;color:var(--gold);line-height:1">${weeklyRecords}</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:.3rem">This week's reflections</div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">SPIRIT Distribution</div>
+        ${spiritBars}
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem">
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">⚔️ Broadcast</div>
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+          <button id="tmpl-btn-diagnostic" onclick="selectBroadcastTemplate('diagnostic')"
+            style="flex:1;padding:.5rem;border-radius:8px;border:1.5px solid var(--gold);background:var(--gold-dim);color:var(--gold);font-size:.78rem;cursor:pointer;font-weight:600">
+            📋 Lite Diagnostic Invite
+          </button>
+          <button id="tmpl-btn-practice" onclick="selectBroadcastTemplate('practice')"
+            style="flex:1;padding:.5rem;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:.78rem;cursor:pointer">
+            🔔 Reflection Reminder
+          </button>
+        </div>
+        <div id="broadcast-desc" style="font-size:.82rem;color:var(--cream2);margin-bottom:1rem;line-height:1.6">
+          Sends registered participants an invitation to the SAMURAI Diagnostic — Lite Edition.<br>
+          Each participant receives a personalized link (<code style="font-size:.75rem;background:var(--bg3);padding:.1rem .3rem;border-radius:3px">lite.html?uid=…</code>).
+        </div>
+        <label style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;cursor:pointer">
+          <input type="checkbox" id="broadcast-skip-existing" checked style="width:16px;height:16px;accent-color:var(--gold)">
+          <span id="broadcast-skip-label" style="font-size:.82rem;color:var(--cream2)">Exclude those who have already completed the diagnostic (recommended)</span>
+        </label>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.4rem">
+          Message to send <span style="font-weight:400">(<code style="font-size:.7rem;background:var(--bg3);padding:.05rem .3rem;border-radius:3px">{URL}</code> is automatically replaced with each user's personalized link)</span>
+        </div>
+        <textarea id="broadcast-message" rows="10"
+          style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--cream2);font-size:.8rem;padding:.7rem .9rem;resize:vertical;font-family:inherit;line-height:1.7;margin-bottom:.9rem">⚔️ A message from SAMURAI in You
+
+Find the SAMURAI Spirit that becomes your axis.
+Take the SAMURAI Diagnostic — Lite Edition.
+
+It takes 2 minutes.
+Just answer as you truly are, right now.
+
+👇 Start your diagnostic
+{URL}
+
+The practice has no end.
+— Still Becoming.</textarea>
+        <input type="hidden" id="broadcast-template-type" value="diagnostic">
+        <button onclick="executeBroadcast()"
+          style="width:100%;padding:.8rem;background:var(--gold);color:#0a0a10;border:none;border-radius:var(--r);font-weight:700;font-size:.9rem;cursor:pointer;letter-spacing:.05em">
+          Send Broadcast
+        </button>
+        <div id="broadcast-result" style="margin-top:.8rem;font-size:.82rem;text-align:center;color:var(--muted)"></div>
+      </div>`;
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `<div style="color:var(--muted);padding:2rem;text-align:center">Failed to load</div>`;
+  }
+}
+
+/* ── Read state (localStorage) ── */
+function getReadState() {
+  try { return JSON.parse(localStorage.getItem('siyen_admin_read') || '{}'); } catch { return {}; }
+}
+function markUserRead(userId, entries) {
+  const state = getReadState();
+  const maxTs = Math.max(...entries.map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0), 0);
+  if (maxTs > 0) state[userId] = maxTs;
+  localStorage.setItem('siyen_admin_read', JSON.stringify(state));
+}
+function getUnreadCount(userId, entries) {
+  const state = getReadState();
+  const seenUntil = state[userId] || 0;
+  return entries.filter(e => e.timestamp && new Date(e.timestamp).getTime() > seenUntil).length;
+}
+
+async function renderAdminPractices() {
+  const container = document.getElementById('admin-practice-body');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Loading...</div>';
+  try {
+    const [practiceSnap, profileSnap] = await Promise.all([
+      db.collection('practices').get(),
+      db.collection('profiles').get()
+    ]);
+    if (practiceSnap.empty) {
+      container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r)">No reflection records yet</div>`;
+      return;
+    }
+    const nameMap = {};
+    profileSnap.forEach(d => {
+      const data = d.data();
+      if (data.displayName) nameMap[d.id] = { name: data.displayName, pic: data.pictureUrl || '' };
+    });
+    const docs = practiceSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => {
+        const latestA = Math.max(...(a.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0), 0);
+        const latestB = Math.max(...(b.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0), 0);
+        return latestB - latestA;
+      });
+
+    container.innerHTML = docs.map(p => {
+      const entries = (p.entries || []).sort((a, b) => {
+        const ta = a.timestamp ? new Date(a.timestamp).getTime() : a.day;
+        const tb = b.timestamp ? new Date(b.timestamp).getTime() : b.day;
+        return tb - ta;
+      });
+      const count     = entries.length;
+      const rank      = p.rank || 'Apprentice';
+      const userId    = p.lineUserId || p.uid || p.id;
+      const prof      = nameMap[userId];
+      const name      = prof?.name || '';
+      const pic       = prof?.pic  || '';
+      const reportUrl = `report.html?uid=${userId}`;
+      const unread    = getUnreadCount(userId, entries);
+      const latestEntry = entries[0];
+      const latestTs    = latestEntry?.timestamp ? new Date(latestEntry.timestamp) : null;
+      const latestLabel = latestTs && !isNaN(latestTs)
+        ? `${latestTs.getMonth()+1}/${latestTs.getDate()} ${String(latestTs.getHours()).padStart(2,'0')}:${String(latestTs.getMinutes()).padStart(2,'0')}`
+        : '';
+      const pDocId = p.id;
+      const pChecked = adminSelectedIds.has(pDocId);
+      return `
+        <div id="pcard-${userId}" style="background:var(--bg2);border:1px solid ${adminSelectMode && pChecked ? 'rgba(139,40,40,.5)' : unread > 0 ? 'rgba(201,168,76,.5)' : 'var(--border)'};border-radius:var(--r);margin-bottom:1rem;overflow:hidden">
+          <div style="padding:.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;cursor:pointer;border-bottom:1px solid rgba(201,168,76,.08)"
+               onclick="${adminSelectMode ? '' : `togglePracticeCard('${userId}', this)`}">
+            <div style="display:flex;align-items:center;gap:.7rem;flex:1;min-width:0">
+              ${adminSelectMode ? `<input type="checkbox" onchange="toggleSelectItem('${pDocId}')" ${pChecked ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--red);cursor:pointer;flex-shrink:0" onclick="event.stopPropagation()">` : ''}
+              ${pic ? `<img src="${pic}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(201,168,76,.2)">` :
+                      `<div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">⚔</div>`}
+              <div style="min-width:0;flex:1">
+                <div style="display:flex;align-items:center;gap:.5rem">
+                  <div style="font-size:.93rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                    ${name || `<span style="color:var(--muted);font-size:.8rem">${userId.slice(0,16)}...</span>`}
+                  </div>
+                  ${unread > 0 ? `<span id="badge-${userId}" style="flex-shrink:0;min-width:18px;height:18px;background:#e05050;color:#fff;border-radius:100px;font-size:.68rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px">${unread}</span>` : `<span id="badge-${userId}"></span>`}
+                </div>
+                <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.2rem">
+                  <span style="font-size:.72rem;padding:.15rem .55rem;border-radius:100px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,.3)">${rank}</span>
+                  <span style="font-size:.78rem;color:var(--muted)">${count} / 21 days recorded</span>
+                  ${latestLabel ? `<span style="font-size:.72rem;color:var(--muted)">Last: ${latestLabel}</span>` : ''}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
+              <a href="${reportUrl}" target="_blank"
+                 style="font-size:.72rem;padding:.3rem .7rem;border-radius:100px;background:var(--bg3);color:var(--gold);border:1px solid var(--border);text-decoration:none"
+                 onclick="event.stopPropagation()">Report</a>
+              <span style="color:var(--muted);font-size:1rem">›</span>
+            </div>
+          </div>
+          <div id="pdetail-${userId}" style="display:none;padding:.8rem 1.1rem">
+            ${entries.length === 0
+              ? `<div style="font-size:.83rem;color:var(--muted);padding:.5rem 0">No entries</div>`
+              : entries.map(e => {
+                  const ts = e.timestamp ? new Date(e.timestamp) : null;
+                  const dateStr = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
+                  const seenUntil = getReadState()[userId] || 0;
+                  const isUnread  = ts && ts.getTime() > seenUntil;
+                  return `
+                    <div data-ts="${ts ? ts.getTime() : 0}" ${isUnread ? 'data-unread="1"' : ''}
+                         style="display:flex;gap:.7rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04);align-items:flex-start${isUnread ? ';background:rgba(201,168,76,.04);margin:0 -.8rem;padding-left:.8rem;padding-right:.8rem;border-radius:6px' : ''}">
+                      <div style="flex-shrink:0;width:32px;height:32px;background:${isUnread ? 'rgba(201,168,76,.25)' : 'var(--gold-dim)'};border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;position:relative">
+                        ${isUnread ? `<div class="unread-dot" style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#e05050;border-radius:50%;border:1.5px solid var(--bg2)"></div>` : ''}
+                        <span style="font-size:.55rem;color:var(--muted)">DAY</span>
+                        <span style="font-size:.78rem;font-weight:600;color:var(--gold)">${e.day}</span>
+                      </div>
+                      <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem">
+                          ${dateStr ? `<div style="font-size:.65rem;color:var(--muted)">${dateStr}</div>` : ''}
+                          ${isUnread ? `<span class="unread-label" style="font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">New</span>` : ''}
+                        </div>
+                        <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? e.text.replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">(no entry)</span>'}</div>
+                        ${(() => {
+                          const dayComments = (p.adminComments || []).filter(c => c.day === e.day);
+                          if (dayComments.length === 0) return '';
+                          return dayComments.map(c => {
+                            const ct = c.sentAt?.toDate ? c.sentAt.toDate() : (c.sentAt ? new Date(c.sentAt) : null);
+                            const ctStr = ct && !isNaN(ct) ? `${ct.getMonth()+1}/${ct.getDate()} ${String(ct.getHours()).padStart(2,'0')}:${String(ct.getMinutes()).padStart(2,'0')}` : '';
+                            return `<div style="margin-top:.55rem;padding:.5rem .7rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 6px 6px 0">
+                              <div style="font-size:.62rem;color:var(--gold);margin-bottom:.25rem;display:flex;gap:.5rem;align-items:center">
+                                <span>⚔️ Your comment</span>${ctStr ? `<span style="color:var(--muted)">${ctStr}</span>` : ''}
+                              </div>
+                              <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${c.text.replace(/\n/g,'<br>')}</div>
+                            </div>`;
+                          }).join('');
+                        })()}
+                        <div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.4rem">
+                          <textarea placeholder="Send a comment..." rows="2"
+                            style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>
+                          <div style="display:flex;gap:.4rem;justify-content:flex-end">
+                            <button onclick="generateMusashiComment('${e.text || ''}', ${e.day}, '${rank}', this)"
+                              style="padding:.35rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);font-size:.75rem;cursor:pointer;white-space:nowrap">
+                              ⚔️ Musashi BOT
+                            </button>
+                            <button onclick="sendAdminComment('${userId}', ${e.day}, this)"
+                              style="padding:.35rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer;white-space:nowrap">Send</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>`;
+                }).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `<div style="color:var(--muted);padding:2rem;text-align:center">Failed to load</div>`;
+  }
+}
+
+function togglePracticeCard(userId, headerEl) {
+  const detail = document.getElementById(`pdetail-${userId}`);
+  const card   = document.getElementById(`pcard-${userId}`);
+  const isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    let maxTs = 0;
+    detail.querySelectorAll('[data-ts]').forEach(el => {
+      const ts = parseInt(el.dataset.ts || '0');
+      if (ts > maxTs) maxTs = ts;
+    });
+    const state = getReadState();
+    state[userId] = Math.max(state[userId] || 0, maxTs || Date.now());
+    localStorage.setItem('siyen_admin_read', JSON.stringify(state));
+    const badge = document.getElementById(`badge-${userId}`);
+    if (badge) badge.innerHTML = '';
+    card.style.borderColor = 'var(--border)';
+    detail.querySelectorAll('[data-unread]').forEach(el => {
+      el.querySelector('.unread-dot')?.remove();
+      el.querySelector('.unread-label')?.remove();
+      el.style.background = ''; el.style.margin = '';
+      el.style.paddingLeft = ''; el.style.paddingRight = '';
+      el.style.borderRadius = ''; el.removeAttribute('data-unread');
+    });
+  }
+}
+
+const BROADCAST_TEMPLATES = {
+  diagnostic: {
+    desc: 'Sends registered participants an invitation to the SAMURAI Diagnostic — Lite Edition.<br>Each participant receives a personalized link (<code style="font-size:.75rem;background:var(--bg3);padding:.1rem .3rem;border-radius:3px">lite.html?uid=…</code>).',
+    skipLabel: 'Exclude those who have already completed the diagnostic (recommended)',
+    message: `⚔️ A message from SAMURAI in You\n\nFind the SAMURAI Spirit that becomes your axis.\nTake the SAMURAI Diagnostic — Lite Edition.\n\nIt takes 2 minutes.\nJust answer as you truly are, right now.\n\n👇 Start your diagnostic\n{URL}\n\nThe practice has no end.\n— Still Becoming.`,
+  },
+  practice: {
+    desc: 'Sends participants who have not reflected recently a reminder to record their practice.<br>Each participant receives a personalized link (<code style="font-size:.75rem;background:var(--bg3);padding:.1rem .3rem;border-radius:3px">practice.html?uid=…</code>).',
+    skipLabel: 'Exclude those who have already reflected this week (recommended)',
+    message: `⚔️ Have you recorded today's practice?\n\nOne line is enough.\nWrite down what you felt, what you noticed —\njust as it is.\n\nThe accumulation becomes your axis.\n\n👇 Record today's reflection\n{URL}\n\nThe practice has no end.\n— Still Becoming.`,
+  },
+};
+
+function selectBroadcastTemplate(type) {
+  const tmpl = BROADCAST_TEMPLATES[type];
+  if (!tmpl) return;
+  document.getElementById('broadcast-template-type').value = type;
+  document.getElementById('broadcast-desc').innerHTML = tmpl.desc;
+  document.getElementById('broadcast-skip-label').textContent = tmpl.skipLabel;
+  document.getElementById('broadcast-message').value = tmpl.message;
+  const ON  = ';border-color:var(--gold);background:var(--gold-dim);color:var(--gold);font-weight:600';
+  const OFF = ';border-color:var(--border);background:transparent;color:var(--muted);font-weight:400';
+  document.getElementById('tmpl-btn-diagnostic').style.cssText += type === 'diagnostic' ? ON : OFF;
+  document.getElementById('tmpl-btn-practice').style.cssText  += type === 'practice'   ? ON : OFF;
+}
+
+async function executeBroadcast() {
+  const skipExisting = document.getElementById('broadcast-skip-existing')?.checked ?? true;
+  const customMessage = document.getElementById('broadcast-message')?.value.trim();
+  const templateType = document.getElementById('broadcast-template-type')?.value || 'diagnostic';
+  const resultEl = document.getElementById('broadcast-result');
+  const btn = event.currentTarget;
+  if (!customMessage) {
+    resultEl.style.color = 'var(--red)'; resultEl.textContent = '⚠️ Please enter a message.'; return;
+  }
+  const confirmed = window.confirm(
+    `Send broadcast?\n\n${skipExisting ? '✅ Excluding those who already completed the diagnostic.' : '⚠️ Sending to everyone (including completed).'}\n\nContinue?`
+  );
+  if (!confirmed) return;
+  btn.disabled = true; btn.textContent = 'Sending...'; resultEl.textContent = '';
+  try {
+    const res = await fetch(SEND_BROADCAST_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+      body: JSON.stringify({ skipExisting, customMessage, templateType })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    resultEl.style.color = 'var(--gold)';
+    resultEl.textContent = `✅ Sent: ${data.sent}, skipped: ${data.skipped}${data.errors > 0 ? `, errors: ${data.errors}` : ''}`;
+  } catch(e) {
+    console.error(e); resultEl.style.color = 'var(--red)'; resultEl.textContent = '⚠️ Send failed: ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Send Broadcast';
+  }
+}
+
+/* ── Musashi BOT API Key management ── */
+function getMusashiKey() { return localStorage.getItem('musashi_api_key') || ''; }
+function saveMusashiKey() {
+  const input = document.getElementById('musashi-api-key-input');
+  const key = input.value.trim();
+  if (!key.startsWith('sk-ant-')) { document.getElementById('musashi-key-status').textContent = '⚠️ Key must start with sk-ant-'; return; }
+  localStorage.setItem('musashi_api_key', key);
+  input.value = ''; updateMusashiBanner();
+}
+function clearMusashiKey() { localStorage.removeItem('musashi_api_key'); updateMusashiBanner(); }
+function updateMusashiBanner() {
+  const key = getMusashiKey();
+  const banner = document.getElementById('musashi-key-banner');
+  const status = document.getElementById('musashi-key-status');
+  const clearBtn = document.getElementById('musashi-key-clear');
+  if (!banner) return;
+  if (key) {
+    status.textContent = '✓ API key set (sk-ant-....' + key.slice(-4) + ')';
+    status.style.color = 'var(--gold)'; clearBtn.style.display = '';
+  } else {
+    status.textContent = 'Enter your API key and press Save';
+    status.style.color = 'var(--muted)'; clearBtn.style.display = 'none';
+  }
+}
+
+async function generateMusashiComment(reflectionText, day, spiritName, btn) {
+  if (!reflectionText.trim()) { alert('No reflection text found.'); return; }
+  const apiKey = getMusashiKey();
+  if (!apiKey) {
+    alert('API key not set.\nEnter your key in the Musashi BOT banner above.');
+    document.getElementById('musashi-key-banner').style.display = '';
+    document.getElementById('musashi-api-key-input').focus();
+    return;
+  }
+  const textarea = btn.parentElement.parentElement.querySelector('textarea');
+  const original = btn.innerHTML;
+  btn.disabled = true; btn.textContent = 'Generating...';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        system: `You are Miyamoto Musashi — author of The Book of Five Rings, master swordsman, and lifelong practitioner of the Way.
+
+Your style:
+- Speak in short, sharp words that cut to the essence (3-4 sentences maximum)
+- Not as a teacher lecturing, but as a fellow traveler on the path (dōsha)
+- Grounded in the philosophy of Go Rin No Sho (earth, water, fire, wind, void) but spoken in contemporary language
+- Sometimes end with a question — to let the practitioner find their own insight
+- Write in a direct, spare voice — not "please" or "let's," but "consider this," "notice that," "what do you see?"
+- Never verbose. Honor the space between words.
+
+Forbidden:
+- Praise words like "wonderful," "great work," "you did well"
+- Familiarity like "let's do this together"
+- Long explanations or bullet lists`,
+        messages: [{
+          role: 'user',
+          content: `Day ${day}${spiritName ? ` (${spiritName} practice)` : ''} — respond to this reflection.\n\n[Practitioner's reflection]\n${reflectionText}\n\nAs Miyamoto Musashi, respond briefly.`
+        }]
+      })
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || res.status); }
+    const data = await res.json();
+    textarea.value = data.content[0].text.trim() + '\n\n— Musashi BOT';
+    textarea.focus();
+    btn.innerHTML = '✓ Generated'; btn.style.color = 'var(--gold)';
+    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; btn.style.color = ''; }, 2500);
+  } catch(e) {
+    console.error('Musashi BOT error:', e);
+    btn.textContent = 'Failed'; btn.style.color = 'var(--red)';
+    textarea.value = '[Error] ' + e.message;
+    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; btn.style.color = ''; }, 3000);
+  }
+}
+
+async function sendAdminComment(userId, day, btn) {
+  const textarea = btn.parentElement.parentElement.querySelector('textarea');
+  const message = textarea.value.trim();
+  if (!message) return;
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try {
+    const res = await fetch(SEND_COMMENT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+      body: JSON.stringify({ userId, day, message })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    textarea.value = ''; btn.textContent = '✓ Sent'; btn.style.color = 'var(--gold)';
+    setTimeout(() => { renderAdminPractices(); }, 800);
+  } catch(e) {
+    console.error(e); btn.textContent = 'Failed'; btn.style.color = 'var(--red)';
+    setTimeout(() => { btn.textContent = 'Send'; btn.disabled = false; btn.style.color = ''; }, 3000);
+  }
+}
+
+async function clearAdminData() {
+  const tab = currentAdminTab;
+  const label = tab === 'lite' ? 'all Lite participant data (diagnostic results and practice records)' :
+                tab === 'practice' ? 'all reflection records' : 'all Dojo diagnostic data';
+  if (!confirm(`Delete ${label}?\nThis action cannot be undone.`)) return;
+  try {
+    const batch = db.batch();
+    if (tab === 'lite') {
+      const [liteSnap, practSnap] = await Promise.all([
+        db.collection('lite_results').get(), db.collection('practices').get()
+      ]);
+      liteSnap.docs.forEach(doc => batch.delete(doc.ref));
+      practSnap.docs.forEach(doc => batch.delete(doc.ref));
+    } else if (tab === 'practice') {
+      const practSnap = await db.collection('practices').get();
+      practSnap.docs.forEach(doc => batch.delete(doc.ref));
+    } else {
+      const snapshot = await db.collection('submissions').get();
+      snapshot.docs.forEach(doc => batch.delete(doc.ref));
+    }
+    await batch.commit();
+    adminSelectedIds.clear(); adminSelectMode = false;
+    updateSelectionUI(); refreshAdmin();
+  } catch(e) { console.error(e); alert('Deletion failed.'); }
+}
+
+/* ════════════════════════════════════
+   RESULT (admin use only)
+════════════════════════════════════ */
+function showResult() {
+  if (selected.size < 1) return;
+  const chosen = CARDS.filter(c => selected.has(c.id));
+  const counts = { jiko:0, flex:0, strat:0, sei:0, hei:0 };
+  chosen.forEach(c => counts[c.spirit]++);
+  const total = chosen.length;
+  const skillCounts = {};
+  chosen.forEach(c => {
+    if (!skillCounts[c.skill]) skillCounts[c.skill] = { count:0, skillJa:c.skillJa, spirit:c.spirit };
+    skillCounts[c.skill].count++;
+  });
+  const skillRanked = Object.entries(skillCounts).sort((a,b) => b[1].count - a[1].count);
+
+  const recap = document.getElementById('selected-recap');
+  const spiritOrder = ['hei','jiko','flex','strat','sei'];
+  recap.innerHTML = `
+    <div style="grid-column:1/-1;background:#f5f0e6;border:1px solid rgba(154,117,32,.35);border-radius:var(--r);padding:1.1rem 1.2rem">
+      <div style="font-size:.75rem;letter-spacing:.15em;color:#7a6840;margin-bottom:.7rem">Spirit Distribution — ${total} cards</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+        ${spiritOrder.filter(k => counts[k] > 0).map(k => {
+          const s = SPIRITS[k];
+          const pct = Math.round(counts[k] / total * 100);
+          return `<div style="display:flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.7);border:1px solid ${s.color}80;border-radius:8px;padding:.35rem .75rem">
+            <span style="font-size:.82rem">${s.name.split(' ')[0]}</span>
+            <span style="font-size:.8rem;font-weight:600;color:${s.color}">${s.name.split(' ').slice(1).join(' ')}</span>
+            <span style="font-size:.72rem;color:${s.color};font-weight:700">${counts[k]} ${pct}%</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(154,117,32,.3),transparent);margin-bottom:.8rem"></div>
+      <div style="font-size:.75rem;letter-spacing:.15em;color:#7a6840;margin-bottom:.6rem">Skill Distribution</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+        ${skillRanked.map(([skill, d]) => {
+          const s = SPIRITS[d.spirit];
+          const pct = Math.round(d.count / total * 100);
+          return `<div style="display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.7);border:1px solid ${s.color}70;border-radius:6px;padding:.28rem .65rem">
+            <span style="font-size:.78rem;font-weight:700;color:${s.color}">${skill}</span>
+            <span style="font-size:.7rem;color:${s.color};font-weight:700">${d.count}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  const ROLE_LABELS    = { individual:'Individual Contributor', leader:'Team Lead / Manager', executive:'Executive / Entrepreneur', none:'Other' };
+  const LIFE_LABELS    = { childcare:'Raising children', caregiving:'Caregiving', student:'Student', career_change:'Recent role change', independent:'Considering independence', away:'Living apart from family', illness:'Managing illness' };
+  const URGENCY_LABELS = { now:'Start now', longterm:'Long-term approach' };
+  const badge = document.getElementById('profile-badge');
+  if (profile.role) {
+    const lifeChips = profile.life.length > 0
+      ? profile.life.map(v => LIFE_LABELS[v] || v)
+      : (profile.lifeSkipped ? ['Q2 skipped'] : []);
+    const chips = [ROLE_LABELS[profile.role], ...lifeChips, URGENCY_LABELS[profile.urgency]]
+      .filter(Boolean)
+      .map(label => `<span style="font-size:.73rem;padding:.28rem .7rem;border-radius:100px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(160,120,40,.3)">${label}</span>`)
+      .join('');
+    badge.innerHTML = `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem;margin-bottom:1rem">${chips}</div>`;
+    badge.style.display = 'block';
+  }
+
+  document.getElementById('penta-sub-text').textContent = `Spirit distribution from your ${total} selected cards`;
+  document.getElementById('skill-sub-text').textContent = `10 Skills breakdown from your ${total} selected cards`;
+
+  drawPentagon(counts, total);
+
+  const legend = document.getElementById('pentagon-legend');
+  const maxCount = Math.max(...Object.values(counts));
+  legend.innerHTML = spiritOrder.map(k => {
+    const s = SPIRITS[k]; const c = counts[k];
+    const pct = total > 0 ? Math.round(c / total * 100) : 0;
+    const isTop = c === maxCount && c > 0;
+    return `
+      <div class="legend-item ${isTop ? 'highlight' : ''}">
+        <div class="legend-dot" style="background:${s.color}"></div>
+        <div class="legend-name">${s.name}<br><small style="color:var(--muted);font-size:.7rem">${s.en}</small></div>
+        <div class="legend-count" style="color:${c > 0 ? s.color : 'var(--muted)'}">${c > 0 ? pct + '%' : '—'}</div>
+      </div>`;
+  }).join('');
+
+  drawSkillChart(skillCounts, total);
+  renderFocus(counts, chosen, total, skillCounts);
+  showScreen('s-result');
+}
+
+/* ─── Skill Bar Chart ─── */
+function drawSkillChart(skillCounts, total) {
+  const container = document.getElementById('skill-chart');
+  const ALL_SKILLS = [
+    { skill:'OBJECTIVITY',   skillJa:'虚の心',    spirit:'hei'   },
+    { skill:'PSYCHOSOMATIC', skillJa:'心身一如',   spirit:'hei'   },
+    { skill:'ATTUNEMENT',    skillJa:'嗜む',      spirit:'jiko'  },
+    { skill:'CULTIVATION',   skillJa:'資質器量',   spirit:'jiko'  },
+    { skill:'ADAPTABILITY',  skillJa:'有構無構',   spirit:'flex'  },
+    { skill:'OPTIMIZATION',  skillJa:'二刀一',     spirit:'flex'  },
+    { skill:'DISCERNMENT',   skillJa:'打つと当たる', spirit:'strat' },
+    { skill:'PERSPECTIVE',   skillJa:'観見',       spirit:'strat' },
+    { skill:'RHYTHM',        skillJa:'陰陽の足',   spirit:'sei'   },
+    { skill:'TIMING',        skillJa:'拍子',       spirit:'sei'   },
+  ];
+  const maxSkillCount = Math.max(...ALL_SKILLS.map(s => (skillCounts[s.skill]?.count || 0)), 1);
+  container.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:.55rem;padding:.2rem 0">
+      ${ALL_SKILLS.map(({ skill, skillJa, spirit }) => {
+        const count = skillCounts[skill]?.count || 0;
+        const pct = Math.round(count / total * 100);
+        const barWidth = Math.round(count / maxSkillCount * 100);
+        const s = SPIRITS[spirit];
+        const active = count > 0;
+        return `
+          <div style="display:grid;grid-template-columns:170px 1fr 52px;align-items:center;gap:.8rem;opacity:${active ? 1 : 0.35}">
+            <div style="text-align:right">
+              <span style="font-size:.8rem;font-weight:${active ? 700 : 400};color:${active ? s.color : 'var(--muted)'}">${skill}</span>
+            </div>
+            <div style="height:14px;background:rgba(0,0,0,.05);border-radius:7px;overflow:hidden">
+              <div style="height:100%;width:${barWidth}%;background:${active ? s.color : 'transparent'};border-radius:7px;transition:width .5s ease;min-width:${active ? 4 : 0}px"></div>
+            </div>
+            <div style="font-size:.78rem;font-weight:700;color:${active ? s.color : 'var(--muted)'}">
+              ${active ? `${count} <span style="font-weight:400;font-size:.7rem">${pct}%</span>` : '—'}
+            </div>
+          </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:.5rem">
+      ${['hei','jiko','flex','strat','sei'].map(k => {
+        const s = SPIRITS[k];
+        return `<div style="display:flex;align-items:center;gap:.3rem">
+          <div style="width:8px;height:8px;border-radius:50%;background:${s.color}"></div>
+          <span style="font-size:.7rem;color:${s.color};font-weight:600">${s.name}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+/* ─── Pentagon SVG ─── */
+function drawPentagon(counts, total) {
+  const svg = document.getElementById('pentagon-svg');
+  svg.innerHTML = '';
+  const cx = 150, cy = 150, R = 110;
+  const axes = [
+    { key:'hei',   angle: -90 },
+    { key:'strat', angle: -90 + 72 },
+    { key:'sei',   angle: -90 + 144 },
+    { key:'flex',  angle: -90 + 216 },
+    { key:'jiko',  angle: -90 + 288 },
+  ];
+  function pt(angle, r) {
+    const rad = angle * Math.PI / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+  [0.2, 0.4, 0.6, 0.8, 1.0].forEach(frac => {
+    const points = axes.map(a => pt(a.angle, R * frac));
+    const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points', points.map(p => `${p.x},${p.y}`).join(' '));
+    poly.setAttribute('fill', 'none'); poly.setAttribute('stroke', 'rgba(160,120,40,.12)'); poly.setAttribute('stroke-width', '1');
+    svg.appendChild(poly);
+  });
+  axes.forEach(a => {
+    const p = pt(a.angle, R);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+    line.setAttribute('x2', p.x); line.setAttribute('y2', p.y);
+    line.setAttribute('stroke', 'rgba(160,120,40,.15)'); line.setAttribute('stroke-width', '1');
+    svg.appendChild(line);
+  });
+  const dataPoints = axes.map(a => {
+    const pct = total > 0 ? counts[a.key] / total : 0;
+    const r = pct > 0 ? pct * R : R * 0.04;
+    return pt(a.angle, r);
+  });
+  const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+  poly.setAttribute('points', dataPoints.map(p => `${p.x},${p.y}`).join(' '));
+  poly.setAttribute('fill', 'rgba(160,120,40,.18)'); poly.setAttribute('stroke', '#a07828');
+  poly.setAttribute('stroke-width', '2'); poly.setAttribute('stroke-linejoin', 'round');
+  svg.appendChild(poly);
+  axes.forEach(a => {
+    const pct = total > 0 ? counts[a.key] / total : 0;
+    const r = pct > 0 ? pct * R : R * 0.04;
+    const dp = pt(a.angle, r);
+    const spirit = SPIRITS[a.key];
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx', dp.x); circle.setAttribute('cy', dp.y);
+    circle.setAttribute('r', pct > 0 ? '5' : '3');
+    circle.setAttribute('fill', pct > 0 ? spirit.color : 'rgba(160,120,40,.3)');
+    circle.setAttribute('stroke', '#fff'); circle.setAttribute('stroke-width', '1.5');
+    svg.appendChild(circle);
+    const lp = pt(a.angle, R + 22);
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', lp.x); text.setAttribute('y', lp.y);
+    text.setAttribute('text-anchor', 'middle'); text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('font-size', '10'); text.setAttribute('font-family', "'Open Sans', sans-serif");
+    text.setAttribute('font-weight', pct > 0 ? '600' : '400');
+    text.setAttribute('fill', pct > 0 ? spirit.color : '#9a8a70');
+    const emoji = spirit.name.split(' ')[0];
+    const shortName = spirit.name.split(' ').slice(1).join(' ');
+    text.textContent = emoji + ' ' + shortName;
+    svg.appendChild(text);
+  });
+}
+
+/* ════════════════════════════════════
+   PROFILE CONTEXT MESSAGES
+════════════════════════════════════ */
+const PROFILE_ROLE_CONTEXT = {
+  individual: {
+    hei:  "You don't have to carry everything alone. Protecting your own pace is what sustains long-term performance.",
+    jiko: 'Investing in yourself is an asset no one can take away. Start from small daily accumulations.',
+    flex: 'As an individual, the speed at which you adapt to change is something you define for yourself.',
+    strat:"It is you who steers your own career. Sharpen the axis of your judgment.",
+    sei:  'The key is consciously aligning the three rhythms of work, family, and self.',
+  },
+  leader: {
+    hei:  "The psychological safety of your team is born from your own equanimity. Settle yourself first.",
+    jiko: "A leader's growth is directly connected to the growth of the whole team. Do not neglect self-cultivation.",
+    flex: "To help your team adapt to change, the leader must first be seen releasing their own form.",
+    strat:"The power to observe your people's movements and the full picture simultaneously — now is the time to sharpen kan-ken.",
+    sei:  "Balancing sincere engagement with your team alongside the rhythms of family and self is your core challenge.",
+  },
+  executive: {
+    hei:  "An executive's equanimity is directly tied to organizational stability. Your axis becomes the team's axis.",
+    jiko: 'Self-cultivation as an executive is a solitary path. But that accumulation becomes the deep strength of the organization.',
+    flex: 'To help the organization adapt to market change, the executive must first have the resolve to change their own form.',
+    strat:"The quality of executive decisions is determined not by the quantity of information but by the depth of insight. Refine kan-ken.",
+    sei:  "Being sincere to your organization, your family, and yourself — all three — is what builds trust over the long term.",
+  },
+};
+
+const PROFILE_LIFE_CONTEXT = {
+  childcare:     'The dojo of child-rearing is itself your training ground.',
+  caregiving:    'Even under the heavy weight of caregiving, the practice of not losing yourself is essential.',
+  student:       'Because you are in a time of learning, building your axis now becomes the foundation of a lifetime.',
+  career_change: 'A new environment is precisely where the strength of your axis is tested.',
+  independent:   'Confirming your own axis is the most important step before the decision to go independent.',
+  away:          'Even at a physical distance, integrity and axis can be maintained.',
+  illness:       'Even while changing the form of your practice, you can protect your axis.',
+};
+
+const PROFILE_URGENCY_CONTEXT = {
+  now:      'This week, choose just one concrete action and practice it.',
+  longterm: 'Without rushing, commit to the 21-day practice — consistent effort is where real change is born.',
+};
+
+function getContextualMessage(spiritKey) {
+  const base = SPIRIT_MESSAGES[spiritKey].message.replace(/\n/g, '<br>');
+  const parts = [base];
+  const roleMsg = profile.role && PROFILE_ROLE_CONTEXT[profile.role]?.[spiritKey];
+  if (roleMsg) parts.push(`<span style="color:var(--gold);font-weight:500">${roleMsg}</span>`);
+  const lifeMsgs = profile.life.map(v => PROFILE_LIFE_CONTEXT[v]).filter(Boolean);
+  if (lifeMsgs.length) parts.push(`<em style="color:var(--muted)">${lifeMsgs.join(' ')}</em>`);
+  const urgencyMsg = profile.urgency && PROFILE_URGENCY_CONTEXT[profile.urgency];
+  if (urgencyMsg) parts.push(`<strong>${urgencyMsg}</strong>`);
+  return parts.join('<br><br>');
+}
+
+/* ─── Focus Section ─── */
+function renderFocus(counts, chosen, total, skillCounts) {
+  const container = document.getElementById('focus-section-container');
+  const ranked = Object.keys(counts).filter(k => counts[k] > 0).sort((a, b) => counts[b] - counts[a]);
+  if (ranked.length === 0) return;
+  const topCount = counts[ranked[0]];
+  const coLeaders = ranked.filter(k => counts[k] === topCount);
+
+  function skillsForSpirit(spiritKey) {
+    return Object.entries(skillCounts).filter(([, d]) => d.spirit === spiritKey).sort((a, b) => b[1].count - a[1].count);
+  }
+
+  const primarySection = coLeaders.map(key => {
+    const spirit = SPIRITS[key];
+    const pct = Math.round(counts[key] / total * 100);
+    const spiritSkills = skillsForSpirit(key);
+    const skillDetail = spiritSkills.map(([skill, d]) =>
+      `<div style="display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:rgba(255,255,255,.06);border-radius:8px;border:1px solid ${spirit.color}40">
+        <div>
+          <div style="font-size:.85rem;font-weight:700;color:${spirit.color}">${skill}</div>
+        </div>
+        <div style="margin-left:auto;font-size:.8rem;font-weight:700;color:${spirit.color}">${d.count}</div>
+      </div>`
+    ).join('');
+    return `
+      <div class="focus-section focus-spirit-${key}" style="margin-bottom:1rem">
+        <div class="focus-label">PRIMARY FOCUS — ${pct}% (${counts[key]} cards)</div>
+        <div class="focus-primary-spirit" style="color:${spirit.color}">
+          ${spirit.name}
+          <span class="spirit-en">${spirit.en}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;margin:1rem 0">${skillDetail}</div>
+        <div class="focus-message">${getContextualMessage(key)}</div>
+      </div>`;
+  }).join('');
+
+  const secondary = ranked.filter(k => !coLeaders.includes(k));
+  const secondarySection = secondary.length > 0 ? `
+    <div class="multi-focus" style="margin-top:.5rem">
+      <h3 style="font-size:1rem;margin-bottom:.8rem">Other Areas of Focus</h3>
+      <div class="multi-spirit-list">
+        ${secondary.map(k => {
+          const s = SPIRITS[k];
+          const pct = Math.round(counts[k] / total * 100);
+          const spiritSkills = skillsForSpirit(k);
+          const skillTags = spiritSkills.map(([skill, d]) =>
+            `<span style="font-size:.72rem;font-weight:600;color:${s.color};background:${s.bg};border-radius:4px;padding:.1rem .4rem">${skill} ×${d.count}</span>`
+          ).join(' ');
+          return `
+            <div class="multi-spirit-item" style="flex-direction:column;align-items:flex-start;gap:.4rem">
+              <div style="display:flex;align-items:center;gap:.6rem;width:100%">
+                <span class="multi-spirit-icon">${s.name.split(' ')[0]}</span>
+                <div class="multi-spirit-info">
+                  <div class="multi-spirit-name" style="color:${s.color}">${s.name.split(' ').slice(1).join(' ')}</div>
+                  <div class="multi-spirit-skill">${s.en}</div>
+                </div>
+                <span style="font-size:.8rem;font-weight:700;color:${s.color};margin-left:auto">${pct}% (${counts[k]})</span>
+              </div>
+              ${skillTags ? `<div style="display:flex;flex-wrap:wrap;gap:.3rem;padding-left:2rem">${skillTags}</div>` : ''}
+            </div>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+
+  const samuraiSection = renderSamuraiMatch(counts, total);
+  container.innerHTML = primarySection + secondarySection + samuraiSection;
+}
+
+/* ════════════════════════════════════
+   SAMURAI MATCHING
+════════════════════════════════════ */
+const SAMURAI_DB = {
+  jiko: [
+    {
+      name: '宮本武蔵', en: 'Miyamoto Musashi', years: '1584–1645', emoji: '⚔️',
+      tagline: 'The sword, the brush, the stone garden — all were one path',
+      profile: `The solitary sword-saint. He fought his first duel at 13 and went undefeated in over 60 encounters.\nHe wrote The Book of Five Rings and taught: "One thousand days to forge; ten thousand days to refine." In his later years he left paintings, calligraphy, and garden designs — embodying the spirit of living every pursuit as one unified Way.`,
+      quote: 'One thousand days to forge; ten thousand days to refine.',
+      match: "Your steadfast commitment to building yourself step by step mirrors Musashi's teaching in the Earth scroll: that patient, unglamorous practice is the only true foundation.",
+    },
+    {
+      name: '上杉謙信', en: 'Uesugi Kenshin', years: '1530–1578', emoji: '🐉',
+      tagline: 'The Dragon of Echigo — sought not territory, but the perfection of self',
+      profile: `One of the greatest warlords of the Sengoku era, known as "the Dragon of Echigo." He remained celibate his entire life, devoted to Bishamonten, and practiced rigorous austerity.\nAt the Battles of Kawanakajima he led from the front, spear in hand. He consistently chose inner honor over territorial gain, living simply until the end.`,
+      quote: 'Seek not to overcome righteousness, but to live by it.',
+      match: "Your way of refining yourself in order to influence those around you resonates with Kenshin's \"gi\" — the conviction that all action must flow from inner integrity.",
+    },
+  ],
+  flex: [
+    {
+      name: '豊臣秀吉', en: 'Toyotomi Hideyoshi', years: '1537–1598', emoji: '🐒',
+      tagline: 'The man who never stopped changing form — from peasant to lord of the realm',
+      profile: `Born the son of a peasant, he rose from Nobunaga's sandal-bearer to unify Japan.\nHe continuously reinvented his own form to fit each situation — cunning in battle, warm and flexible in diplomacy. He was the embodiment of "mu-kamae": adapting completely, whatever the role demanded.`,
+      quote: 'A person can change. There is no one who cannot change.',
+      match: 'Your ability to release fixed ideas and reshape yourself to meet the moment mirrors the strength Hideyoshi practiced all his life — the power of having no fixed form.',
+    },
+    {
+      name: '伊達政宗', en: 'Date Masamune', years: '1567–1636', emoji: '🦅',
+      tagline: 'The One-Eyed Dragon — defeated, he always found the next move',
+      profile: `He lost his right eye to smallpox in childhood, yet conquered the Ōshū region, earning the name "One-Eyed Dragon." Through the battles of Sekigahara and Ōsaka he navigated complex allegiances and ultimately survived into the Tokugawa era.\nOne of the first Japanese lords to open trade with the West, dispatching the Keichō Embassy to Europe. He read the times and always kept his options open.`,
+      quote: 'Survival is the greatest strategy.',
+      match: "Your ability to stay grounded through change and read the situation to move with flexibility resonates with Masamune's wisdom of adaptation — the craft of riding out any storm without losing yourself.",
+    },
+  ],
+  strat: [
+    {
+      name: '徳川家康', en: 'Tokugawa Ieyasu', years: '1543–1616', emoji: '🐢',
+      tagline: "If the nightingale won't sing, wait — the man who built 260 years",
+      profile: `He spent his childhood as a hostage, buffeted by the powers of Imagawa, Takeda, Oda, and Toyotomi. Yet each time he was defeated, he chose to wait — and his patience at Sekigahara gave him the realm.\n"Blame yourself, not others," he taught, always favoring reason over emotion and the long view over the short. That discipline became the foundation of a shogunate that lasted over 250 years.`,
+      quote: "A man's life is like a long road with a heavy load. Do not hurry.",
+      match: 'Your ability to analyze situations from a long-term perspective and choose the optimal move aligns with the "strategic patience" Ieyasu spent his entire life mastering.',
+    },
+    {
+      name: '黒田官兵衛', en: 'Kuroda Kanbei', years: '1546–1604', emoji: '🦊',
+      tagline: 'The greatest strategist of the Sengoku era — the insight to read the answer in the field',
+      profile: `As Toyotomi Hideyoshi's chief strategist, he devised the plans that built the realm, earning the saying "he made two rulers of the land."\nEven when imprisoned for a year in Arima Castle, his spirit never broke — and he returned to Hideyoshi's side immediately upon release. His approach: "Go to the field. The answer is in the field." He took Buddhist vows in his final years, closing a strategic life in contemplation.`,
+      quote: 'What is needed is not information, but insight.',
+      match: "Your ability to synthesize information quickly and anticipate the opponent's next move aligns with Kanbei's \"kan-ken wisdom\" — the eyes that see what is not yet visible.",
+    },
+  ],
+  sei: [
+    {
+      name: '大石内蔵助', en: 'Oishi Kuranosuke', years: '1659–1703', emoji: '🌸',
+      tagline: 'The faithful will that bound 47 men — leader of the loyal retainers',
+      profile: `As chief retainer of the Akō domain, he led the Forty-Seven Rōnin to avenge their lord. For two years before the raid, he kept faith with every man without once betraying them — while simultaneously deceiving the shogunate's surveillance.\nAfter the raid, all forty-seven chose to die by seppuku. Their sincere consistency is inscribed in the Japanese spirit three hundred years on.`,
+      quote: 'Integrity is doing the same thing whether or not anyone is watching.',
+      match: "Your faithfulness to your own beliefs regardless of who is watching echoes the spirit of righteousness that Oishi and his men pledged to each other and kept until the very end.",
+    },
+    {
+      name: '直江兼続', en: 'Naoe Kanetsugu', years: '1560–1619', emoji: '❤️',
+      tagline: 'The character "love" on his helmet — a warrior of justice and compassion',
+      profile: `Chief retainer of Uesugi Kagekatsu, he rode to battle with the character "ai" (love) on his helmet crest — remarkable for placing love on a battlefield.\nAfter Sekigahara, the Uesugi domain was drastically reduced from 1.2 million koku to 300,000 — yet Kanetsugu never wavered in sincere care for his retainers and people. He is celebrated as a man who united righteousness and compassion.`,
+      quote: 'Live by justice, and be sincere to feeling — that is the true path of the warrior.',
+      match: "Your commitment to honoring agreements and meeting others with genuine care resonates with the conviction Kanetsugu carried on his helmet: that sincere relationship is the source of true strength.",
+    },
+  ],
+  hei: [
+    {
+      name: '柳生宗矩', en: 'Yagyū Munenori', years: '1571–1646', emoji: '☁️',
+      tagline: 'The sword is not for killing — the realm of the life-giving sword',
+      profile: `He served as sword instructor to the Tokugawa shogunate and authored Heihō Kadensho. He taught that "the sword is not for taking life but for giving it" (katsujin-ken), developing a philosophy of the mind that transcended swordsmanship.\n"Heijōshin kore dō" — the ordinary everyday mind is itself the Way. He spent his life practicing an unshakeable inner axis through battle, statecraft, and daily living alike.`,
+      quote: 'Heijōshin kore dō — the ordinary mind is the Way.',
+      match: "Your way of holding a steady axis even under pressure resonates with the realm Munenori reached through the sword — being exactly the same mind in any situation.",
+    },
+    {
+      name: '山本常朝', en: 'Yamamoto Tsunetomo', years: '1659–1719', emoji: '📜',
+      tagline: 'Hagakure — the man who put samurai equanimity into words',
+      profile: `He served the Saga domain and, after his lord's death, took Buddhist vows and retreated into the mountains. His spoken teachings were compiled as Hagakure.\nKnown for "Bushidō is found in death," its true meaning is: only by accepting death can action in this present moment become completely pure. That is the philosophy of equanimity.`,
+      quote: 'Bushidō is found in death — and in that acceptance, true equanimity is born.',
+      match: "Your power to focus completely on this present moment without being swept away by emotion resonates with what Tsunetomo described in Hagakure — the equanimity born of resolve: living each instant completely and without reservation.",
+    },
+  ],
+};
+
+function renderSamuraiMatch(counts, total) {
+  const ranked = Object.keys(counts).filter(k => counts[k] > 0).sort((a, b) => counts[b] - counts[a]);
+  if (ranked.length === 0) return '';
+  const topCount = counts[ranked[0]];
+  const topSpirits = ranked.filter(k => counts[k] === topCount);
+  const primaryKey = topSpirits[0];
+  const spirit = SPIRITS[primaryKey];
+  const samurais = SAMURAI_DB[primaryKey] || [];
+  if (samurais.length === 0) return '';
+  const pct = Math.round(counts[primaryKey] / total * 100);
+
+  const cards = samurais.map(s => `
+    <div style="background:rgba(255,255,255,.85);border:1px solid ${spirit.color}50;border-radius:12px;padding:1.2rem 1.3rem;margin-bottom:.8rem;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${spirit.color}"></div>
+      <div style="display:flex;align-items:flex-start;gap:.85rem;margin-bottom:.75rem">
+        <div style="font-size:2rem;line-height:1">${s.emoji}</div>
+        <div>
+          <div style="font-size:1.05rem;font-weight:800;color:#2a1f10;font-family:'Cormorant Garamond',serif">${s.en}</div>
+          <div style="font-size:.75rem;color:${spirit.color};font-weight:600;letter-spacing:.08em">${s.name} <span style="color:#9a8a70;font-weight:400">${s.years}</span></div>
+          <div style="font-size:.78rem;color:#6a5a40;margin-top:.25rem;font-style:italic">${s.tagline}</div>
+        </div>
+      </div>
+      <div style="font-size:.82rem;color:#4a3a2a;line-height:1.7;margin-bottom:.8rem;white-space:pre-line">${s.profile}</div>
+      <div style="background:rgba(154,117,32,.08);border-left:3px solid ${spirit.color};padding:.65rem .9rem;border-radius:0 6px 6px 0;margin-bottom:.8rem">
+        <div style="font-size:.7rem;letter-spacing:.15em;color:${spirit.color};font-weight:700;margin-bottom:.25rem">Quote</div>
+        <div style="font-size:.85rem;color:#2a1f10;font-style:italic;font-family:'Cormorant Garamond',serif">"${s.quote}"</div>
+      </div>
+      <div style="background:${spirit.color}12;border-radius:8px;padding:.7rem .9rem">
+        <div style="font-size:.7rem;letter-spacing:.15em;color:${spirit.color};font-weight:700;margin-bottom:.3rem">Your Resonance</div>
+        <div style="font-size:.82rem;color:#3a2a1a;line-height:1.6">${s.match}</div>
+      </div>
+    </div>`
+  ).join('');
+
+  return `
+    <div style="margin-top:1.5rem;padding:1.2rem 1.2rem 1.4rem;background:linear-gradient(135deg,rgba(154,117,32,.06),rgba(154,117,32,.02));border:1px solid rgba(154,117,32,.25);border-radius:14px">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem">
+        <div style="font-size:1.4rem">⚔️</div>
+        <div>
+          <div style="font-size:.7rem;letter-spacing:.2em;color:var(--gold);font-weight:700">SAMURAI MATCH</div>
+          <div style="font-size:1.05rem;font-weight:800;color:#2a1f10;font-family:'Cormorant Garamond',serif">Your Samurai Match</div>
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:#7a6840;margin-bottom:1.1rem;line-height:1.6">
+        <strong style="color:${spirit.color}">${spirit.name} (${pct}%)</strong> is your strongest Spirit.<br>
+        Here are the historical samurai whose spirit resonates most closely with yours.
+      </div>
+      ${cards}
+    </div>`;
+}
+
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  updateCounter();
+  if (location.hash === '#admin') showScreen('s-admin-login');
+});
+</script>
+</body>
+</html>

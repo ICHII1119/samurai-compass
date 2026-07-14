@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daily Practice — SAMURAI in You</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="apple-touch-icon" href="../logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyC1qm7kUjSRk7QRwxK-W7bH1q-pqH3lklU",
+  authDomain: "samurai-compass.firebaseapp.com",
+  projectId: "samurai-compass",
+  storageBucket: "samurai-compass.firebasestorage.app",
+  messagingSenderId: "502771859953",
+  appId: "1:502771859953:web:89e801832fdd42c6cb0450"
+});
+const db = firebase.firestore();
+</script>
+<script src="strings.js"></script>
+<style>
+:root {
+  --bg:       #1a1a1f;
+  --bg2:      #222228;
+  --bg3:      #2a2a32;
+  --cream:    #f0ead8;
+  --cream2:   #c8bfa8;
+  --muted:    #7a7060;
+  --gold:     #c9a84c;
+  --gold2:    #a07828;
+  --gold-dim: rgba(201,168,76,.12);
+  --red:      #8b1a1a;
+  --border:   rgba(201,168,76,.18);
+  --r:        12px;
+  --font:     'Open Sans', -apple-system, sans-serif;
+  --font-b:   'Cormorant Garamond', serif;
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+html { -webkit-text-size-adjust:100% }
+body {
+  background:var(--bg); color:var(--cream); font-family:var(--font);
+  min-height:100vh; min-height:100dvh;
+  -webkit-font-smoothing:antialiased; padding-bottom:3rem;
+}
+
+.page-header { text-align:center; padding:2rem 1.2rem 1.2rem; border-bottom:1px solid var(--border) }
+.logo-img { width:48px; height:48px; object-fit:contain; margin-bottom:.5rem }
+.page-title { font-family:var(--font-b); font-size:1rem; letter-spacing:.2em; color:var(--gold) }
+
+.rank-section { text-align:center; padding:1.8rem 1.2rem 1rem }
+.rank-mon { width:80px; height:80px; margin:0 auto 1rem }
+.rank-mon svg { width:100%; height:100% }
+.rank-name { font-family:var(--font-b); font-size:2rem; font-weight:700; color:var(--cream); letter-spacing:.1em; line-height:1 }
+.rank-sub  { font-size:.78rem; color:var(--muted); letter-spacing:.15em; margin-top:.4rem }
+.rank-desc { font-size:.85rem; color:var(--cream2); margin-top:.8rem; line-height:1.7; max-width:320px; margin-left:auto; margin-right:auto }
+
+.progress-section { padding:0 1.2rem 1.4rem; max-width:480px; margin:0 auto }
+.progress-label { display:flex; justify-content:space-between; font-size:.78rem; color:var(--muted); margin-bottom:.5rem }
+.progress-count { color:var(--gold); font-weight:600 }
+.progress-bar-bg { height:6px; background:var(--bg3); border-radius:100px; overflow:hidden }
+.progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--gold2),var(--gold)); border-radius:100px; transition:width .6s ease }
+
+.stamp-section { padding:0 1rem 1.5rem; max-width:480px; margin:0 auto }
+.stamp-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:.45rem }
+.stamp-slot {
+  aspect-ratio:1; border-radius:8px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative; border:1.5px solid rgba(201,168,76,.2); background:var(--bg2);
+  cursor:default; overflow:hidden;
+}
+.stamp-slot.stamped  { border-color:var(--gold2); background:var(--gold-dim) }
+.stamp-slot.today-slot { border-color:var(--gold); background:var(--gold-dim); box-shadow:0 0 0 2px rgba(201,168,76,.15) }
+.stamp-slot.future   { opacity:.35 }
+.stamp-day-num { font-size:.58rem; color:var(--muted); line-height:1; margin-bottom:.15rem }
+.stamp-slot.stamped .stamp-day-num    { color:rgba(201,168,76,.5) }
+.stamp-slot.today-slot .stamp-day-num { color:var(--gold) }
+.stamp-seal { font-family:var(--font-b); font-size:1.1rem; font-weight:700; color:var(--gold); line-height:1 }
+
+.reflection-section { max-width:480px; margin:0 auto; padding:0 1.2rem 1.5rem }
+.reflection-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:var(--r);
+  padding:1.4rem; position:relative; overflow:hidden;
+}
+.reflection-card::before {
+  content:''; position:absolute; top:-1px; left:15%; right:15%; height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.reflection-day-label { font-size:.7rem; letter-spacing:.2em; color:var(--muted); margin-bottom:.3rem }
+.reflection-title { font-family:var(--font-b); font-size:1.1rem; color:var(--cream); font-weight:700; margin-bottom:1rem }
+.reflection-textarea {
+  width:100%; background:var(--bg3); border:1px solid rgba(201,168,76,.2); border-radius:8px;
+  color:var(--cream); font-family:var(--font); font-size:.92rem; line-height:1.7;
+  padding:.8rem 1rem; resize:none; min-height:100px; outline:none; transition:border-color .2s;
+}
+.reflection-textarea:focus { border-color:var(--gold) }
+.reflection-textarea::placeholder { color:var(--muted) }
+
+.btn-submit {
+  display:block; width:100%; margin-top:.9rem; padding:.85rem;
+  background:linear-gradient(135deg,#8b1a1a,#a02020); border:none; border-radius:8px;
+  color:var(--cream); font-family:var(--font-b); font-size:1rem; font-weight:700;
+  letter-spacing:.1em; cursor:pointer; transition:opacity .2s;
+}
+.btn-submit:hover { opacity:.88 }
+.btn-submit:disabled { opacity:.4; cursor:not-allowed }
+
+.already-stamped {
+  text-align:center; padding:1.2rem; background:var(--bg2);
+  border:1px solid var(--border); border-radius:var(--r);
+  font-size:.9rem; color:var(--cream2); line-height:1.7;
+}
+.already-stamped .done-mark { font-size:1.6rem; margin-bottom:.5rem }
+
+.completion-screen { display:none; text-align:center; padding:2rem 1.5rem; max-width:480px; margin:0 auto }
+.completion-screen.visible { display:block }
+.completion-mon { width:100px; height:100px; margin:0 auto 1.2rem }
+.completion-title { font-family:var(--font-b); font-size:1.8rem; font-weight:700; color:var(--gold); letter-spacing:.05em; margin-bottom:.5rem }
+.completion-rank  { font-family:var(--font-b); font-size:2.8rem; font-weight:700; color:var(--cream); letter-spacing:.1em; margin-bottom:.8rem }
+.completion-desc  { font-size:.92rem; color:var(--cream2); line-height:1.8 }
+.completion-divider { margin:1.5rem auto; width:60px; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent) }
+
+.loading-screen { text-align:center; padding:4rem 1.5rem; color:var(--muted); font-size:.9rem }
+.error-screen   { text-align:center; padding:3rem 1.5rem; color:var(--muted) }
+
+@keyframes stampIn {
+  0%   { transform:scale(2) rotate(-15deg); opacity:0 }
+  60%  { transform:scale(.9) rotate(-6deg); opacity:1 }
+  100% { transform:scale(1) rotate(-8deg); opacity:1 }
+}
+.stamp-anim { animation:stampIn .4s cubic-bezier(.22,1,.36,1) forwards }
+
+@keyframes fadeSlideUp {
+  from { opacity:0; transform:translateY(16px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+.fade-up { animation:fadeSlideUp .5s ease forwards }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <img src="../logo.png" alt="SAMURAI in You" class="logo-img">
+  <div class="page-title" id="page-title"></div>
+  <div id="report-link-area" style="margin-top:.7rem;display:none">
+    <a id="report-link" href="#" style="font-size:.75rem;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.35);padding:.3rem .8rem;border-radius:100px;display:inline-block">
+      📜 View My Record &amp; Memos
+    </a>
+  </div>
+</div>
+
+<div class="loading-screen" id="loading"></div>
+
+<div id="main-content" style="display:none">
+  <div class="rank-section">
+    <div class="rank-mon" id="rank-mon"></div>
+    <div class="rank-name" id="rank-name"></div>
+    <div class="rank-sub"  id="rank-sub"></div>
+    <div class="rank-desc" id="rank-desc"></div>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-label">
+      <span>Training Progress</span>
+      <span class="progress-count"><span id="stamped-count">0</span> / 21 days</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="stamp-section">
+    <div class="stamp-grid" id="stamp-grid"></div>
+  </div>
+
+  <div class="reflection-section" id="reflection-area"></div>
+  <div class="completion-screen" id="completion-screen"></div>
+</div>
+
+<div class="error-screen" id="error-screen" style="display:none">
+  <div style="font-size:1.5rem;margin-bottom:.8rem">⚠️</div>
+  <div id="error-msg"></div>
+</div>
+
+<script>
+const RANKS = [
+  {
+    id:'apprentice', name:'Apprentice', sub:'MINARAI',
+    desc:'Experience the spirit of the samurai through 21 days of free practice.',
+    color:'#7a7060',
+    mon:`<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="40" r="36" stroke="#7a7060" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <path d="M40 58 C40 58 22 46 22 32 C22 22 30 16 40 16 C50 16 58 22 58 32 C58 46 40 58 40 58Z" fill="none" stroke="#7a7060" stroke-width="1.8"/>
+      <path d="M40 16 C40 16 40 44 40 58" stroke="#7a7060" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M40 28 C36 26 30 27 27 30" stroke="#7a7060" stroke-width="1" stroke-linecap="round"/>
+      <path d="M40 36 C36 34 29 35 26 38" stroke="#7a7060" stroke-width="1" stroke-linecap="round"/>
+      <path d="M40 28 C44 26 50 27 53 30" stroke="#7a7060" stroke-width="1" stroke-linecap="round"/>
+      <path d="M40 36 C44 34 51 35 54 38" stroke="#7a7060" stroke-width="1" stroke-linecap="round"/>
+    </svg>`
+  },
+  {
+    id:'10kyu', name:'10th Kyu', sub:'JUU-KYUU',
+    desc:'21 days of training complete. You have taken the first step into the dojo.',
+    color:'#c9a84c',
+    mon:`<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="40" r="36" stroke="#c9a84c" stroke-width="2.5"/>
+      <circle cx="40" cy="40" r="30" stroke="#c9a84c" stroke-width="1" opacity=".4"/>
+      <text x="40" y="52" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" font-weight="bold">十</text>
+    </svg>`
+  }
+];
+
+/* URL param: ?uid= (English version uses 'uid', not 'lid') */
+const params  = new URLSearchParams(location.search);
+const userId  = params.get('uid') || localStorage.getItem('siyen_uid');
+const todayDay = parseInt(params.get('day')) || null;
+
+let practiceData = null;
+let stampedDays  = new Set();
+
+async function init() {
+  document.getElementById('loading').textContent = S.practice.loading;
+  document.getElementById('page-title').textContent = S.practice.title;
+
+  if (!userId) {
+    showError(S.practice.errorNotFound);
+    return;
+  }
+
+  const reportLinkArea = document.getElementById('report-link-area');
+  const reportLink = document.getElementById('report-link');
+  if (reportLinkArea && reportLink) {
+    reportLink.href = `report.html?uid=${userId}`;
+    reportLinkArea.style.display = '';
+  }
+
+  try {
+    const doc = await db.collection('practices').doc(userId).get();
+    practiceData = doc.exists ? doc.data() : { userId, entries: [], cycle: 1 };
+    (practiceData.entries || []).forEach(e => stampedDays.add(e.day));
+    render();
+  } catch(e) {
+    console.error(e);
+    showError(S.error);
+  }
+}
+
+function render() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('main-content').style.display = 'block';
+
+  const count    = stampedDays.size;
+  const completed = count >= 21;
+  const rank     = RANKS[completed ? 1 : 0];
+
+  document.getElementById('rank-mon').innerHTML   = rank.mon;
+  document.getElementById('rank-name').textContent = rank.name;
+  document.getElementById('rank-sub').textContent  = rank.sub;
+  document.getElementById('rank-desc').textContent = rank.desc;
+
+  document.getElementById('stamped-count').textContent = count;
+  document.getElementById('progress-fill').style.width = `${Math.min(count / 21 * 100, 100)}%`;
+
+  renderGrid();
+
+  if (completed) {
+    showCompletion();
+  } else if (todayDay && todayDay >= 1 && todayDay <= 21) {
+    renderReflection(todayDay);
+  } else {
+    document.getElementById('reflection-area').innerHTML = `
+      <div class="already-stamped">
+        <div style="font-size:.82rem;color:var(--muted)">
+          Open the link from your daily morning notification<br>to record today's practice.
+        </div>
+      </div>`;
+  }
+}
+
+function renderGrid() {
+  const grid = document.getElementById('stamp-grid');
+  grid.innerHTML = '';
+  for (let d = 1; d <= 21; d++) {
+    const el = document.createElement('div');
+    const isStamped = stampedDays.has(d);
+    const isToday   = d === todayDay;
+    el.className = 'stamp-slot' + (isStamped ? ' stamped' : isToday ? ' today-slot' : ' future');
+    const dayLabel = `<div class="stamp-day-num">${d}</div>`;
+    if (isStamped) {
+      el.innerHTML = dayLabel + `<div class="stamp-seal">練</div>`;
+    } else if (isToday) {
+      el.innerHTML = dayLabel + `<div style="font-size:.75rem;color:var(--gold);font-weight:600">Today</div>`;
+    } else {
+      el.innerHTML = dayLabel;
+    }
+    grid.appendChild(el);
+  }
+}
+
+function renderReflection(day) {
+  const area      = document.getElementById('reflection-area');
+  const savedMemo = (practiceData.memos || {})[String(day)]?.text || '';
+  const P = S.practice;
+
+  if (stampedDays.has(day)) {
+    const entry = (practiceData.entries || []).find(e => e.day === day);
+    area.innerHTML = `
+      <div class="already-stamped fade-up">
+        <div class="done-mark">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+            <circle cx="26" cy="26" r="22" stroke="#c9a84c" stroke-width="2.5"/>
+            <polyline points="15,26 22,34 37,17" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div style="font-weight:600;margin-bottom:.5rem">${P.dayComplete(day)}</div>
+        ${entry?.text ? `<div style="font-size:.83rem;color:var(--muted);line-height:1.7;margin-top:.5rem;padding:.6rem .8rem;background:var(--bg3);border-radius:6px">${entry.text}</div>` : ''}
+      </div>
+      ${memoBlock(day, savedMemo)}`;
+    return;
+  }
+
+  area.innerHTML = `
+    <div class="reflection-card fade-up">
+      <div class="reflection-day-label">DAY ${day} · ${P.reflectionLabel}</div>
+      <div class="reflection-title">${P.reflectionLabel}</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem">${P.reflectionNote}</div>
+      <textarea class="reflection-textarea" id="reflection-text"
+        placeholder="${P.reflectionPlaceholder}" rows="4"></textarea>
+      <button class="btn-submit" id="submit-btn" onclick="submitPractice(${day})">
+        ⚔️ ${P.submitBtn}
+      </button>
+    </div>
+    ${memoBlock(day, savedMemo)}`;
+}
+
+function memoBlock(day, savedText) {
+  const P = S.practice;
+  return `
+    <div class="reflection-card fade-up" style="margin-top:1rem;border-color:rgba(201,168,76,.1)">
+      <div class="reflection-day-label">${P.memoLabel}</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem">${P.memoNote}</div>
+      <textarea class="reflection-textarea" id="memo-text" rows="3"
+        placeholder="${P.memoPlaceholder}">${savedText}</textarea>
+      <button class="btn-submit" id="memo-btn" onclick="saveMemo(${day})"
+        style="margin-top:.7rem;background:linear-gradient(135deg,#2a3a2a,#3a5a3a)">
+        ${P.memoBtn}
+      </button>
+      <div id="memo-result" style="text-align:center;font-size:.8rem;margin-top:.5rem;color:var(--muted)"></div>
+    </div>`;
+}
+
+async function saveMemo(day) {
+  const P = S.practice;
+  const text   = document.getElementById('memo-text')?.value ?? '';
+  const btn    = document.getElementById('memo-btn');
+  const result = document.getElementById('memo-result');
+  btn.disabled = true;
+  btn.textContent = P.memoSaving;
+  try {
+    await db.collection('practices').doc(userId).set({
+      memos: { [String(day)]: { text, updatedAt: new Date().toISOString() } }
+    }, { merge: true });
+    if (!practiceData.memos) practiceData.memos = {};
+    practiceData.memos[String(day)] = { text };
+    result.style.color = 'var(--gold)';
+    result.textContent = P.memoDone;
+    setTimeout(() => { result.textContent = ''; }, 2500);
+  } catch(e) {
+    console.error(e);
+    result.style.color = '#c06060';
+    result.textContent = P.memoError;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = P.memoBtn;
+  }
+}
+
+async function submitPractice(day) {
+  const P = S.practice;
+  const textEl = document.getElementById('reflection-text');
+  const text   = textEl?.value?.trim() || '';
+  const btn    = document.getElementById('submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = P.submitting; }
+
+  const entry = { day, text, timestamp: new Date().toISOString(), cycle: practiceData.cycle || 1 };
+
+  try {
+    await db.collection('practices').doc(userId).set({
+      userId,
+      cycle: practiceData.cycle || 1,
+      entries: firebase.firestore.FieldValue.arrayUnion(entry),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    stampedDays.add(day);
+    if (!practiceData.entries) practiceData.entries = [];
+    practiceData.entries.push({ ...entry, timestamp: new Date() });
+
+    const count = stampedDays.size;
+    document.getElementById('stamped-count').textContent = count;
+    document.getElementById('progress-fill').style.width = `${Math.min(count / 21 * 100, 100)}%`;
+
+    renderGrid();
+    if (count >= 21) {
+      await db.collection('practices').doc(userId).set({ rank: '10kyu' }, { merge: true });
+      setTimeout(showCompletion, 600);
+    } else {
+      renderReflection(day);
+    }
+  } catch(e) {
+    console.error(e);
+    if (btn) { btn.disabled = false; btn.textContent = `⚔️ ${S.practice.submitBtn}`; }
+    alert(S.practice.submitError);
+  }
+}
+
+function showCompletion() {
+  const P = S.practice;
+  document.getElementById('completion-screen').innerHTML = `
+    <div class="fade-up">
+      <div class="completion-mon">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="46" stroke="#c9a84c" stroke-width="3"/>
+          <circle cx="50" cy="50" r="38" stroke="#c9a84c" stroke-width="1" opacity=".4"/>
+          <circle cx="50" cy="50" r="30" stroke="#c9a84c" stroke-width="1" opacity=".2"/>
+          <text x="50" y="65" text-anchor="middle" font-family="serif" font-size="36" fill="#c9a84c" font-weight="bold">十</text>
+        </svg>
+      </div>
+      <div class="completion-title">${P.programComplete}</div>
+      <div class="completion-rank">10th Kyu</div>
+      <div class="completion-divider"></div>
+      <div class="completion-desc">
+        You kept going.<br>
+        That alone makes you a samurai.<br><br>
+        The gates of the dojo are now open.<br>
+        Your real training begins.
+      </div>
+      <div style="margin-top:1.5rem">
+        <a href="report.html?uid=${userId}"
+          style="display:inline-block;background:var(--gold);color:#1a1208;border-radius:100px;padding:.8rem 2rem;font-weight:600;text-decoration:none;font-size:.95rem">
+          ${P.viewReport}
+        </a>
+      </div>
+    </div>`;
+  document.getElementById('completion-screen').classList.add('visible');
+  document.getElementById('reflection-area').innerHTML = '';
+}
+
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error-screen').style.display = 'block';
+  document.getElementById('error-msg').innerHTML = msg;
+}
+
+init();
+</script>
+</body>
+</html>

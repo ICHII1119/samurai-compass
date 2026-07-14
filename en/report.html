@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>21-Day Practice Report — SAMURAI in You</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="apple-touch-icon" href="../logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyC1qm7kUjSRk7QRwxK-W7bH1q-pqH3lklU",
+  authDomain: "samurai-compass.firebaseapp.com",
+  projectId: "samurai-compass",
+  storageBucket: "samurai-compass.firebasestorage.app",
+  messagingSenderId: "502771859953",
+  appId: "1:502771859953:web:89e801832fdd42c6cb0450"
+});
+const db = firebase.firestore();
+</script>
+<script src="strings.js"></script>
+<style>
+:root {
+  --bg:      #1a1a1f;
+  --bg2:     #222228;
+  --bg3:     #2a2a32;
+  --cream:   #f0ead8;
+  --cream2:  #c8bfa8;
+  --muted:   #7a7060;
+  --gold:    #c9a84c;
+  --gold2:   #a07828;
+  --gold-dim:rgba(201,168,76,.12);
+  --border:  rgba(201,168,76,.18);
+  --r:       12px;
+  --font:    'Open Sans', -apple-system, sans-serif;
+  --font-b:  'Cormorant Garamond', serif;
+  --c-hei:   #60a0b8;
+  --c-jiko:  #c87840;
+  --c-flex:  #70a860;
+  --c-strat: #9878c8;
+  --c-sei:   #c86878;
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+html { -webkit-text-size-adjust:100% }
+body {
+  background:var(--bg); color:var(--cream); font-family:var(--font);
+  min-height:100vh; -webkit-font-smoothing:antialiased; padding-bottom:4rem;
+}
+
+.report-header {
+  text-align:center; padding:2.5rem 1.5rem 2rem;
+  border-bottom:1px solid var(--border); position:relative;
+}
+.report-header::after {
+  content:''; position:absolute; bottom:-1px; left:20%; right:20%; height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.logo-img { width:52px; height:52px; object-fit:contain; margin-bottom:.6rem }
+.report-title    { font-family:var(--font-b); font-size:1.35rem; font-weight:700; color:var(--cream); letter-spacing:.05em; margin-bottom:.25rem }
+.report-subtitle { font-size:.75rem; letter-spacing:.25em; color:var(--muted) }
+
+.rank-hero { text-align:center; padding:2rem 1.5rem 1.5rem; max-width:520px; margin:0 auto }
+.rank-badge-large {
+  display:inline-flex; align-items:center; gap:.6rem;
+  background:var(--gold-dim); border:1.5px solid rgba(201,168,76,.4);
+  border-radius:100px; padding:.5rem 1.4rem .5rem 1rem; margin-bottom:1rem;
+}
+.rank-badge-large .badge-icon { font-size:1.4rem }
+.rank-badge-large .badge-text { font-family:var(--font-b); font-size:1.1rem; font-weight:700; color:var(--gold); letter-spacing:.1em }
+.rank-hero-date { font-size:.78rem; color:var(--muted); margin-bottom:.5rem }
+.rank-hero-msg  { font-family:var(--font-b); font-size:1rem; color:var(--cream2); line-height:1.8 }
+
+.section { max-width:520px; margin:0 auto; padding:1.5rem 1.2rem 0 }
+.section-label { font-size:.68rem; letter-spacing:.22em; color:var(--muted); margin-bottom:.6rem }
+.section-title {
+  font-family:var(--font-b); font-size:1rem; font-weight:700; color:var(--cream);
+  margin-bottom:1rem; padding-bottom:.5rem; border-bottom:1px solid var(--border);
+}
+
+.spirit-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:var(--r);
+  padding:1.3rem; position:relative; overflow:hidden; margin-bottom:1rem;
+}
+.spirit-card::before {
+  content:''; position:absolute; top:-1px; left:15%; right:15%; height:2px;
+  background:linear-gradient(90deg,transparent,var(--spirit-color,var(--gold)),transparent);
+}
+.spirit-name-ja { font-family:var(--font-b); font-size:1.4rem; font-weight:700; margin-bottom:.2rem }
+.spirit-name-en { font-size:.7rem; letter-spacing:.2em; color:var(--muted); margin-bottom:.8rem }
+.spirit-desc    { font-size:.87rem; color:var(--cream2); line-height:1.75 }
+
+.spirit-bars { display:flex; flex-direction:column; gap:.55rem; margin-top:.8rem }
+.spirit-bar-row { display:flex; align-items:center; gap:.6rem }
+.spirit-bar-label { font-size:.72rem; color:var(--cream2); width:90px; flex-shrink:0 }
+.spirit-bar-bg    { flex:1; height:7px; background:var(--bg3); border-radius:100px; overflow:hidden }
+.spirit-bar-fill  { height:100%; border-radius:100px; transition:width .8s ease }
+.spirit-bar-num   { font-size:.7rem; color:var(--muted); width:24px; text-align:right; flex-shrink:0 }
+
+.practice-log { display:flex; flex-direction:column; gap:.8rem }
+.diary-entry {
+  background:var(--bg2); border:1px solid rgba(201,168,76,.12);
+  border-radius:10px; padding:1rem 1.1rem; display:flex; gap:.9rem; align-items:flex-start;
+}
+.entry-day {
+  flex-shrink:0; width:36px; height:36px;
+  background:var(--gold-dim); border:1px solid rgba(201,168,76,.3); border-radius:8px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1;
+}
+.entry-day-num   { font-size:.65rem; color:var(--muted) }
+.entry-day-label { font-size:.75rem; font-weight:600; color:var(--gold) }
+.entry-body  { flex:1 }
+.entry-date  { font-size:.68rem; color:var(--muted); margin-bottom:.25rem }
+.entry-text  { font-size:.87rem; color:var(--cream2); line-height:1.7 }
+.entry-empty { font-size:.82rem; color:var(--muted); font-style:italic }
+
+.diary-block { margin-top:.6rem; padding-top:.55rem; border-top:1px solid rgba(255,255,255,.04) }
+.diary-block-label { font-size:.62rem; letter-spacing:.12em; color:var(--muted); margin-bottom:.3rem }
+.diary-memo-block {
+  margin-top:.6rem; padding:.55rem .7rem;
+  background:rgba(255,255,255,.04); border-radius:6px; border-left:2px solid rgba(201,168,76,.25);
+}
+.diary-comment-block {
+  margin-top:.6rem; padding:.55rem .7rem;
+  background:rgba(201,168,76,.07); border-radius:0 6px 6px 0; border-left:2px solid var(--gold);
+}
+.diary-comment-label {
+  font-size:.62rem; color:var(--gold); margin-bottom:.25rem;
+  display:flex; gap:.5rem; align-items:center;
+}
+
+.stamp-summary {
+  display:grid; grid-template-columns:repeat(7,1fr); gap:.4rem; margin-bottom:1rem;
+}
+.stamp-pip {
+  aspect-ratio:1; border-radius:6px; background:var(--bg3);
+  border:1px solid rgba(201,168,76,.15);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.6rem; color:var(--muted);
+}
+.stamp-pip.done {
+  background:var(--gold-dim); border-color:var(--gold2);
+  font-family:var(--font-b); font-size:.75rem; color:var(--gold);
+}
+
+.closing { max-width:520px; margin:2rem auto 0; padding:1.5rem; text-align:center; border-top:1px solid var(--border) }
+.closing-quote { font-family:var(--font-b); font-size:.95rem; color:var(--cream2); line-height:2; font-style:italic; margin-bottom:1rem; white-space:pre-line }
+.closing-attr  { font-size:.72rem; color:var(--muted); letter-spacing:.1em }
+.closing-seal  { width:52px; height:52px; margin:1.5rem auto 0 }
+
+.loading { text-align:center; padding:4rem 1.5rem; color:var(--muted); font-size:.9rem }
+.error   { text-align:center; padding:3rem 1.5rem; color:var(--cream2); font-size:.9rem }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+.fade-up { animation:fadeUp .5s ease forwards }
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading"></div>
+<div class="error" id="error" style="display:none">
+  <div style="font-size:1.4rem;margin-bottom:.8rem">⚠️</div>
+  <div id="error-msg"></div>
+</div>
+<div id="report" style="display:none"></div>
+
+<script>
+const SPIRITS = {
+  hei:  { name:'平常心', en:'EQUANIMITY',    color:'#60a0b8', desc:'The ability to observe with a still mind and judge with clarity. An unshakeable axis that holds through any situation.' },
+  jiko: { name:'自己鍛錬', en:'SELF-MASTERY', color:'#c87840', desc:'The will to keep sharpening yourself. Small daily accumulations become great strength over time.' },
+  flex: { name:'柔軟な適応力', en:'ADAPTABILITY', color:'#70a860', desc:'The courage to release your form. Moving freely with change rather than resisting it.' },
+  strat:{ name:'戦略的思考', en:'STRATEGIC MIND', color:'#9878c8', desc:'The eye that sees the whole. Reading the big picture rather than being captured by what is immediately in front of you.' },
+  sei:  { name:'誠実さ', en:'INTEGRITY',     color:'#c86878', desc:'Staying honest with yourself and others. The foundation on which trust is built.' },
+};
+const SPIRIT_ORDER = ['hei','jiko','flex','strat','sei'];
+
+const params = new URLSearchParams(location.search);
+const userId = params.get('uid') || params.get('lid') || localStorage.getItem('siyen_uid');
+
+async function init() {
+  const R = S.report;
+  document.getElementById('loading').textContent = R.loading;
+
+  if (!userId) { showError(R.errorGeneral); return; }
+  try {
+    const [liteDoc, practiceDoc] = await Promise.all([
+      db.collection('lite_results').doc(userId).get(),
+      db.collection('practices').doc(userId).get()
+    ]);
+    const lite     = liteDoc.exists     ? liteDoc.data()     : null;
+    const practice = practiceDoc.exists ? practiceDoc.data() : null;
+    if (!lite && !practice) { showError(R.errorGeneral); return; }
+    render(lite, practice);
+  } catch(e) {
+    console.error(e);
+    showError(R.errorGeneral);
+  }
+}
+
+function fmt(ts) {
+  if (!ts) return '';
+  const d = ts instanceof Date ? ts : new Date(ts);
+  if (isNaN(d)) return '';
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function render(lite, practice) {
+  const R = S.report;
+  const entries       = (practice?.entries || []).sort((a,b) => a.day - b.day);
+  const memos         = practice?.memos || {};
+  const adminComments = practice?.adminComments || [];
+  const stampDays     = new Set(entries.map(e => e.day));
+  const count         = stampDays.size;
+  const spirit        = lite?.spirit || null;
+  const spiritInfo    = spirit ? SPIRITS[spirit] : null;
+  const counts        = lite?.counts || {};
+  const maxCount      = Math.max(...Object.values(counts), 1);
+  const startDate     = lite?.timestamp?.toDate ? lite.timestamp.toDate() : null;
+  const dayNum        = startDate ? Math.floor((Date.now() - startDate.getTime()) / (1000*60*60*24)) + 1 : 0;
+  const completed     = dayNum > 21;
+
+  const dateStr = startDate
+    ? `${S.report.sinceLabel} ${startDate.getFullYear()}/${String(startDate.getMonth()+1).padStart(2,'0')}/${String(startDate.getDate()).padStart(2,'0')}`
+    : '';
+
+  document.getElementById('report').innerHTML = `
+    <div class="report-header fade-up">
+      <img src="../logo.png" alt="SAMURAI in You" class="logo-img">
+      <div class="report-title">${R.title}</div>
+      <div class="report-subtitle">${R.reportSub}</div>
+    </div>
+
+    <div class="rank-hero fade-up">
+      <div class="rank-hero-date">${dateStr}</div>
+      <div class="rank-badge-large">
+        <span class="badge-icon">⚔️</span>
+        <span class="badge-text">${completed ? R.rank10 : R.rankApprentice}</span>
+      </div>
+      <div class="rank-hero-msg">
+        ${completed
+          ? 'You kept going.<br>That alone makes you a samurai.'
+          : 'In the midst of training.<br>This is how the samurai begins.'}
+      </div>
+    </div>
+
+    ${spiritInfo ? `
+    <div class="section fade-up">
+      <div class="section-label">${R.spiritLabel}</div>
+      <div class="section-title">${R.spiritLabel}</div>
+      <div class="spirit-card" style="--spirit-color:${spiritInfo.color}">
+        <div class="spirit-name-ja" style="color:${spiritInfo.color}">${spiritInfo.name}</div>
+        <div class="spirit-name-en">${spiritInfo.en}</div>
+        <div class="spirit-desc">${spiritInfo.desc}</div>
+      </div>
+      <div class="spirit-bars">
+        ${SPIRIT_ORDER.map(k => {
+          const sp  = SPIRITS[k];
+          const val = counts[k] || 0;
+          const pct = Math.round(val / maxCount * 100);
+          return `
+          <div class="spirit-bar-row">
+            <div class="spirit-bar-label">${sp.en}</div>
+            <div class="spirit-bar-bg">
+              <div class="spirit-bar-fill" style="width:${pct}%;background:${sp.color}"></div>
+            </div>
+            <div class="spirit-bar-num">${val}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="section fade-up" style="margin-top:1.5rem">
+      <div class="section-label">21-DAY PRACTICE</div>
+      <div class="section-title">${R.practiceTitle} — ${count} / 21 ${R.dayUnit}s</div>
+      <div class="stamp-summary">
+        ${Array.from({length:21},(_,i) => {
+          const d = i + 1;
+          return `<div class="stamp-pip ${stampDays.has(d) ? 'done' : ''}">
+            ${stampDays.has(d) ? '練' : d}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    ${(() => {
+      const allDays = new Set([
+        ...entries.map(e => e.day),
+        ...Object.keys(memos).map(Number),
+        ...adminComments.filter(c => c.day).map(c => c.day)
+      ]);
+      if (allDays.size === 0) return `<div class="section"><p style="color:var(--muted);font-size:.87rem">${R.noPractice}</p></div>`;
+
+      const sortedDays = [...allDays].sort((a,b) => a - b);
+      return `
+      <div class="section fade-up">
+        <div class="section-label">${R.practiceTitle}</div>
+        <div class="section-title">${R.practiceSub}</div>
+        <div class="practice-log">
+          ${sortedDays.map(day => {
+            const entry    = entries.find(e => e.day === day);
+            const memo     = memos[String(day)];
+            const comments = adminComments.filter(c => c.day === day);
+            const dateLabel = entry?.timestamp ? fmt(new Date(entry.timestamp)) : '';
+
+            const reflectionHtml = entry
+              ? `<div class="diary-block">
+                   <div class="diary-block-label">${R.reflectionLabel}${dateLabel ? `　${dateLabel}` : ''}</div>
+                   ${entry.text
+                     ? `<div class="entry-text">${entry.text.replace(/\n/g,'<br>')}</div>`
+                     : `<div class="entry-empty">(no text)</div>`}
+                 </div>`
+              : '';
+
+            const memoHtml = memo?.text
+              ? (() => {
+                  const mt = memo.updatedAt ? new Date(memo.updatedAt) : null;
+                  const memoTime = mt && !isNaN(mt) ? `　${fmt(mt)}` : '';
+                  return `<div class="diary-memo-block">
+                   <div class="diary-block-label">${R.memoLabel}${memoTime}</div>
+                   <div class="entry-text">${memo.text.replace(/\n/g,'<br>')}</div>
+                 </div>`;
+                })()
+              : '';
+
+            const commentsHtml = comments.map(c => {
+              const ct    = c.sentAt?.toDate ? c.sentAt.toDate() : (c.sentAt ? new Date(c.sentAt) : null);
+              const ctStr = ct && !isNaN(ct) ? fmt(ct) : '';
+              return `<div class="diary-comment-block">
+                        <div class="diary-comment-label">
+                          <span>${R.facilitatorLabel}</span>
+                          ${ctStr ? `<span style="color:var(--muted);font-weight:400">${ctStr}</span>` : ''}
+                        </div>
+                        <div class="entry-text">${c.text.replace(/\n/g,'<br>')}</div>
+                      </div>`;
+            }).join('');
+
+            return `
+            <div class="diary-entry">
+              <div class="entry-day">
+                <div class="entry-day-num">DAY</div>
+                <div class="entry-day-label">${day}</div>
+              </div>
+              <div class="entry-body" style="flex:1">
+                ${reflectionHtml}${memoHtml}${commentsHtml}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    })()}
+
+    <div class="closing fade-up">
+      <div class="closing-quote">${R.closingQuote}</div>
+      <div class="closing-attr">${R.closingAttr}</div>
+      <div style="margin-top:.8rem;font-size:.8rem;letter-spacing:.15em;color:var(--gold)">${R.stillBecoming}</div>
+      <div class="closing-seal">
+        <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="26" cy="26" r="23" stroke="#c9a84c" stroke-width="2"/>
+          <circle cx="26" cy="26" r="18" stroke="#c9a84c" stroke-width="1" opacity=".4"/>
+          <text x="26" y="32" text-anchor="middle" font-family="serif" font-size="16" font-weight="bold" fill="#c9a84c">侍</text>
+        </svg>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('report').style.display  = 'block';
+}
+
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error').style.display   = 'block';
+  document.getElementById('error-msg').innerHTML   = msg;
+}
+
+init();
+</script>
+</body>
+</html>
