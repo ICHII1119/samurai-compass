@@ -2191,14 +2191,11 @@ async function saveMusashiKey() {
     document.getElementById('musashi-key-status').textContent = '⚠️ キーは sk-ant- で始まる必要があります';
     return;
   }
-  try {
-    await db.collection('config').doc('admin').set({ musashiApiKey: key }, { merge: true });
-    localStorage.setItem('musashi_api_key', key);
-    input.value = '';
-    updateMusashiBanner();
-  } catch(e) {
-    document.getElementById('musashi-key-status').textContent = '⚠️ 保存失敗: ' + e.message;
-  }
+  localStorage.setItem('musashi_api_key', key);
+  input.value = '';
+  updateMusashiBanner();
+  db.collection('config').doc('admin').set({ musashiApiKey: key }, { merge: true })
+    .catch(e => console.warn('Firestore保存失敗（localStorageに保存済み）:', e.message));
 }
 async function clearMusashiKey() {
   try {
