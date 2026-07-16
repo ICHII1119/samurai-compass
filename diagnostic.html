@@ -2140,10 +2140,16 @@ async function executeBroadcast() {
     return;
   }
 
+  const sampleUrl = templateType === 'practice'
+    ? 'https://ichii1119.github.io/samurai-compass/practice.html?lid=（各自のID）'
+    : 'https://ichii1119.github.io/samurai-compass/lite.html?lid=（各自のID）';
+  const urlLabel = templateType === 'practice' ? '📋 稽古ページ（practice.html）' : '📋 診断ページ（lite.html）';
+
   const confirmed = window.confirm(
-    `一斉送信を実行します。\n\n` +
+    `【送信前確認】\n\n` +
+    `送信先URL：${urlLabel}\n${sampleUrl}\n\n` +
     `${skipExisting ? '✅ 診断済みの方は除外します。' : '⚠️ 全員に送信します（診断済み含む）。'}\n\n` +
-    `よろしいですか？`
+    `このURLで送信してよろしいですか？`
   );
   if (!confirmed) return;
 
