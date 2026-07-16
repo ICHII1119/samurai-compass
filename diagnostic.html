@@ -1263,6 +1263,7 @@ const CARDS = [
 const ADMIN_PIN = '1234'; // 管理者PINコード（変更可）
 const SEND_COMMENT_URL    = 'https://sendadmincomment-6wuzckrpiq-uc.a.run.app';
 const SEND_BROADCAST_URL  = 'https://sendbroadcast-6wuzckrpiq-uc.a.run.app';
+const RESEND_DAILY_TIP_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/resendDailyTip';
 
 let selected = new Set();
 let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
@@ -1875,6 +1876,18 @@ SAMURAI診断 — 入門編で見つけてください。
           一斉送信を実行する
         </button>
         <div id="broadcast-result" style="margin-top:.8rem;font-size:.82rem;text-align:center;color:var(--muted)"></div>
+
+        <div style="margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--border)">
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:.6rem">⚔️ 今日のTIPSカードを今すぐ再送する</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:.8rem;line-height:1.6">
+            毎朝8時の自動配信が失敗したとき用。各参加者の今日のDay・Spiritに合ったTIPSカードを個別に送ります。
+          </div>
+          <button onclick="resendTodayTip(this)"
+            style="width:100%;padding:.75rem;background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.4);border-radius:var(--r);font-weight:700;font-size:.88rem;cursor:pointer;letter-spacing:.05em">
+            ⚔️ 今日のTIPSを全員に再送
+          </button>
+          <div id="resend-tip-result" style="margin-top:.8rem;font-size:.82rem;text-align:center;color:var(--muted)"></div>
+        </div>
       </div>`;
   } catch(e) {
     console.error(e);
@@ -2174,6 +2187,28 @@ async function executeBroadcast() {
   } finally {
     btn.disabled = false;
     btn.textContent = '一斉送信を実行する';
+  }
+}
+
+/* ── 今日のTIPSを再送 ── */
+async function resendTodayTip(btn) {
+  const resultEl = document.getElementById('resend-tip-result');
+  if (!window.confirm('今日のTIPSカードを全参加者に今すぐ送信します。\nよろしいですか？')) return;
+  btn.disabled = true; btn.textContent = '送信中...'; resultEl.textContent = '';
+  try {
+    const res = await fetch(RESEND_DAILY_TIP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    resultEl.style.color = 'var(--gold)';
+    resultEl.textContent = `✅ 送信完了：${data.sent}件送信、${data.skipped}件スキップ${data.errors > 0 ? `、${data.errors}件エラー` : ''}`;
+  } catch(e) {
+    console.error(e); resultEl.style.color = 'var(--red)';
+    resultEl.textContent = '⚠️ 送信失敗：' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = '⚔️ 今日のTIPSを全員に再送';
   }
 }
 
