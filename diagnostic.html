@@ -1671,6 +1671,54 @@ function copyDojoLink(url, btn) {
   });
 }
 
+function toggleRankForm(userId, triggerBtn) {
+  const form = document.getElementById(`rank-form-${userId}`);
+  if (!form) return;
+  const isHidden = form.style.display === 'none';
+  form.style.display = isHidden ? 'block' : 'none';
+  triggerBtn.textContent = isHidden ? '閉じる' : '承認する';
+}
+
+function closeRankForm(userId) {
+  const form = document.getElementById(`rank-form-${userId}`);
+  if (!form) return;
+  form.style.display = 'none';
+  const triggerBtn = form.previousElementSibling?.querySelector('button[onclick^="toggleRankForm"]');
+  if (triggerBtn) triggerBtn.textContent = '承認する';
+}
+
+async function approveRankUp(userId, nextRank, btn) {
+  const comment = document.getElementById(`rank-comment-${userId}`)?.value.trim();
+  if (!comment) {
+    alert('道場長からの言葉を入力してください。');
+    return;
+  }
+  if (!confirm(`${nextRank} への昇級を承認しますか？\n\n「${comment}」`)) return;
+
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+  try {
+    const historyEntry = {
+      rank: nextRank,
+      comment,
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    await db.collection('practices').doc(userId).set({
+      rank: nextRank,
+      rankHistory: firebase.firestore.FieldValue.arrayUnion(historyEntry),
+    }, { merge: true });
+
+    btn.textContent = `✓ ${nextRank} に昇級しました`;
+    btn.style.color = 'var(--gold2)';
+    setTimeout(() => renderAdminLite(), 1200);
+  } catch(e) {
+    console.error(e);
+    btn.disabled = false;
+    btn.textContent = `${nextRank} に昇級を承認`;
+    alert('保存に失敗しました: ' + e.message);
+  }
+}
+
 async function renderAdminLite() {
   const container = document.getElementById('admin-lite-body');
   container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
@@ -1761,7 +1809,46 @@ async function renderAdminLite() {
                 コピー
               </button>
             </div>
-          </div>` : ''}
+          </div>
+          ${(() => {
+            const RANK_NEXT = { '十級':'九級', '九級':'八級', '八級':'七級' };
+            const RANK_CRITERIA = {
+              '九級': '道場稽古 30日・振り返り 20件',
+              '八級': '道場稽古 60日・振り返り 40件',
+              '七級': '道場稽古 90日・振り返り 60件',
+            };
+            const nextRank = RANK_NEXT[rankLabel];
+            if (!nextRank) return '';
+            const criteria = RANK_CRITERIA[nextRank];
+            return `
+            <div style="margin-top:.6rem;padding:.7rem .9rem;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:calc(var(--r) - 4px)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">
+                <div>
+                  <div style="font-size:.7rem;color:var(--muted)">昇級審査</div>
+                  <div style="font-size:.8rem;color:var(--cream);margin-top:.2rem">${rankLabel} → <strong style="color:var(--gold)">${nextRank}</strong></div>
+                  <div style="font-size:.65rem;color:var(--muted);margin-top:.15rem">目安：${criteria}</div>
+                </div>
+                <button onclick="toggleRankForm('${userId}', this)"
+                  style="flex-shrink:0;font-size:.72rem;padding:.35rem .9rem;border-radius:100px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer">
+                  承認する
+                </button>
+              </div>
+              <div id="rank-form-${userId}" style="display:none;margin-top:.7rem">
+                <textarea id="rank-comment-${userId}" placeholder="道場長からの言葉（参加者に届きます）"
+                  style="width:100%;min-height:70px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--cream);font-size:.8rem;padding:.5rem .7rem;resize:vertical;font-family:var(--font)"></textarea>
+                <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.4rem">
+                  <button onclick="closeRankForm('${userId}')"
+                    style="font-size:.72rem;padding:.3rem .8rem;border-radius:100px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer">
+                    キャンセル
+                  </button>
+                  <button onclick="approveRankUp('${userId}', '${nextRank}', this)"
+                    style="font-size:.72rem;padding:.3rem .9rem;border-radius:100px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
+                    ${nextRank} に昇級を承認
+                  </button>
+                </div>
+              </div>
+            </div>`;
+          })()}` : ''}
         </div>`;
     }).join('');
   } catch(e) {

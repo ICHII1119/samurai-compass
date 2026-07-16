@@ -371,6 +371,9 @@ body {
     <div class="stamp-grid" id="stamp-grid"></div>
   </div>
 
+  <!-- Rank History -->
+  <div id="rank-history-area"></div>
+
   <!-- Reflection or Already Done -->
   <div class="reflection-section" id="reflection-area"></div>
 
@@ -400,8 +403,8 @@ firebase.initializeApp({
 const db = firebase.firestore();
 
 /* ── Rank definitions ── */
-const RANKS = [
-  {
+const RANKS_BY_ID = {
+  minarai: {
     id: 'minarai', name: '見習い', sub: 'MINARAI',
     desc: '21日間の無料体験でSAMURAIの精神を体感します。',
     color: '#7a7060',
@@ -415,7 +418,7 @@ const RANKS = [
       <path d="M40 36 C44 34 51 35 54 38" stroke="#7a7060" stroke-width="1" stroke-linecap="round"/>
     </svg>`
   },
-  {
+  jukyu: {
     id: 'jukyu', name: '十級', sub: 'JUU-KYUU',
     desc: '21日の稽古を積み、道場への第一歩を踏み出しました。',
     color: '#c9a84c',
@@ -424,8 +427,40 @@ const RANKS = [
       <circle cx="40" cy="40" r="30" stroke="#c9a84c" stroke-width="1" opacity=".4"/>
       <text x="40" y="52" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" font-weight="bold">十</text>
     </svg>`
-  }
-];
+  },
+  kukyu: {
+    id: 'kukyu', name: '九級', sub: 'KU-KYUU',
+    desc: '道場での稽古を積み重ね、さらなる深みへと踏み込んでいます。',
+    color: '#c9a84c',
+    mon: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="40" r="36" stroke="#c9a84c" stroke-width="2.5"/>
+      <circle cx="40" cy="40" r="30" stroke="#c9a84c" stroke-width="1" opacity=".4"/>
+      <text x="40" y="52" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" font-weight="bold">九</text>
+    </svg>`
+  },
+  hachikyu: {
+    id: 'hachikyu', name: '八級', sub: 'HACHI-KYUU',
+    desc: '継続の力が身につき、軸が定まりはじめています。',
+    color: '#c9a84c',
+    mon: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="40" r="36" stroke="#c9a84c" stroke-width="2.5"/>
+      <circle cx="40" cy="40" r="30" stroke="#c9a84c" stroke-width="1" opacity=".4"/>
+      <text x="40" y="52" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" font-weight="bold">八</text>
+    </svg>`
+  },
+  nanakyu: {
+    id: 'nanakyu', name: '七級', sub: 'NANA-KYUU',
+    desc: '稽古が生き方に溶け込み、平常心が育ちつつあります。',
+    color: '#c9a84c',
+    mon: `<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="40" r="36" stroke="#c9a84c" stroke-width="2.5"/>
+      <circle cx="40" cy="40" r="30" stroke="#c9a84c" stroke-width="1" opacity=".4"/>
+      <text x="40" y="52" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" font-weight="bold">七</text>
+    </svg>`
+  },
+};
+const RANK_NAME_TO_ID = { '見習い':'minarai', '十級':'jukyu', '九級':'kukyu', '八級':'hachikyu', '七級':'nanakyu' };
+const RANKS = [RANKS_BY_ID.minarai, RANKS_BY_ID.jukyu];
 
 /* ── URL params ── */
 const params = new URLSearchParams(location.search);
@@ -474,14 +509,20 @@ function render() {
 
   const count = stampedDays.size;
   const completed = count >= 21;
-  const rankIdx = completed ? 1 : 0;
-  const rank = RANKS[rankIdx];
+
+  // Use Firestore rank if set, otherwise derive from completion
+  const storedRankName = practiceData?.rank;
+  const rankId = RANK_NAME_TO_ID[storedRankName] || (completed ? 'jukyu' : 'minarai');
+  const rank = RANKS_BY_ID[rankId] || RANKS_BY_ID.minarai;
 
   // Rank display
   document.getElementById('rank-mon').innerHTML = rank.mon;
   document.getElementById('rank-name').textContent = rank.name;
   document.getElementById('rank-sub').textContent = rank.sub;
   document.getElementById('rank-desc').textContent = rank.desc;
+
+  // Rank history
+  renderRankHistory();
 
   // Progress
   document.getElementById('stamped-count').textContent = count;
@@ -501,6 +542,40 @@ function render() {
         <div style="font-size:.82rem;color:var(--muted)">LINEのメッセージのリンクから<br>今日の稽古を記録してください。</div>
       </div>`;
   }
+}
+
+function renderRankHistory() {
+  const area = document.getElementById('rank-history-area');
+  if (!area) return;
+  const history = practiceData?.rankHistory;
+  if (!history || history.length === 0) { area.innerHTML = ''; return; }
+
+  const items = [...history]
+    .sort((a, b) => {
+      const ta = a.approvedAt?.toMillis?.() || 0;
+      const tb = b.approvedAt?.toMillis?.() || 0;
+      return tb - ta;
+    })
+    .map(h => {
+      const ts = h.approvedAt?.toDate?.();
+      const dateStr = ts
+        ? `${ts.getFullYear()}/${ts.getMonth()+1}/${ts.getDate()}`
+        : '';
+      return `
+        <div style="display:flex;gap:.75rem;align-items:flex-start;padding:.75rem 0;border-bottom:1px solid rgba(201,168,76,.1)">
+          <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;font-family:var(--font-b);font-size:.85rem;color:var(--gold);font-weight:700">${h.rank}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.78rem;color:var(--cream2);line-height:1.6">${h.comment}</div>
+            ${dateStr ? `<div style="font-size:.65rem;color:var(--muted);margin-top:.2rem">${dateStr} 道場長より</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+  area.innerHTML = `
+    <div style="margin:0 1.5rem 1.5rem;padding:1rem 1.2rem;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:14px">
+      <div style="font-size:.7rem;letter-spacing:.12em;color:var(--muted);margin-bottom:.5rem">道場長からの言葉</div>
+      ${items}
+    </div>`;
 }
 
 function renderGrid() {
