@@ -1690,7 +1690,12 @@ async function renderAdminLite() {
     profileSnap.forEach(d => { if (d.data().displayName) nameMap[d.id] = { name: d.data().displayName, pic: d.data().pictureUrl || '' }; });
 
     const progressMap = {};
-    practiceSnap.forEach(d => { progressMap[d.id] = (d.data().entries || []).length; });
+    const rankMap = {};
+    practiceSnap.forEach(d => {
+      const data = d.data();
+      progressMap[d.id] = (data.entries || []).length;
+      rankMap[d.id] = data.rank || null;
+    });
 
     const spiritNames  = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
     const spiritColors = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
@@ -1708,12 +1713,15 @@ async function renderAdminLite() {
       const spiritLabel = spiritNames[spirit] || spirit;
       const color   = spiritColors[spirit] || 'var(--gold)';
       const recorded = progressMap[userId] || 0;
+      const rank = rankMap[userId];
       const ts = p.timestamp?.toDate?.();
       const dateStr = ts ? `${ts.getFullYear()}/${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
       const now = Date.now();
       const dayNum = ts ? Math.floor((now - ts.getTime()) / (1000*60*60*24)) + 1 : 0;
       const completed = dayNum > 21;
       const phase = completed ? '完了' : dayNum >= 1 ? `Day ${dayNum}` : '';
+      const rankLabel = rank === '十級' ? '十級' : completed ? '十級' : '見習';
+      const rankColor = rankLabel === '十級' ? 'var(--gold)' : 'var(--muted)';
       const reportUrl = `report.html?lid=${userId}`;
       const dojoUrl = `https://ichii1119.github.io/samurai-compass/diagnostic.html?lid=${userId}`;
 
@@ -1732,7 +1740,8 @@ async function renderAdminLite() {
               </div>
               <div style="display:flex;gap:.4rem;align-items:center;margin-top:.25rem;flex-wrap:wrap">
                 <span style="font-size:.72rem;padding:.15rem .55rem;border-radius:100px;background:${color}22;color:${color};border:1px solid ${color}55">${spiritLabel}</span>
-                <span style="font-size:.72rem;color:${completed ? 'var(--gold)' : 'var(--muted)'};font-weight:${completed ? '600' : '400'}">${phase}</span>
+                <span style="font-size:.72rem;padding:.15rem .6rem;border-radius:100px;background:${rankLabel === '十級' ? 'rgba(201,168,76,.12)' : 'var(--bg3)'};color:${rankColor};border:1px solid ${rankLabel === '十級' ? 'rgba(201,168,76,.4)' : 'var(--border)'};font-weight:${rankLabel === '十級' ? '600' : '400'}">${rankLabel}</span>
+                ${phase ? `<span style="font-size:.72rem;color:var(--muted)">${phase}</span>` : ''}
                 <span style="font-size:.72rem;color:var(--muted)">振り返り ${recorded}/21日</span>
                 ${dateStr ? `<span style="font-size:.68rem;color:var(--muted)">登録 ${dateStr}</span>` : ''}
               </div>
