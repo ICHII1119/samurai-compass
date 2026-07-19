@@ -322,6 +322,21 @@ body {
 <!-- Loading -->
 <div class="loading-screen" id="loading">読み込み中...</div>
 
+<!-- 診断前画面 -->
+<div id="pre-diagnostic-screen" style="display:none;padding:2rem 1.5rem;max-width:480px;margin:0 auto;text-align:center">
+  <div style="font-size:3rem;margin-bottom:1rem">⛩</div>
+  <div style="font-family:var(--font-b);font-size:1.6rem;color:var(--gold);margin-bottom:.6rem">道場入門診断</div>
+  <div style="font-size:.88rem;color:var(--cream2);line-height:1.8;margin-bottom:2rem">
+    道場での稽古を始める前に、<br>Pentagon Compassの本番診断を受けてください。<br><br>
+    54の問いを通じて、あなたの5つのSpiritの現在地を確かめます。
+  </div>
+  <a id="diagnostic-link" href="#"
+    style="display:inline-block;padding:.9rem 2.2rem;background:linear-gradient(135deg,#b8902a,#e8c060);color:#1a1a1f;font-family:var(--font-b);font-size:1rem;font-weight:700;letter-spacing:.06em;border-radius:100px;text-decoration:none;box-shadow:0 4px 20px rgba(201,168,76,.35)">
+    診断を受ける →
+  </a>
+  <div style="margin-top:1.5rem;font-size:.72rem;color:var(--muted)">診断完了後、このページに戻ってきてください。</div>
+</div>
+
 <!-- Main -->
 <div id="main-content" style="display:none">
 
@@ -441,10 +456,20 @@ let selectedSpirit = null;
 async function init() {
   if (!userId) { showError('URLが正しくありません。'); return; }
   try {
-    const [dojoDoc, practiceDoc] = await Promise.all([
+    const [dojoDoc, practiceDoc, submissionDoc] = await Promise.all([
       db.collection('dojo_practices').doc(userId).get(),
       db.collection('practices').doc(userId).get(),
+      db.collection('submissions').doc(userId).get(),
     ]);
+
+    // フル診断がまだの場合 → 診断前画面を表示
+    if (!submissionDoc.exists) {
+      document.getElementById('loading').style.display = 'none';
+      const diagUrl = `diagnostic.html?lid=${userId}`;
+      document.getElementById('diagnostic-link').href = diagUrl;
+      document.getElementById('pre-diagnostic-screen').style.display = 'block';
+      return;
+    }
 
     dojoData = dojoDoc.exists
       ? dojoDoc.data()
