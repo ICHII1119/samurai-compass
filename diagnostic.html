@@ -1263,7 +1263,8 @@ const CARDS = [
 const ADMIN_PIN = '1234'; // 管理者PINコード（変更可）
 const SEND_COMMENT_URL    = 'https://sendadmincomment-6wuzckrpiq-uc.a.run.app';
 const SEND_BROADCAST_URL  = 'https://sendbroadcast-6wuzckrpiq-uc.a.run.app';
-const RESEND_DAILY_TIP_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/resendDailyTip';
+const RESEND_DAILY_TIP_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/resendDailyTip';
+const SEND_DOJO_INVITE_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendDojoInvite';
 
 let selected = new Set();
 let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
@@ -1660,6 +1661,28 @@ function refreshAdmin() {
   else renderAdminList();
 }
 
+async function sendDojoInviteLine(userId, nickname, btn) {
+  if (!confirm(`${nickname || 'この参加者'} に道場入門リンクをLINEで送信しますか？`)) return;
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  try {
+    const res = await fetch(SEND_DOJO_INVITE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+      body: JSON.stringify({ userId, nickname }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    btn.textContent = '✓ 送信済み';
+    btn.style.color = '#00c300';
+    btn.style.borderColor = 'rgba(0,195,0,.5)';
+  } catch(e) {
+    console.error(e);
+    btn.textContent = '⚠ 失敗';
+    btn.style.color = 'var(--red)';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'LINEで送信'; btn.style.color = ''; btn.style.borderColor = ''; }, 3000);
+  }
+}
+
 function copyDojoLink(url, btn) {
   navigator.clipboard.writeText(url).then(() => {
     const orig = btn.textContent;
@@ -1807,6 +1830,10 @@ async function renderAdminLite() {
               <button onclick="copyDojoLink('${dojoUrl}', this)"
                 style="flex-shrink:0;font-size:.72rem;padding:.3rem .8rem;border-radius:100px;background:var(--gold-dim);border:1px solid rgba(201,168,76,.4);color:var(--gold);cursor:pointer;white-space:nowrap">
                 コピー
+              </button>
+              <button onclick="sendDojoInviteLine('${userId}', '${name.replace(/'/g, "\\'")}', this)"
+                style="flex-shrink:0;font-size:.72rem;padding:.3rem .8rem;border-radius:100px;background:rgba(0,195,0,.1);border:1px solid rgba(0,195,0,.35);color:#00c300;cursor:pointer;white-space:nowrap">
+                LINEで送信
               </button>
             </div>
           </div>
