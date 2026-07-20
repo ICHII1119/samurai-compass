@@ -1268,6 +1268,8 @@ const SEND_DOJO_INVITE_URL  = 'https://us-central1-samurai-compass.cloudfunction
 
 let selected = new Set();
 let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
+const _urlParams = new URLSearchParams(location.search);
+const _lidParam = _urlParams.get('lid') || null;
 
 /* ════════════════════════════════════
    SCREEN TRANSITIONS
@@ -1462,6 +1464,10 @@ async function submitResponse() {
 
   try {
     await db.collection('submissions').add(submission);
+    // lid パラメータがある場合（道場入門フロー）→ userId でも保存
+    if (_lidParam) {
+      await db.collection('submissions').doc(_lidParam).set(submission, { merge: true });
+    }
     // EmailJS 通知
     emailjs.send('service_1dicjgi', 'template_bhxtn8c').catch(e => console.warn('メール送信エラー:', e));
     showScreen('s-complete');
