@@ -1057,13 +1057,28 @@ body {
         ご回答ありがとうございました
       </h2>
       <div style="width:50px;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:.8rem auto 1.2rem"></div>
-      <p style="color:var(--cream2);line-height:1.9;margin-bottom:2rem">
-        カードの選択が完了しました。<br>
-        ファシリテーターが結果をもとに<br>フィードバックをお届けします。
-      </p>
-      <p style="font-size:.82rem;color:var(--muted);font-style:italic">
-        — 稽古は今日から始まります —
-      </p>
+      <div id="complete-msg-default">
+        <p style="color:var(--cream2);line-height:1.9;margin-bottom:2rem">
+          カードの選択が完了しました。<br>
+          ファシリテーターが結果をもとに<br>フィードバックをお届けします。
+        </p>
+        <p style="font-size:.82rem;color:var(--muted);font-style:italic">
+          — 稽古は今日から始まります —
+        </p>
+      </div>
+      <div id="complete-msg-dojo" style="display:none">
+        <p style="color:var(--cream2);line-height:1.9;margin-bottom:1.5rem">
+          Pentagon Compassの診断が完了しました。<br>
+          あなたの5つのSpiritの現在地が<br>道場に記録されました。
+        </p>
+        <a id="complete-dojo-link" href="#"
+          style="display:inline-block;padding:.9rem 2.2rem;background:linear-gradient(135deg,#b8902a,#e8c060);color:#1a1a1f;font-family:var(--font-b);font-size:1rem;font-weight:700;letter-spacing:.06em;border-radius:100px;text-decoration:none;box-shadow:0 4px 20px rgba(201,168,76,.35)">
+          ⛩ 道場に進む →
+        </a>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:1.2rem;font-style:italic">
+          — 稽古は今日から始まります —
+        </p>
+      </div>
     </div>
   </div>
 </section>
@@ -1470,6 +1485,13 @@ async function submitResponse() {
     }
     // EmailJS 通知
     emailjs.send('service_1dicjgi', 'template_bhxtn8c').catch(e => console.warn('メール送信エラー:', e));
+
+    // 道場フロー：完了画面を切り替え
+    if (_lidParam) {
+      document.getElementById('complete-msg-default').style.display = 'none';
+      document.getElementById('complete-msg-dojo').style.display = 'block';
+      document.getElementById('complete-dojo-link').href = `dojo.html?lid=${_lidParam}`;
+    }
     showScreen('s-complete');
   } catch(e) {
     console.error('送信エラー:', e);
