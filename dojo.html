@@ -814,18 +814,16 @@ function renderCompass(entries) {
   const svg = document.getElementById('compass-svg');
   const cx = 140, cy = 140, maxR = 100;
 
+  // 稽古件数は常にカウント（ラベル表示用）
+  const counts = {};
+  SPIRITS_ORDER.forEach(s => counts[s] = 0);
+  entries.forEach(e => { if (counts[e.spirit] !== undefined) counts[e.spirit]++; });
+
   // AI評価スコアがあればそれを使用、なければ稽古件数ベース
-  let values;
   const aiScores = dojoData.compassScores;
-  if (aiScores) {
-    values = SPIRITS_ORDER.map(s => (aiScores[s] || 0) / 100);
-  } else {
-    const counts = {};
-    SPIRITS_ORDER.forEach(s => counts[s] = 0);
-    entries.forEach(e => { if (counts[e.spirit] !== undefined) counts[e.spirit]++; });
-    const scale = 30;
-    values = SPIRITS_ORDER.map(s => Math.min(counts[s] / scale, 1));
-  }
+  const values = aiScores
+    ? SPIRITS_ORDER.map(s => (aiScores[s] || 0) / 100)
+    : SPIRITS_ORDER.map(s => Math.min(counts[s] / 30, 1));
 
   // 診断ベースライン（診断で選んだカード数を正規化）
   const diagCounts = dojoData.diagnosticCounts;
