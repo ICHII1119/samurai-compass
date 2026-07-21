@@ -2072,19 +2072,29 @@ SAMURAI診断 — 入門編で見つけてください。
   }
 }
 
-/* ── 既読管理（localStorage） ── */
-function getReadState() {
-  try { return JSON.parse(localStorage.getItem('siyen_admin_read') || '{}'); } catch { return {}; }
+/* ── 既読管理（Firestore同期 — PC/スマホ共有） ── */
+let _readStateCache = null;
+
+async function loadReadState() {
+  if (_readStateCache) return _readStateCache;
+  try {
+    const doc = await db.collection('config').doc('admin_read_state').get();
+    _readStateCache = doc.exists ? doc.data() : {};
+  } catch { _readStateCache = {}; }
+  return _readStateCache;
 }
-function markUserRead(userId, entries) {
-  const state = getReadState();
-  const maxTs = Math.max(...entries.map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0), 0);
-  if (maxTs > 0) state[userId] = maxTs;
-  localStorage.setItem('siyen_admin_read', JSON.stringify(state));
+
+function markUserRead(userId, maxTs) {
+  if (!_readStateCache) _readStateCache = {};
+  _readStateCache[userId] = Math.max(_readStateCache[userId] || 0, maxTs || Date.now());
+  db.collection('config').doc('admin_read_state').set(
+    { [userId]: _readStateCache[userId] },
+    { merge: true }
+  ).catch(e => console.warn('readState保存失敗:', e.message));
 }
+
 function getUnreadCount(userId, entries) {
-  const state = getReadState();
-  const seenUntil = state[userId] || 0;
+  const seenUntil = _readStateCache?.[userId] || 0;
   return entries.filter(e => e.timestamp && new Date(e.timestamp).getTime() > seenUntil).length;
 }
 
@@ -2094,7 +2104,8 @@ async function renderAdminPractices() {
   try {
     const [practiceSnap, profileSnap] = await Promise.all([
       db.collection('practices').get(),
-      db.collection('profiles').get()
+      db.collection('profiles').get(),
+      loadReadState(),
     ]);
     if (practiceSnap.empty) {
       container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r)">振り返り記録はまだありません</div>`;
@@ -2236,15 +2247,13 @@ function togglePracticeCard(userId, headerEl) {
   detail.style.display = isOpen ? 'none' : 'block';
 
   if (!isOpen) {
-    /* 最新エントリのtimestampを計算してlocalStorageに保存 */
+    /* 最新エントリのtimestampを計算してFirestoreに保存 */
     let maxTs = 0;
     detail.querySelectorAll('[data-ts]').forEach(el => {
       const ts = parseInt(el.dataset.ts || '0');
       if (ts > maxTs) maxTs = ts;
     });
-    const state = getReadState();
-    state[userId] = Math.max(state[userId] || 0, maxTs || Date.now());
-    localStorage.setItem('siyen_admin_read', JSON.stringify(state));
+    markUserRead(userId, maxTs || Date.now());
 
     /* バッジとボーダーをリセット */
     const badge = document.getElementById(`badge-${userId}`);
