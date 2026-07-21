@@ -231,10 +231,52 @@ body {
 .spirit-btn-name { font-size: .75rem; font-weight: 600; color: var(--cream) }
 .spirit-btn-en { font-size: .6rem; color: var(--muted); margin-top: .1rem; letter-spacing: .06em }
 
+/* ── Form label ── */
+.form-label {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-bottom: .45rem;
+}
+
+/* ── Challenge card ── */
+.challenge-card {
+  display: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+  animation: fadeSlideIn .2s ease;
+}
+.challenge-card.visible { display: block }
+.challenge-label {
+  font-size: .62rem;
+  letter-spacing: .14em;
+  color: var(--muted);
+  margin-bottom: .45rem;
+}
+.challenge-title {
+  font-family: var(--font-b);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: .4rem;
+}
+.challenge-body {
+  font-size: .83rem;
+  color: var(--cream2);
+  line-height: 1.75;
+}
+
+/* ── Journal section ── */
+.journal-section {
+  display: none;
+  animation: fadeSlideIn .2s ease;
+}
+.journal-section.visible { display: block }
+
 /* ── Reflection textarea ── */
 .reflection-input {
   width: 100%;
-  min-height: 90px;
+  min-height: 100px;
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: var(--r);
@@ -244,7 +286,7 @@ body {
   padding: .75rem 1rem;
   resize: vertical;
   margin-bottom: 1rem;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 .reflection-input::placeholder { color: var(--muted) }
 .reflection-input:focus { outline: none; border-color: rgba(201,168,76,.5) }
@@ -264,6 +306,86 @@ body {
   cursor: pointer;
 }
 .btn-submit:disabled { opacity: .5; cursor: not-allowed }
+
+/* ── Success screen ── */
+.success-screen {
+  display: none;
+  text-align: center;
+  padding: .5rem 0;
+  animation: fadeSlideIn .25s ease;
+}
+.success-screen.visible { display: block }
+.success-title {
+  font-family: var(--font-b);
+  font-size: 1.1rem;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+.success-entry-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: .85rem 1rem;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+.success-spirit-label {
+  font-size: .7rem;
+  color: var(--muted);
+  margin-bottom: .2rem;
+}
+.success-challenge-label {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: .35rem;
+}
+.success-reflection-text {
+  font-size: .82rem;
+  color: var(--cream2);
+  line-height: 1.6;
+}
+.ai-loading {
+  font-size: .78rem;
+  color: var(--muted);
+  padding: .5rem 0 1rem;
+}
+.ai-message-area {
+  display: none;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+.ai-message-label {
+  font-size: .65rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin-bottom: .5rem;
+}
+.ai-message-box {
+  background: rgba(201,168,76,.06);
+  border: 1px solid rgba(201,168,76,.22);
+  border-radius: var(--r);
+  padding: .9rem 1rem;
+  font-size: .85rem;
+  color: var(--cream);
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+.btn-close {
+  width: 100%;
+  padding: .75rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--cream2);
+  font-size: .9rem;
+  cursor: pointer;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
 
 /* ── Recent entries ── */
 .entries-section {
@@ -411,16 +533,51 @@ body {
 <div class="record-overlay" id="record-overlay" onclick="handleOverlayClick(event)">
   <div class="record-panel">
     <div class="panel-handle"></div>
-    <div class="panel-title">今日の稽古を記録する</div>
 
-    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.55rem">今日の稽古はどのSpiritに関わるものでしたか？</div>
-    <div class="spirit-grid" id="spirit-grid"></div>
+    <!-- フォームビュー -->
+    <div id="record-form">
+      <div class="panel-title">今日の稽古を記録する</div>
 
-    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem">振り返り</div>
-    <textarea class="reflection-input" id="reflection-input" placeholder="今日の稽古で気づいたこと、感じたことを書いてください。"></textarea>
+      <div class="form-label">今日の稽古はどのSpiritに関わるものでしたか？</div>
+      <div class="spirit-grid" id="spirit-grid"></div>
 
-    <div id="record-error" style="font-size:.75rem;color:var(--red);margin-bottom:.6rem;min-height:1.2em"></div>
-    <button class="btn-submit" id="submit-btn" onclick="submitRecord()">記録する</button>
+      <!-- 課題カード（Spirit選択後に表示） -->
+      <div class="challenge-card" id="challenge-card">
+        <div class="challenge-label">今日の課題</div>
+        <div class="challenge-title" id="challenge-title"></div>
+        <div class="challenge-body" id="challenge-body"></div>
+      </div>
+
+      <!-- ジャーナル（Spirit選択後に表示） -->
+      <div class="journal-section" id="journal-section">
+        <div class="form-label">この課題に、どのように向き合いましたか？</div>
+        <textarea class="reflection-input" id="reflection-input"
+          placeholder="今日の体験、気づき、感じたことを自由に書いてください。"></textarea>
+      </div>
+
+      <div id="record-error" style="font-size:.75rem;color:var(--red);margin-bottom:.6rem;min-height:1.2em"></div>
+      <button class="btn-submit" id="submit-btn" onclick="submitRecord()">記録する</button>
+    </div>
+
+    <!-- 完了ビュー（送信後に表示） -->
+    <div class="success-screen" id="success-screen">
+      <div style="font-size:2.2rem;margin-bottom:.5rem">⚔️</div>
+      <div class="success-title">今日の稽古を記録しました</div>
+
+      <div class="success-entry-box">
+        <div id="success-spirit-label" class="success-spirit-label"></div>
+        <div id="success-challenge-label" class="success-challenge-label"></div>
+        <div id="success-reflection-preview" class="success-reflection-text"></div>
+      </div>
+
+      <div id="ai-loading" class="ai-loading">明日の稽古メッセージを生成中...</div>
+      <div id="ai-message-area" class="ai-message-area">
+        <div class="ai-message-label">明日の稽古に向けて</div>
+        <div class="ai-message-box" id="ai-message-text"></div>
+      </div>
+
+      <button onclick="closeRecord()" class="btn-close">閉じる</button>
+    </div>
   </div>
 </div>
 
@@ -459,11 +616,53 @@ const RANKS_BY_NAME = {
     mon:`<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" stroke="#c9a84c" stroke-width="2.5"/><circle cx="40" cy="40" r="30" stroke="#c9a84c" stroke-width="1" opacity=".4"/><text x="40" y="52" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" font-weight="bold">七</text></svg>` },
 };
 
+/* ── Challenges（各Spirit 5問） ── */
+const CHALLENGES = {
+  hei: [
+    { title: '感情の波を観る',   body: '今日、感情が乱れそうになった瞬間を一つ選んでください。その時、体のどこかで何かを感じましたか？（胸が締まる、呼吸が浅くなる、など）その感覚にあなたはどう向き合いましたか？' },
+    { title: '正しさを手放す',   body: '今日、自分が「正しい」と強く感じた瞬間はありましたか。その確信を一度手放すとしたら、何が見えてきますか？' },
+    { title: '間を置く稽古',     body: '今日、誰かに反論したくなった瞬間はありましたか。実際に口に出す前に、一呼吸置けましたか？その体験を振り返ってください。' },
+    { title: '平静さを保てた瞬間', body: '今日、平静さを保ちながら対応できた場面を一つ思い出してください。何がそれを可能にしましたか？' },
+    { title: '動揺の源を探る',   body: '今日、あなたを最も動揺させたことは何でしたか。その動揺の根にあるものは何だと思いますか？' },
+  ],
+  jiko: [
+    { title: 'やりたくないことをやった', body: '今日、やりたくなかったけれど、やったことを一つ書いてください。なぜやりましたか？やった後、何が変わりましたか？' },
+    { title: '昨日の自分を超えた瞬間',   body: '今日の行動の中で、昨日の自分より一歩だけ前に進んだ瞬間はどこでしたか？小さなことで構いません。' },
+    { title: '習慣を意識する',           body: '今日、無意識にやっていた習慣を一つ意識できましたか。それはどんな習慣で、なぜその習慣があると思いますか？' },
+    { title: '逃げたくなった瞬間',       body: '今日、目を背けたくなった課題や場面はありましたか。どう向き合いましたか、あるいは向き合えませんでしたか？' },
+    { title: '身体の声を聴く',           body: '今日、疲れやストレスを体で感じた瞬間はありましたか。その時、どのようにケアしましたか？あるいはできませんでしたか？' },
+  ],
+  flex: [
+    { title: '計画が外れた時',     body: '今日、自分の計画や予測が外れた場面を一つ書いてください。その時どう対応しましたか？同じ場面が明日来たら何を変えますか？' },
+    { title: '自分のやり方への固執', body: '今日、自分のやり方に固執しそうになった瞬間はありましたか。どう気づき、どう変えましたか？あるいは変えられませんでしたか？' },
+    { title: '予想外の出来事',     body: '今日、予想外の出来事はありましたか。それをどのように受け入れ、前に進みましたか？' },
+    { title: '別の視点を借りる',   body: '今日の悩みや課題について、全く違う立場の人ならどう見ると思いますか？その視点から見えてくるものを書いてください。' },
+    { title: '形を手放した瞬間',   body: '今日、これまで自分が大切にしてきたやり方を変えてみた瞬間はありましたか。どんな気づきがありましたか？' },
+  ],
+  strat: [
+    { title: '全体を俯瞰する',     body: '今日、目先の問題だけでなく「その先」まで考えて行動できた場面はありましたか？どのような判断をしましたか？' },
+    { title: '相手の立場に立つ',   body: '今日、誰かと意見が食い違った場面を選んでください。相手の立場から見ると、その状況はどう映っていたと思いますか？' },
+    { title: '場全体を読む',       body: '今日、目の前の細部にとらわれず、場全体の流れを読もうとした瞬間はありましたか？何が見えましたか？' },
+    { title: '決断を振り返る',     body: '今日の一番重要な決断を振り返ってください。もし同じ場面が明日来たら、何を変えたいですか、それとも同じ判断をしますか？' },
+    { title: '本当に大切なことを問う', body: '今日、忙しさの中で立ち止まり、「本当に大切なことは何か」を問う時間がありましたか？何が浮かびましたか？' },
+  ],
+  sei: [
+    { title: '自分に正直でいる',   body: '今日、自分に正直でいるために少し勇気が必要だった場面はありましたか。その時どんな選択をしましたか？' },
+    { title: '言えなかったこと',   body: '今日、大切な人との関わりの中で、言えなかったことはありますか。もし伝えるとしたら、何をどう伝えますか？' },
+    { title: '自分への約束',       body: '今日、自分自身への約束を守れましたか。守れた場合も守れなかった場合も、何がそうさせましたか？' },
+    { title: '誠実に向き合えた瞬間', body: '今日、誰かと誠実に向き合えた瞬間を一つ選んでください。その関わりの後、どんな気持ちが残りましたか？' },
+    { title: '本音と建前の間',     body: '今日、本音と建前の間で揺れた場面はありましたか。どちらを選びましたか？その選択の理由は何でしたか？' },
+  ],
+};
+
+const GENERATE_DOJO_MESSAGE_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/generateDojoMessage';
+
 /* ── State ── */
 const params = new URLSearchParams(location.search);
 const userId = params.get('lid');
 let dojoData = null;
 let selectedSpirit = null;
+let currentChallenge = null;
 
 /* ── Init ── */
 async function init() {
@@ -700,8 +899,16 @@ function escHtml(s) {
 /* ── Record panel ── */
 function openRecord() {
   selectedSpirit = null;
+  currentChallenge = null;
   document.getElementById('reflection-input').value = '';
   document.getElementById('record-error').textContent = '';
+  document.getElementById('challenge-card').classList.remove('visible');
+  document.getElementById('journal-section').classList.remove('visible');
+  document.getElementById('record-form').style.display = 'block';
+  document.getElementById('success-screen').classList.remove('visible');
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = false;
+  btn.textContent = '記録する';
   renderSpiritGrid();
   document.getElementById('record-overlay').classList.add('open');
 }
@@ -718,9 +925,10 @@ function renderSpiritGrid() {
   const grid = document.getElementById('spirit-grid');
   grid.innerHTML = SPIRITS_ORDER.map(s => {
     const sp = SPIRITS[s];
+    const active = s === selectedSpirit;
     return `
       <div class="spirit-btn" id="sbtn-${s}" onclick="selectSpirit('${s}')"
-           style="border-color:${s === selectedSpirit ? sp.color : 'var(--border)'}; background:${s === selectedSpirit ? sp.color + '22' : 'var(--bg3)'}">
+           style="border-color:${active ? sp.color : 'var(--border)'}; background:${active ? sp.color + '22' : 'var(--bg3)'}">
         <div class="spirit-btn-icon">${sp.icon}</div>
         <div class="spirit-btn-name" style="color:${sp.color}">${sp.name}</div>
         <div class="spirit-btn-en">${sp.en}</div>
@@ -731,6 +939,21 @@ function renderSpiritGrid() {
 function selectSpirit(s) {
   selectedSpirit = s;
   renderSpiritGrid();
+
+  // ランダムに課題を1つ選ぶ
+  const pool = CHALLENGES[s];
+  currentChallenge = pool[Math.floor(Math.random() * pool.length)];
+
+  const sp = SPIRITS[s];
+  const card = document.getElementById('challenge-card');
+  card.style.borderColor = sp.color;
+  document.getElementById('challenge-title').style.color = sp.color;
+  document.getElementById('challenge-title').textContent = currentChallenge.title;
+  document.getElementById('challenge-body').textContent = currentChallenge.body;
+  card.classList.add('visible');
+
+  document.getElementById('journal-section').classList.add('visible');
+  document.getElementById('reflection-input').focus();
 }
 
 async function submitRecord() {
@@ -751,6 +974,8 @@ async function submitRecord() {
 
   const entry = {
     spirit: selectedSpirit,
+    challengeTitle: currentChallenge?.title || '',
+    challengeBody:  currentChallenge?.body  || '',
     reflection,
     date: toDateStr(new Date()),
     timestamp: new Date().toISOString(),
@@ -764,14 +989,59 @@ async function submitRecord() {
     if (!dojoData.entries) dojoData.entries = [];
     dojoData.entries.push(entry);
 
-    closeRecord();
+    // 完了画面に切り替え
+    showSuccessScreen(entry);
     render();
+
+    // バックグラウンドでAIメッセージ生成
+    generateAiMessage(entry);
+
   } catch(e) {
     console.error(e);
     document.getElementById('record-error').textContent = '保存に失敗しました: ' + e.message;
-  } finally {
     btn.disabled = false;
     btn.textContent = '記録する';
+  }
+}
+
+function showSuccessScreen(entry) {
+  document.getElementById('record-form').style.display = 'none';
+  const sp = SPIRITS[entry.spirit];
+  document.getElementById('success-spirit-label').textContent = `${sp.icon} ${sp.name}`;
+  document.getElementById('success-challenge-label').textContent = entry.challengeTitle;
+  const preview = entry.reflection.length > 80
+    ? entry.reflection.slice(0, 80) + '…'
+    : entry.reflection;
+  document.getElementById('success-reflection-preview').textContent = preview;
+  document.getElementById('ai-loading').style.display = 'block';
+  document.getElementById('ai-message-area').style.display = 'none';
+  document.getElementById('success-screen').classList.add('visible');
+}
+
+async function generateAiMessage(entry) {
+  try {
+    const sp = SPIRITS[entry.spirit];
+    const res = await fetch(GENERATE_DOJO_MESSAGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        spirit: entry.spirit,
+        spiritName: sp.name,
+        challengeTitle: entry.challengeTitle,
+        challengeBody:  entry.challengeBody,
+        reflection: entry.reflection,
+      }),
+    });
+    const data = await res.json();
+    document.getElementById('ai-loading').style.display = 'none';
+    if (data.message) {
+      document.getElementById('ai-message-text').textContent = data.message;
+      document.getElementById('ai-message-area').style.display = 'block';
+    }
+  } catch(e) {
+    console.error('AI message generation failed:', e);
+    document.getElementById('ai-loading').style.display = 'none';
   }
 }
 
