@@ -430,6 +430,77 @@ body {
 .rank-history-section {
   padding: 1.2rem 1.5rem 0;
 }
+
+/* ── Compass history ── */
+.compass-history-section {
+  padding: 1.2rem 1.5rem 0;
+}
+.compass-history-title {
+  font-size: .68rem;
+  letter-spacing: .14em;
+  color: var(--muted);
+  margin-bottom: .7rem;
+}
+.compass-week-row {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .6rem 0;
+  border-bottom: 1px solid rgba(201,168,76,.08);
+}
+.compass-week-row:last-child { border-bottom: none }
+.compass-week-num {
+  font-size: .65rem;
+  color: var(--muted);
+  width: 40px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.compass-week-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.compass-bar-row {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.compass-bar-label {
+  font-size: .58rem;
+  color: var(--muted);
+  width: 54px;
+  flex-shrink: 0;
+  text-align: right;
+}
+.compass-bar-track {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.compass-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .4s ease;
+}
+.compass-week-summary {
+  font-size: .65rem;
+  color: var(--cream2);
+  width: 72px;
+  flex-shrink: 0;
+  text-align: right;
+  line-height: 1.4;
+}
+.compass-update-note {
+  font-size: .65rem;
+  color: var(--muted);
+  text-align: center;
+  padding: .6rem 0 0;
+  line-height: 1.6;
+}
 </style>
 </head>
 <body>
@@ -498,16 +569,19 @@ body {
       </div>
       <div style="display:flex;align-items:center;gap:.35rem;font-size:.65rem;color:var(--muted)">
         <svg width="18" height="8"><line x1="0" y1="4" x2="18" y2="4" stroke="#c9a84c" stroke-width="2"/></svg>
-        稽古の成長
+        AI評価（週次更新）
       </div>
     </div>
     <div style="text-align:center;font-size:.72rem;color:var(--muted);line-height:1.7;margin-bottom:.4rem;padding:0 1rem">
-      破線はあなたの道場入門診断で得られた Pentagon Compass です。<br>稽古を積むほど、実線の五芒星が育っていきます。
+      破線は道場入門診断のベースライン。<br>実線は振り返りの内容をAIが評価し、毎週月曜に更新されます。
     </div>
     <div class="compass-wrap">
       <svg id="compass-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
   </div>
+
+  <!-- Compass history -->
+  <div class="compass-history-section" id="compass-history-area"></div>
 
   <!-- Rank history -->
   <div class="rank-history-section" id="rank-history-area"></div>
@@ -730,6 +804,7 @@ function render() {
   document.getElementById('stat-streak').textContent = streak;
 
   renderCompass(entries);
+  renderCompassHistory();
   renderEntries(entries);
   renderRankHistory();
 }
@@ -739,14 +814,18 @@ function renderCompass(entries) {
   const svg = document.getElementById('compass-svg');
   const cx = 140, cy = 140, maxR = 100;
 
-  // 稽古記録のカウント
-  const counts = {};
-  SPIRITS_ORDER.forEach(s => counts[s] = 0);
-  entries.forEach(e => { if (counts[e.spirit] !== undefined) counts[e.spirit]++; });
-
-  // 稽古成長値（30件で100%）
-  const scale = 30;
-  const values = SPIRITS_ORDER.map(s => Math.min(counts[s] / scale, 1));
+  // AI評価スコアがあればそれを使用、なければ稽古件数ベース
+  let values;
+  const aiScores = dojoData.compassScores;
+  if (aiScores) {
+    values = SPIRITS_ORDER.map(s => (aiScores[s] || 0) / 100);
+  } else {
+    const counts = {};
+    SPIRITS_ORDER.forEach(s => counts[s] = 0);
+    entries.forEach(e => { if (counts[e.spirit] !== undefined) counts[e.spirit]++; });
+    const scale = 30;
+    values = SPIRITS_ORDER.map(s => Math.min(counts[s] / scale, 1));
+  }
 
   // 診断ベースライン（診断で選んだカード数を正規化）
   const diagCounts = dojoData.diagnosticCounts;
@@ -838,6 +917,65 @@ function renderEntries(entries) {
         </div>
       </div>`;
   }).join('');
+}
+
+/* ── Compass history ── */
+function renderCompassHistory() {
+  const area = document.getElementById('compass-history-area');
+  const history = dojoData?.compassHistory;
+  const updatedAt = dojoData?.compassUpdatedAt;
+
+  if (!history || history.length === 0) {
+    area.innerHTML = `
+      <div style="padding:0 1.5rem">
+        <div class="compass-update-note">
+          Pentagon Compassは稽古記録に基づき、毎週月曜に更新されます。<br>
+          稽古を積み重ねるほど、精度が上がっていきます。
+        </div>
+      </div>`;
+    return;
+  }
+
+  const SPIRIT_COLORS = { hei:'#60a0b8', jiko:'#4aaa5a', flex:'#4a88d8', strat:'#e86040', sei:'#a060e0' };
+  const SPIRIT_LABEL  = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟', strat:'戦略', sei:'誠実' };
+
+  const sorted = [...history].sort((a, b) => a.week - b.week);
+
+  const nextUpdate = updatedAt
+    ? (() => {
+        const d = updatedAt.toDate ? updatedAt.toDate() : new Date(updatedAt);
+        const next = new Date(d.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const diff = Math.ceil((next - Date.now()) / (1000 * 60 * 60 * 24));
+        return diff > 0 ? `次回更新まであと ${diff} 日` : '次回更新は間もなく';
+      })()
+    : '';
+
+  const rows = sorted.map(h => {
+    const bars = SPIRITS_ORDER.map(s => `
+      <div class="compass-bar-row">
+        <div class="compass-bar-label">${SPIRIT_LABEL[s]}</div>
+        <div class="compass-bar-track">
+          <div class="compass-bar-fill" style="width:${h.scores[s] || 0}%;background:${SPIRIT_COLORS[s]}"></div>
+        </div>
+      </div>`).join('');
+
+    const ts = h.updatedAt?.toDate ? h.updatedAt.toDate() : new Date();
+    const dateStr = `${ts.getMonth()+1}/${ts.getDate()}`;
+
+    return `
+      <div class="compass-week-row">
+        <div class="compass-week-num">Week ${h.week}<br><span style="font-size:.55rem">${dateStr}</span></div>
+        <div class="compass-week-bars">${bars}</div>
+        <div class="compass-week-summary">${escHtml(h.summary || '')}</div>
+      </div>`;
+  }).join('');
+
+  area.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.2rem;margin:0 1.5rem">
+      <div class="compass-history-title">PENTAGON COMPASS — 週次成長記録</div>
+      ${rows}
+      ${nextUpdate ? `<div class="compass-update-note">${nextUpdate}</div>` : ''}
+    </div>`;
 }
 
 /* ── Rank history ── */
