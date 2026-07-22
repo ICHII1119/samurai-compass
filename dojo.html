@@ -612,17 +612,20 @@ body {
     <div id="record-form">
       <div class="panel-title">今日の稽古を記録する</div>
 
-      <div class="form-label">今日の稽古はどのSpiritに関わるものでしたか？</div>
-      <div class="spirit-grid" id="spirit-grid"></div>
-
-      <!-- 課題カード（Spirit選択後に表示） -->
+      <!-- 今日の課題（LINEで配信済み、またはSpirit選択後） -->
       <div class="challenge-card" id="challenge-card">
         <div class="challenge-label">今日の課題</div>
         <div class="challenge-title" id="challenge-title"></div>
         <div class="challenge-body" id="challenge-body"></div>
       </div>
 
-      <!-- ジャーナル（Spirit選択後に表示） -->
+      <!-- Spirit選択（今日の課題がない場合のみ表示） -->
+      <div id="spirit-select-section" style="display:none">
+        <div class="form-label">今日の稽古はどのSpiritに関わるものでしたか？</div>
+        <div class="spirit-grid" id="spirit-grid"></div>
+      </div>
+
+      <!-- ジャーナル -->
       <div class="journal-section" id="journal-section">
         <div class="form-label">この課題に、どのように向き合いましたか？</div>
         <textarea class="reflection-input" id="reflection-input"
@@ -1033,6 +1036,10 @@ function escHtml(s) {
 }
 
 /* ── Record panel ── */
+function toDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function openRecord() {
   selectedSpirit = null;
   currentChallenge = null;
@@ -1045,7 +1052,30 @@ function openRecord() {
   const btn = document.getElementById('submit-btn');
   btn.disabled = false;
   btn.textContent = '記録する';
-  renderSpiritGrid();
+
+  const today = toDateStr(new Date());
+  const tc = dojoData.todayChallenge;
+
+  if (tc && tc.date === today) {
+    // LINEで届いた今日の課題をそのまま表示
+    selectedSpirit = tc.spirit;
+    currentChallenge = { title: tc.title, body: tc.body };
+    const sp = SPIRITS[tc.spirit] || {};
+    const card = document.getElementById('challenge-card');
+    card.style.borderColor = sp.color || 'var(--gold)';
+    document.getElementById('challenge-title').style.color = sp.color || 'var(--gold)';
+    document.getElementById('challenge-title').textContent = tc.title;
+    document.getElementById('challenge-body').textContent = tc.body;
+    card.classList.add('visible');
+    document.getElementById('spirit-select-section').style.display = 'none';
+    document.getElementById('journal-section').classList.add('visible');
+    document.getElementById('reflection-input').focus();
+  } else {
+    // 今日の課題なし → Spiritを手動選択
+    document.getElementById('spirit-select-section').style.display = 'block';
+    renderSpiritGrid();
+  }
+
   document.getElementById('record-overlay').classList.add('open');
 }
 
@@ -1074,7 +1104,6 @@ function renderSpiritGrid() {
 
 function selectSpirit(s) {
   selectedSpirit = s;
-  renderSpiritGrid();
 
   // ランダムに課題を1つ選ぶ
   const pool = CHALLENGES[s];
@@ -1088,6 +1117,7 @@ function selectSpirit(s) {
   document.getElementById('challenge-body').textContent = currentChallenge.body;
   card.classList.add('visible');
 
+  document.getElementById('spirit-select-section').style.display = 'none';
   document.getElementById('journal-section').classList.add('visible');
   document.getElementById('reflection-input').focus();
 }
