@@ -516,6 +516,23 @@ body {
 <div class="loading-screen" id="loading">読み込み中...</div>
 
 <!-- 診断前画面 -->
+<!-- 21日間入門中の参加者向け -->
+<div id="in-practice-screen" style="display:none;padding:2rem 1.5rem;max-width:480px;margin:0 auto;text-align:center">
+  <div style="font-size:3rem;margin-bottom:1rem">🌱</div>
+  <div style="font-family:var(--font-b);font-size:1.5rem;color:var(--gold);margin-bottom:.8rem">21日間の稽古の途中です</div>
+  <div style="font-size:.88rem;color:var(--cream2);line-height:1.9;margin-bottom:2rem">
+    あなたは今、21日間の入門稽古に取り組んでいます。<br><br>
+    SAMURAI道場は、21日間の稽古を終えた後に開かれます。<br>
+    今は目の前の稽古に集中してください。
+  </div>
+  <a id="practice-link" href="#"
+    style="display:inline-block;padding:.9rem 2.2rem;background:linear-gradient(135deg,#b8902a,#e8c060);color:#1a1a1f;font-family:var(--font-b);font-size:1rem;font-weight:700;letter-spacing:.06em;border-radius:100px;text-decoration:none;box-shadow:0 4px 20px rgba(201,168,76,.35)">
+    稽古記録へ →
+  </a>
+  <div style="margin-top:1.5rem;font-size:.72rem;color:var(--muted)">千日の稽古を鍛とし、万日の稽古を錬とす。</div>
+</div>
+
+<!-- フル診断前の画面 -->
 <div id="pre-diagnostic-screen" style="display:none;padding:2rem 1.5rem;max-width:480px;margin:0 auto;text-align:center">
   <div style="font-size:3rem;margin-bottom:1rem">⛩</div>
   <div style="font-family:var(--font-b);font-size:1.6rem;color:var(--gold);margin-bottom:.6rem">道場入門診断</div>
@@ -751,12 +768,20 @@ async function init() {
       db.collection('submissions').doc(userId).get(),
     ]);
 
-    // フル診断がまだの場合 → 診断前画面を表示
+    // フル診断がまだの場合
     if (!submissionDoc.exists) {
       document.getElementById('loading').style.display = 'none';
-      const diagUrl = `diagnostic.html?lid=${userId}`;
-      document.getElementById('diagnostic-link').href = diagUrl;
-      document.getElementById('pre-diagnostic-screen').style.display = 'block';
+      if (practiceDoc.exists) {
+        // 21日間の入門稽古中
+        const practiceUrl = `practice.html?lid=${userId}`;
+        document.getElementById('practice-link').href = practiceUrl;
+        document.getElementById('in-practice-screen').style.display = 'block';
+      } else {
+        // 診断自体がまだ
+        const diagUrl = `diagnostic.html?lid=${userId}`;
+        document.getElementById('diagnostic-link').href = diagUrl;
+        document.getElementById('pre-diagnostic-screen').style.display = 'block';
+      }
       return;
     }
 
