@@ -629,17 +629,11 @@ body {
     <div id="record-form">
       <div class="panel-title">今日の稽古を記録する</div>
 
-      <!-- 今日の課題（LINEで配信済み、またはSpirit選択後） -->
+      <!-- 今日の課題 -->
       <div class="challenge-card" id="challenge-card">
         <div class="challenge-label">今日の課題</div>
         <div class="challenge-title" id="challenge-title"></div>
         <div class="challenge-body" id="challenge-body"></div>
-      </div>
-
-      <!-- Spirit選択（今日の課題がない場合のみ表示） -->
-      <div id="spirit-select-section" style="display:none">
-        <div class="form-label">今日の稽古はどのSpiritに関わるものでしたか？</div>
-        <div class="spirit-grid" id="spirit-grid"></div>
       </div>
 
       <!-- ジャーナル -->
@@ -1070,8 +1064,6 @@ function openRecord() {
   currentChallenge = null;
   document.getElementById('reflection-input').value = '';
   document.getElementById('record-error').textContent = '';
-  document.getElementById('challenge-card').classList.remove('visible');
-  document.getElementById('journal-section').classList.remove('visible');
   document.getElementById('record-form').style.display = 'block';
   document.getElementById('success-screen').classList.remove('visible');
   const btn = document.getElementById('submit-btn');
@@ -1080,27 +1072,28 @@ function openRecord() {
 
   const today = toDateStr(new Date());
   const tc = dojoData.todayChallenge;
+  const card = document.getElementById('challenge-card');
 
   if (tc && tc.date === today) {
-    // LINEで届いた今日の課題をそのまま表示
+    // LINEで届いた今日の課題を表示
     selectedSpirit = tc.spirit;
     currentChallenge = { title: tc.title, body: tc.body };
     const sp = SPIRITS[tc.spirit] || {};
-    const card = document.getElementById('challenge-card');
     card.style.borderColor = sp.color || 'var(--gold)';
     document.getElementById('challenge-title').style.color = sp.color || 'var(--gold)';
     document.getElementById('challenge-title').textContent = tc.title;
     document.getElementById('challenge-body').textContent = tc.body;
-    card.classList.add('visible');
-    document.getElementById('spirit-select-section').style.display = 'none';
-    document.getElementById('journal-section').classList.add('visible');
-    document.getElementById('reflection-input').focus();
   } else {
-    // 今日の課題なし → Spiritを手動選択
-    document.getElementById('spirit-select-section').style.display = 'block';
-    renderSpiritGrid();
+    // 今日の課題がまだ届いていない場合
+    card.style.borderColor = 'var(--gold)';
+    document.getElementById('challenge-title').style.color = 'var(--gold)';
+    document.getElementById('challenge-title').textContent = '本日の課題';
+    document.getElementById('challenge-body').textContent = '今日の課題はまだ届いていません。毎朝8時にLINEで送られます。';
   }
 
+  card.classList.add('visible');
+  document.getElementById('journal-section').classList.add('visible');
+  document.getElementById('reflection-input').focus();
   document.getElementById('record-overlay').classList.add('open');
 }
 
