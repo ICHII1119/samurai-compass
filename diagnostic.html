@@ -3011,7 +3011,7 @@ const PROFILE_URGENCY_CONTEXT = {
 };
 
 function getContextualMessage(spiritKey) {
-  const base = SPIRIT_MESSAGES[spiritKey].message.replace(/\n/g, '<br>');
+  const base = (SPIRIT_MESSAGES[spiritKey]?.message || '').replace(/\n/g, '<br>');
   const parts = [base];
   const roleMsg = profile.role && PROFILE_ROLE_CONTEXT[profile.role]?.[spiritKey];
   if (roleMsg) parts.push(`<span style="color:var(--gold);font-weight:500">${roleMsg}</span>`);

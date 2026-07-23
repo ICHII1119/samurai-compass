@@ -1055,10 +1055,6 @@ function escHtml(s) {
 }
 
 /* ── Record panel ── */
-function toDateStr(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
 function openRecord() {
   selectedSpirit = null;
   currentChallenge = null;
@@ -1084,11 +1080,13 @@ function openRecord() {
     document.getElementById('challenge-title').textContent = tc.title;
     document.getElementById('challenge-body').textContent = tc.body;
   } else {
-    // 今日の課題がまだ届いていない場合
+    // 今日の課題がまだ届いていない場合 — 送信ボタンを無効化
     card.style.borderColor = 'var(--gold)';
     document.getElementById('challenge-title').style.color = 'var(--gold)';
     document.getElementById('challenge-title').textContent = '本日の課題';
     document.getElementById('challenge-body').textContent = '今日の課題はまだ届いていません。毎朝8時にLINEで送られます。';
+    btn.disabled = true;
+    btn.textContent = '課題が届いてから記録できます';
   }
 
   card.classList.add('visible');
