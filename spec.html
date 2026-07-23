@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>設計書 — SAMURAI in You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Zen+Antique+Soft&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #faf8f4;
+  --bg2:     #f0ebe0;
+  --bg3:     #e8e0d0;
+  --card:    #ffffff;
+  --border:  #ddd4b8;
+  --text:    #1a130a;
+  --muted:   #6a5a40;
+  --gold:    #9a7520;
+  --gold-hi: #c9a84c;
+  --gold-bg: rgba(201,168,76,.10);
+  --red:     #7a1a1a;
+  --sidebar: 220px;
+  --font-d:  'Cormorant Garamond', 'Zen Antique Soft', serif;
+  --font-b:  'Inter', system-ui, sans-serif;
+  --font-m:  'Menlo', 'Courier New', monospace;
+  --r:       8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#0d0905; --bg2:#160f08; --bg3:#1f1508; --card:#160f08;
+    --border:#3a2c18; --text:#e8dfc0; --muted:#9a8a6a;
+    --gold:#c9a84c; --gold-hi:#e0c070; --gold-bg:rgba(201,168,76,.12); --red:#c05050;
+  }
+}
+:root[data-theme="light"] {
+  --bg:#faf8f4;--bg2:#f0ebe0;--bg3:#e8e0d0;--card:#ffffff;--border:#ddd4b8;
+  --text:#1a130a;--muted:#6a5a40;--gold:#9a7520;--gold-hi:#c9a84c;
+  --gold-bg:rgba(201,168,76,.10);--red:#7a1a1a;
+}
+:root[data-theme="dark"] {
+  --bg:#0d0905;--bg2:#160f08;--bg3:#1f1508;--card:#160f08;--border:#3a2c18;
+  --text:#e8dfc0;--muted:#9a8a6a;--gold:#c9a84c;--gold-hi:#e0c070;
+  --gold-bg:rgba(201,168,76,.12);--red:#c05050;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { font-size:15px; scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--text); font-family:var(--font-b); line-height:1.7; }
+
+/* ─ PIN画面 ─ */
+#pin-screen {
+  display:flex; align-items:center; justify-content:center;
+  min-height:100vh; padding:2rem;
+}
+.pin-box {
+  background:var(--card); border:1px solid var(--border); border-radius:14px;
+  padding:2.5rem 2rem; width:100%; max-width:340px; text-align:center;
+}
+.pin-logo { font-family:var(--font-d); font-size:.85rem; letter-spacing:.2em; color:var(--gold); text-transform:uppercase; margin-bottom:.4rem; }
+.pin-title { font-family:var(--font-d); font-size:1.5rem; font-weight:400; color:var(--text); margin-bottom:.4rem; }
+.pin-sub { font-size:.78rem; color:var(--muted); margin-bottom:1.6rem; }
+.pin-input {
+  width:100%; background:var(--bg2); border:1.5px solid var(--border); border-radius:var(--r);
+  color:var(--text); font-size:1.1rem; padding:.7rem 1rem; text-align:center;
+  letter-spacing:.3em; font-family:var(--font-m); outline:none;
+  transition:border-color .15s;
+}
+.pin-input:focus { border-color:var(--gold); }
+.pin-error { font-size:.76rem; color:var(--red); margin-top:.5rem; min-height:1.2em; }
+.pin-btn {
+  margin-top:1rem; width:100%; padding:.75rem; border-radius:var(--r);
+  background:var(--gold-bg); border:1.5px solid var(--gold); color:var(--gold);
+  font-size:.85rem; font-weight:600; cursor:pointer; letter-spacing:.05em;
+  transition:background .15s;
+}
+.pin-btn:hover { background:rgba(201,168,76,.2); }
+
+/* ─ メインレイアウト ─ */
+#app { display:none; }
+#sidebar {
+  position:fixed; top:0; left:0; width:var(--sidebar);
+  height:100vh; overflow-y:auto; background:var(--card);
+  border-right:1px solid var(--border); padding:24px 0 40px; z-index:100;
+}
+.sidebar-logo { padding:0 18px 18px; border-bottom:1px solid var(--border); margin-bottom:14px; }
+.sidebar-logo .app-name { font-family:var(--font-d); font-size:12px; letter-spacing:.12em; color:var(--gold); text-transform:uppercase; }
+.sidebar-logo .doc-label { font-size:9px; color:var(--muted); letter-spacing:.08em; margin-top:2px; }
+.sidebar-logo a { display:block; font-size:10px; color:var(--muted); text-decoration:none; margin-top:6px; }
+.sidebar-logo a:hover { color:var(--gold); }
+.toc-group { margin-bottom:6px; }
+.toc-group-label { font-size:9px; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); padding:7px 18px 3px; }
+.toc-link {
+  display:block; padding:5px 18px; font-size:12px; color:var(--muted);
+  text-decoration:none; border-left:2px solid transparent; transition:color .15s,background .15s;
+}
+.toc-link:hover { color:var(--text); background:var(--gold-bg); }
+.toc-link.active { color:var(--gold); border-left-color:var(--gold); }
+
+#main { margin-left:var(--sidebar); padding:44px 52px 80px; max-width:880px; }
+
+/* ─ ヘッダー ─ */
+.doc-header { padding-bottom:28px; margin-bottom:44px; border-bottom:1px solid var(--border); }
+.doc-eyebrow { font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+.doc-title { font-family:var(--font-d); font-size:2.2rem; font-weight:400; color:var(--text); text-wrap:balance; line-height:1.25; margin-bottom:10px; }
+.doc-meta { display:flex; gap:20px; flex-wrap:wrap; margin-top:14px; }
+.doc-meta-item { font-size:11.5px; color:var(--muted); }
+.doc-meta-item strong { color:var(--text); margin-right:4px; }
+
+/* ─ セクション ─ */
+.spec-section { margin-bottom:60px; scroll-margin-top:28px; }
+.section-eyebrow { font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-bottom:5px; }
+.section-title {
+  font-family:var(--font-d); font-size:1.45rem; font-weight:400; color:var(--text);
+  padding-bottom:10px; border-bottom:1px solid var(--border); margin-bottom:22px; text-wrap:balance;
+}
+.sub-title { font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:26px 0 10px; }
+
+/* ─ カード ─ */
+.card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:10px; margin-bottom:14px; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:14px 15px; }
+.card-icon { font-size:18px; margin-bottom:5px; }
+.card-name { font-size:12px; font-weight:600; color:var(--text); margin-bottom:2px; }
+.card-desc { font-size:11px; color:var(--muted); margin-top:5px; line-height:1.5; }
+
+.info-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); padding:14px 18px; margin-bottom:14px; font-size:13px; line-height:1.7; }
+.info-block.gold { border-left:3px solid var(--gold); background:var(--gold-bg); }
+
+/* ─ テーブル ─ */
+.table-wrap { overflow-x:auto; margin-bottom:18px; }
+table { width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums; }
+th { text-align:left; padding:7px 12px; font-size:9.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); }
+td { padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:top; line-height:1.5; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:var(--gold-bg); }
+
+/* ─ コード ─ */
+code { font-family:var(--font-m); font-size:11px; background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:1px 5px; color:var(--gold); }
+pre { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); padding:14px 18px; overflow-x:auto; font-family:var(--font-m); font-size:11px; color:var(--text); margin-bottom:14px; line-height:1.65; }
+
+/* ─ タグ ─ */
+.tag { display:inline-block; font-size:10px; padding:2px 8px; border-radius:100px; border:1px solid var(--border); color:var(--muted); margin:1px; }
+.tag.gold { border-color:var(--gold); color:var(--gold); background:var(--gold-bg); }
+
+/* ─ フロー ─ */
+.flow { display:flex; align-items:center; flex-wrap:wrap; gap:0; margin:14px 0; }
+.flow-node { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:7px 13px; font-size:12px; color:var(--text); white-space:nowrap; }
+.flow-node.gold { border-color:var(--gold); color:var(--gold); background:var(--gold-bg); }
+.flow-arrow { padding:0 7px; color:var(--muted); font-size:14px; flex-shrink:0; }
+
+/* ─ コレクション ─ */
+.collection { margin-bottom:18px; border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+.collection-header { background:var(--bg2); padding:9px 15px; font-family:var(--font-m); font-size:11.5px; color:var(--gold); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:7px; }
+.field-row { display:flex; padding:6px 15px; font-size:11.5px; gap:10px; border-bottom:1px solid var(--border); }
+.field-row:last-child { border-bottom:none; }
+.field-name { font-family:var(--font-m); color:var(--gold); min-width:150px; flex-shrink:0; }
+.field-type { color:var(--muted); min-width:75px; flex-shrink:0; font-size:11px; }
+.field-desc { color:var(--text); }
+
+/* ─ Function行 ─ */
+.fn-list { display:flex; flex-direction:column; gap:8px; }
+.fn-row { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:12px 15px; display:grid; grid-template-columns:170px 100px 1fr; gap:10px; align-items:start; font-size:12px; }
+.fn-name { font-family:var(--font-m); color:var(--gold); font-size:11px; }
+.fn-trigger { color:var(--muted); }
+.fn-desc { color:var(--text); line-height:1.5; }
+
+/* ─ Spirit ─ */
+.spirit-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px; }
+.spirit-card { border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+.spirit-header { padding:9px 13px; font-size:12px; font-weight:600; }
+.spirit-skills { padding:6px 13px 10px; }
+.skill-item { font-size:11px; color:var(--muted); padding:3px 0; display:flex; gap:7px; }
+.skill-dot { width:4px; height:4px; border-radius:50%; background:currentColor; margin-top:7px; flex-shrink:0; }
+
+/* ─ カラースウォッチ ─ */
+.token-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; margin-bottom:14px; }
+.token-swatch { border-radius:6px; overflow:hidden; border:1px solid var(--border); }
+.swatch-color { height:36px; }
+.swatch-label { padding:5px 7px; font-size:10px; font-family:var(--font-m); color:var(--muted); background:var(--card); }
+.swatch-name { font-weight:600; color:var(--text); font-size:10.5px; }
+
+/* ─ テーマ切り替え ─ */
+.theme-toggle { position:fixed; top:14px; right:14px; background:var(--card); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:11px; color:var(--muted); cursor:pointer; z-index:200; }
+.theme-toggle:hover { color:var(--text); }
+
+@media (max-width:680px) {
+  #sidebar { display:none; }
+  #main { margin-left:0; padding:24px 18px 60px; }
+  .fn-row { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── PIN認証画面 ── -->
+<div id="pin-screen">
+  <div class="pin-box">
+    <div class="pin-logo">SAMURAI IN YOU</div>
+    <div class="pin-title">設計書</div>
+    <div class="pin-sub">管理者PINコードを入力してください</div>
+    <input id="pin-input" class="pin-input" type="password" inputmode="numeric"
+      maxlength="8" placeholder="••••" autocomplete="off"
+      onkeydown="if(event.key==='Enter')checkPin()">
+    <div class="pin-error" id="pin-error"></div>
+    <button class="pin-btn" onclick="checkPin()">ログイン</button>
+  </div>
+</div>
+
+<!-- ── 本体（認証後） ── -->
+<div id="app">
+<button class="theme-toggle" id="themeToggle">☀︎ / ☾</button>
+
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="app-name">SAMURAI in You</div>
+    <div class="doc-label">アプリ設計書 — v1.0</div>
+    <a href="diagnostic.html#admin">← 管理パネルへ戻る</a>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-label">概要</div>
+    <a class="toc-link" href="#overview">プロジェクト概要</a>
+    <a class="toc-link" href="#architecture">システム構成</a>
+    <a class="toc-link" href="#urls">URL・ページ一覧</a>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-label">データ</div>
+    <a class="toc-link" href="#firestore">Firestore設計</a>
+    <a class="toc-link" href="#content">コンテンツ設計</a>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-label">バックエンド</div>
+    <a class="toc-link" href="#functions">Cloud Functions</a>
+    <a class="toc-link" href="#notifications">通知フロー</a>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-label">フロントエンド</div>
+    <a class="toc-link" href="#screens">画面フロー</a>
+    <a class="toc-link" href="#admin">管理パネル</a>
+    <a class="toc-link" href="#design">デザインシステム</a>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-label">外部連携</div>
+    <a class="toc-link" href="#integrations">外部サービス</a>
+    <a class="toc-link" href="#deploy">デプロイ</a>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="doc-header">
+    <div class="doc-eyebrow">Application Specification</div>
+    <h1 class="doc-title">SAMURAI in You<br>カード・コンパス PWA</h1>
+    <div class="doc-meta">
+      <div class="doc-meta-item"><strong>バージョン</strong>1.0</div>
+      <div class="doc-meta-item"><strong>最終更新</strong>2026-07-23</div>
+      <div class="doc-meta-item"><strong>ホスティング</strong>GitHub Pages</div>
+      <div class="doc-meta-item"><strong>言語</strong>日本語 / 英語</div>
+    </div>
+  </header>
+
+  <!-- 01 概要 -->
+  <section class="spec-section" id="overview">
+    <div class="section-eyebrow">01</div>
+    <h2 class="section-title">プロジェクト概要</h2>
+    <div class="info-block gold">
+      武士道の知恵（五輪書・武士道）を基盤とした <strong>Pentagon Compass</strong> を通じて、参加者が自分の軸（Spirit）を発見し、21日間稽古で鍛え続けるためのプログラム＆PWAアプリ。
+    </div>
+    <div class="sub-title">技術スタック</div>
+    <div class="card-grid">
+      <div class="card"><div class="card-icon">🌐</div><div class="card-name">フロントエンド</div><div class="card-desc">バニラ HTML / CSS / JavaScript（フレームワークなし）</div></div>
+      <div class="card"><div class="card-icon">🔥</div><div class="card-name">Firebase</div><div class="card-desc">Firestore（DB）/ Cloud Functions（サーバー処理）</div></div>
+      <div class="card"><div class="card-icon">💬</div><div class="card-name">LINE Messaging API</div><div class="card-desc">参加者への通知・Webhook受信</div></div>
+      <div class="card"><div class="card-icon">📧</div><div class="card-name">EmailJS</div><div class="card-desc">診断レポートHTMLメール送信</div></div>
+      <div class="card"><div class="card-icon">🚀</div><div class="card-name">GitHub Pages</div><div class="card-desc">静的ホスティング・PWA配信</div></div>
+      <div class="card"><div class="card-icon">🤖</div><div class="card-name">OpenAI API</div><div class="card-desc">道場AIコメント・武蔵BOT生成</div></div>
+    </div>
+    <div class="sub-title">PWA設定</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>項目</th><th>値</th></tr></thead>
+      <tbody>
+        <tr><td>Service Worker</td><td><code>sw.js</code> — キャッシュ名 <code>samurai-compass-v1</code></td></tr>
+        <tr><td>Manifest</td><td><code>manifest.json</code>（日本語版）/ <code>en/manifest.json</code>（英語版）</td></tr>
+        <tr><td>iOS対応</td><td><code>apple-mobile-web-app-capable</code> メタタグ</td></tr>
+        <tr><td>Android対応</td><td>Chrome PWA インストール対応</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 02 システム構成 -->
+  <section class="spec-section" id="architecture">
+    <div class="section-eyebrow">02</div>
+    <h2 class="section-title">システム構成</h2>
+    <div class="sub-title">全体フロー</div>
+    <div class="flow"><div class="flow-node">ユーザー（LINE）</div><div class="flow-arrow">→</div><div class="flow-node">LINE Webhook</div><div class="flow-arrow">→</div><div class="flow-node gold">Cloud Functions</div><div class="flow-arrow">→</div><div class="flow-node">Firestore</div></div>
+    <div class="flow" style="margin-top:7px"><div class="flow-node">GitHub Pages（PWA）</div><div class="flow-arrow">↔</div><div class="flow-node">Firestore（直接読み書き）</div></div>
+    <div class="flow" style="margin-top:7px"><div class="flow-node gold">Cloud Functions（スケジュール）</div><div class="flow-arrow">→</div><div class="flow-node">LINE 通知送信</div></div>
+    <div class="flow" style="margin-top:7px"><div class="flow-node">診断完了（Firestore書き込み）</div><div class="flow-arrow">→</div><div class="flow-node gold">EmailJS</div><div class="flow-arrow">→</div><div class="flow-node">HTMLメール送信</div></div>
+    <div class="sub-title">ファイル構成</div>
+    <pre>/files/                        ← Git リポジトリ（GitHub Pages）
+├── diagnostic.html            日本語版：コンパス診断 + 管理パネル
+├── lite.html                  日本語版：入門編（15カード）
+├── practice.html              日本語版：21日間稽古記録
+├── report.html                日本語版：振り返りレポート
+├── dojo.html                  道場ページ（診断完了者向け）
+├── spec.html                  設計書（管理者限定・PIN認証）
+├── logo.png                   共有ロゴ
+├── sw.js / manifest.json      PWA
+├── tips/                      21日間TIPSカード画像
+└── en/                        英語版（GitHub Pages /en/）</pre>
+  </section>
+
+  <!-- 03 URL一覧 -->
+  <section class="spec-section" id="urls">
+    <div class="section-eyebrow">03</div>
+    <h2 class="section-title">URL・ページ一覧</h2>
+    <div class="info-block" style="margin-bottom:18px"><strong>Base URL：</strong><code>https://ichii1119.github.io/samurai-compass/</code></div>
+    <div class="sub-title">日本語版</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ページ</th><th>URL</th><th>役割</th><th>認証</th></tr></thead>
+      <tbody>
+        <tr><td>入門診断（Lite）</td><td><code>/lite.html?lid={LINE_ID}</code></td><td>15枚カードでSpirit診断。LINE ID紐付け・ニックネーム登録</td><td>LIDパラメータ</td></tr>
+        <tr><td>コンパス診断</td><td><code>/diagnostic.html</code></td><td>54枚フルカード診断。プロフィール入力・メール登録。診断後HTMLメール自動送信</td><td>なし（公開）</td></tr>
+        <tr><td>道場</td><td><code>/dojo.html?lid={LINE_ID}</code></td><td>診断完了者向け。毎朝の稽古課題・ジャーナリング・コンパス履歴</td><td>LIDパラメータ</td></tr>
+        <tr><td>21日間稽古記録</td><td><code>/practice.html?lid={LINE_ID}</code></td><td>日次振り返り・メモ・進捗確認</td><td>LIDパラメータ</td></tr>
+        <tr><td>振り返りレポート</td><td><code>/report.html?lid={LINE_ID}</code></td><td>稽古日誌・管理者コメント・21日間まとめ</td><td>LIDパラメータ</td></tr>
+        <tr><td>管理パネル</td><td><code>/diagnostic.html#admin</code></td><td>参加者一覧・詳細・道場招待・ランク付与・一斉送信</td><td>PINコード</td></tr>
+        <tr><td>設計書</td><td><code>/spec.html</code></td><td>アプリ全体の仕様書（本ページ）</td><td>PINコード</td></tr>
+      </tbody>
+    </table></div>
+    <div class="sub-title">英語版（/en/）</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ページ</th><th>URL</th></tr></thead>
+      <tbody>
+        <tr><td>入門診断</td><td><code>/en/lite.html?uid={uid}</code></td></tr>
+        <tr><td>コンパス診断</td><td><code>/en/diagnostic.html</code></td></tr>
+        <tr><td>21日間稽古記録</td><td><code>/en/practice.html?uid={uid}</code></td></tr>
+        <tr><td>振り返りレポート</td><td><code>/en/report.html?uid={uid}</code></td></tr>
+        <tr><td>管理パネル</td><td><code>/en/diagnostic.html#admin</code></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 04 Firestore設計 -->
+  <section class="spec-section" id="firestore">
+    <div class="section-eyebrow">04</div>
+    <h2 class="section-title">Firestore データ設計</h2>
+    <div class="collection">
+      <div class="collection-header">📁 submissions / {docId}</div>
+      <div class="field-row"><span class="field-name">profile</span><span class="field-type">object</span><span class="field-desc">nickname, email, role, life[], urgency</span></div>
+      <div class="field-row"><span class="field-name">counts</span><span class="field-type">object</span><span class="field-desc">{ hei, jiko, flex, strat, sei } — Spirit別カード枚数</span></div>
+      <div class="field-row"><span class="field-name">skillCounts</span><span class="field-type">object</span><span class="field-desc">{ SKILL_NAME: { count, skillJa, spirit } }</span></div>
+      <div class="field-row"><span class="field-name">total</span><span class="field-type">number</span><span class="field-desc">選択総枚数</span></div>
+      <div class="field-row"><span class="field-name">topSpirit</span><span class="field-type">string</span><span class="field-desc">最も強いSpirit key（hei/jiko/flex/strat/sei）</span></div>
+      <div class="field-row"><span class="field-name">selectedCards</span><span class="field-type">array</span><span class="field-desc">選択カードIDリスト</span></div>
+      <div class="field-row"><span class="field-name">timestamp</span><span class="field-type">timestamp</span><span class="field-desc">診断完了日時</span></div>
+    </div>
+    <div class="collection">
+      <div class="collection-header">📁 lite_results / {lineUserId}</div>
+      <div class="field-row"><span class="field-name">lineUserId</span><span class="field-type">string</span><span class="field-desc">LINE UID</span></div>
+      <div class="field-row"><span class="field-name">nickname</span><span class="field-type">string</span><span class="field-desc">ニックネーム</span></div>
+      <div class="field-row"><span class="field-name">topSpirit</span><span class="field-type">string</span><span class="field-desc">最も強いSpirit</span></div>
+      <div class="field-row"><span class="field-name">counts</span><span class="field-type">object</span><span class="field-desc">Spirit別カード枚数</span></div>
+      <div class="field-row"><span class="field-name">timestamp</span><span class="field-type">timestamp</span><span class="field-desc">診断日時</span></div>
+      <div class="field-row"><span class="field-name">joinSource</span><span class="field-type">string</span><span class="field-desc">参加経路ID（オプション）</span></div>
+    </div>
+    <div class="collection">
+      <div class="collection-header">📁 practices / {lineUserId}</div>
+      <div class="field-row"><span class="field-name">rank</span><span class="field-type">string</span><span class="field-desc">現在のランク（十級〜初段）</span></div>
+      <div class="field-row"><span class="field-name">rankHistory</span><span class="field-type">array</span><span class="field-desc">ランク昇段履歴 { rank, date }</span></div>
+      <div class="field-row"><span class="field-name">entries</span><span class="field-type">array</span><span class="field-desc">稽古記録 { date, spirit, reflection, note, aiMessage }</span></div>
+      <div class="field-row"><span class="field-name">adminComment</span><span class="field-type">string</span><span class="field-desc">管理者コメント</span></div>
+      <div class="field-row"><span class="field-name">compassHistory</span><span class="field-type">array</span><span class="field-desc">週次Compassスコア履歴（AI評価付き）</span></div>
+    </div>
+    <div class="collection">
+      <div class="collection-header">📁 dojo_practices / {lineUserId}</div>
+      <div class="field-row"><span class="field-name">todayChallenge</span><span class="field-type">object</span><span class="field-desc">{ spirit, title, body, date } — 当日の稽古課題</span></div>
+      <div class="field-row"><span class="field-name">entries</span><span class="field-type">array</span><span class="field-desc">道場稽古記録 { date, spirit, reflection, aiMessage }</span></div>
+      <div class="field-row"><span class="field-name">compassHistory</span><span class="field-type">array</span><span class="field-desc">道場コンパス履歴</span></div>
+    </div>
+    <div class="collection">
+      <div class="collection-header">📁 profiles / {lineUserId}</div>
+      <div class="field-row"><span class="field-name">nickname</span><span class="field-type">string</span><span class="field-desc">表示名</span></div>
+      <div class="field-row"><span class="field-name">displayName</span><span class="field-type">string</span><span class="field-desc">LINE表示名</span></div>
+      <div class="field-row"><span class="field-name">pictureUrl</span><span class="field-type">string</span><span class="field-desc">LINEプロフィール画像URL</span></div>
+      <div class="field-row"><span class="field-name">createdAt</span><span class="field-type">timestamp</span><span class="field-desc">初回登録日時</span></div>
+    </div>
+    <div class="collection">
+      <div class="collection-header">📁 config / admin_read_state</div>
+      <div class="field-row"><span class="field-name">{userId}</span><span class="field-type">timestamp</span><span class="field-desc">管理者が最後に確認した振り返り日時（未読バッジ制御）</span></div>
+    </div>
+    <div class="collection">
+      <div class="collection-header">📁 participants / {lineUserId}</div>
+      <div class="field-row"><span class="field-name">lineUserId</span><span class="field-type">string</span><span class="field-desc">LINE UID</span></div>
+      <div class="field-row"><span class="field-name">joinedAt</span><span class="field-type">timestamp</span><span class="field-desc">友達追加・参加日時</span></div>
+      <div class="field-row"><span class="field-name">joinSource</span><span class="field-type">string</span><span class="field-desc">参加経路ID</span></div>
+    </div>
+  </section>
+
+  <!-- 05 コンテンツ設計 -->
+  <section class="spec-section" id="content">
+    <div class="section-eyebrow">05</div>
+    <h2 class="section-title">コンテンツ設計</h2>
+    <div class="sub-title">Pentagon Compass — 5 Spirits × 10 Skills</div>
+    <div class="spirit-grid">
+      <div class="spirit-card">
+        <div class="spirit-header" style="background:rgba(74,122,138,.12);color:#4a7a8a">☁️ 平常心（EQUANIMITY）</div>
+        <div class="spirit-skills">
+          <div class="skill-item" style="color:#4a7a8a"><div class="skill-dot"></div>OBJECTIVITY — 虚の心</div>
+          <div class="skill-item" style="color:#4a7a8a"><div class="skill-dot"></div>PSYCHOSOMATIC — 心技体</div>
+        </div>
+      </div>
+      <div class="spirit-card">
+        <div class="spirit-header" style="background:rgba(45,122,58,.12);color:#2d7a3a">🌿 自己鍛錬（SELF-CULTIVATION）</div>
+        <div class="spirit-skills">
+          <div class="skill-item" style="color:#2d7a3a"><div class="skill-dot"></div>ATTUNEMENT — 嗜む</div>
+          <div class="skill-item" style="color:#2d7a3a"><div class="skill-dot"></div>CULTIVATION — 資質器量</div>
+        </div>
+      </div>
+      <div class="spirit-card">
+        <div class="spirit-header" style="background:rgba(37,99,168,.12);color:#2563a8">🐦 柔軟な適応力（FLEXIBILITY）</div>
+        <div class="spirit-skills">
+          <div class="skill-item" style="color:#2563a8"><div class="skill-dot"></div>ADAPTABILITY — 有構無構</div>
+          <div class="skill-item" style="color:#2563a8"><div class="skill-dot"></div>OPTIMIZATION — リソース最適化</div>
+        </div>
+      </div>
+      <div class="spirit-card">
+        <div class="spirit-header" style="background:rgba(201,74,32,.12);color:#c94a20">🔥 戦略的思考（STRATEGIC THINKING）</div>
+        <div class="spirit-skills">
+          <div class="skill-item" style="color:#c94a20"><div class="skill-dot"></div>DISCERNMENT — 打つと当たる</div>
+          <div class="skill-item" style="color:#c94a20"><div class="skill-dot"></div>PERSPECTIVE — 観見</div>
+        </div>
+      </div>
+      <div class="spirit-card">
+        <div class="spirit-header" style="background:rgba(123,59,181,.12);color:#7b3bb5">🌀 誠実さ（INTEGRITY）</div>
+        <div class="spirit-skills">
+          <div class="skill-item" style="color:#7b3bb5"><div class="skill-dot"></div>RHYTHM — 陰陽の足</div>
+          <div class="skill-item" style="color:#7b3bb5"><div class="skill-dot"></div>TIMING — 拍子</div>
+        </div>
+      </div>
+    </div>
+    <div class="sub-title">カードセット</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>種類</th><th>枚数</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>フルカード（diagnostic.html）</td><td>54枚</td><td>Pentagon Compass 診断。5 Spirit × 各10〜11枚</td></tr>
+        <tr><td>Liteカード（lite.html）</td><td>15枚</td><td>入門診断。LINEからアクセスする参加者向け</td></tr>
+        <tr><td>Challenge Card</td><td>毎日1枚</td><td>道場用。毎朝8時にLINE通知 + Firestore保存</td></tr>
+        <tr><td>Mastery Card（TIPSカード）</td><td>21枚</td><td>21日間稽古。毎朝画像付きLINE配信</td></tr>
+      </tbody>
+    </table></div>
+    <div class="sub-title">SAMURAI MATCH</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Spirit</th><th>武将1</th><th>武将2</th></tr></thead>
+      <tbody>
+        <tr><td>平常心</td><td>⛩ 黒田官兵衛</td><td>☁️ 細川ガラシャ</td></tr>
+        <tr><td>自己鍛錬</td><td>⚔️ 宮本武蔵</td><td>🐉 上杉謙信</td></tr>
+        <tr><td>柔軟な適応力</td><td>🐒 豊臣秀吉</td><td>🦅 伊達政宗</td></tr>
+        <tr><td>戦略的思考</td><td>🏯 徳川家康</td><td>🌺 千利休</td></tr>
+        <tr><td>誠実さ</td><td>❤️ 直江兼続</td><td>🗡️ 土方歳三</td></tr>
+      </tbody>
+    </table></div>
+    <div class="sub-title">プロフィール選択肢</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>項目</th><th>選択肢</th></tr></thead>
+      <tbody>
+        <tr><td>役割（role）</td><td>一般社員・スタッフ / チームリード / 経営者・起業家 / 特になし</td></tr>
+        <tr><td>ライフステージ（life）複数選択</td><td>子育て中 / 介護中 / 学生 / 転職・異動 / 独立・起業検討中 / 単身赴任 / 病気・療養中</td></tr>
+        <tr><td>緊急度（urgency）</td><td>今すぐ取り組む / 中長期で鍛える</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 06 Cloud Functions -->
+  <section class="spec-section" id="functions">
+    <div class="section-eyebrow">06</div>
+    <h2 class="section-title">Cloud Functions</h2>
+    <div class="info-block" style="margin-bottom:18px">
+      リージョン: <code>us-central1</code>（スケジューラ）/ <code>asia-northeast1</code>（Firestoreトリガー）　ランタイム: Node.js 20（2nd Gen）
+    </div>
+    <div class="sub-title">スケジュール実行（JST換算）</div>
+    <div class="fn-list">
+      <div class="fn-row"><div class="fn-name">dojoMorningMessage</div><div class="fn-trigger"><span class="tag gold">毎朝 8:00</span></div><div class="fn-desc">Challenge CardをFirestoreへ保存 → LINEで「課題が届いた」通知</div></div>
+      <div class="fn-row"><div class="fn-name">dailyTip</div><div class="fn-trigger"><span class="tag">毎朝 8:00</span></div><div class="fn-desc">21日間参加者にMastery Card（TIPSカード）を画像付きで配信</div></div>
+      <div class="fn-row"><div class="fn-name">eveningReminder</div><div class="fn-trigger"><span class="tag">毎夜 20:00</span></div><div class="fn-desc">21日間参加者に振り返り促進メッセージを送信</div></div>
+      <div class="fn-row"><div class="fn-name">weeklySummary</div><div class="fn-trigger"><span class="tag">毎週日 8:00</span></div><div class="fn-desc">週次稽古サマリー（稽古日数・連続日数・Spirit分布）をLINE送信</div></div>
+      <div class="fn-row"><div class="fn-name">checkInMessage</div><div class="fn-trigger"><span class="tag">スケジュール</span></div><div class="fn-desc">Day 7 / Day 14 節目メッセージ送信</div></div>
+      <div class="fn-row"><div class="fn-name">followUpMessage</div><div class="fn-trigger"><span class="tag">スケジュール</span></div><div class="fn-desc">Day 21 完了メッセージ・ランク昇段通知</div></div>
+      <div class="fn-row"><div class="fn-name">dojoCompassUpdate</div><div class="fn-trigger"><span class="tag">毎週日</span></div><div class="fn-desc">道場メンバーの週次コンパス更新（AI評価付き）</div></div>
+    </div>
+    <div class="sub-title">Firestoreトリガー</div>
+    <div class="fn-list">
+      <div class="fn-row"><div class="fn-name">sendLiteResult</div><div class="fn-trigger"><span class="tag gold">lite_results 作成</span></div><div class="fn-desc">入門診断完了時、診断結果をLINEで自動送信</div></div>
+      <div class="fn-row"><div class="fn-name">notifyAdminOnReflection</div><div class="fn-trigger"><span class="tag gold">practices 更新</span></div><div class="fn-desc">参加者が振り返りを投稿したとき、管理者LINEへ通知</div></div>
+      <div class="fn-row"><div class="fn-name">notifyDiagnosticReport</div><div class="fn-trigger"><span class="tag gold">submissions 作成</span></div><div class="fn-desc">診断完了から3秒後、LINE通知「診断レポートをメールに送りました」を送信</div></div>
+    </div>
+    <div class="sub-title">HTTP エンドポイント</div>
+    <div class="fn-list">
+      <div class="fn-row"><div class="fn-name">lineWebhook</div><div class="fn-trigger"><span class="tag">POST</span></div><div class="fn-desc">LINE Webhook受信。友達追加・キーワード返信（道場/結果等）処理</div></div>
+      <div class="fn-row"><div class="fn-name">sendAdminComment</div><div class="fn-trigger"><span class="tag">POST</span></div><div class="fn-desc">管理パネルから参加者へコメントをLINE送信 + Firestore保存</div></div>
+      <div class="fn-row"><div class="fn-name">sendBroadcast</div><div class="fn-trigger"><span class="tag">POST</span></div><div class="fn-desc">全参加者への一斉送信（テンプレート選択可）</div></div>
+      <div class="fn-row"><div class="fn-name">sendDojoInvite</div><div class="fn-trigger"><span class="tag">POST</span></div><div class="fn-desc">個別ユーザーへ道場招待LINEを送信</div></div>
+      <div class="fn-row"><div class="fn-name">generateDojoMessage</div><div class="fn-trigger"><span class="tag">POST</span></div><div class="fn-desc">OpenAI APIで武蔵BOTメッセージを生成</div></div>
+      <div class="fn-row"><div class="fn-name">resendDailyTip</div><div class="fn-trigger"><span class="tag">POST</span></div><div class="fn-desc">任意のTIPSカードを特定ユーザーへ再送信</div></div>
+    </div>
+  </section>
+
+  <!-- 07 通知フロー -->
+  <section class="spec-section" id="notifications">
+    <div class="section-eyebrow">07</div>
+    <h2 class="section-title">通知フロー</h2>
+    <div class="sub-title">LINE 通知タイムライン（21日間稽古）</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>タイミング</th><th>内容</th><th>トリガー</th></tr></thead>
+      <tbody>
+        <tr><td>入門診断完了直後</td><td>診断結果（TopSpirit・スコア）</td><td>Firestoreトリガー</td></tr>
+        <tr><td>毎朝 8:00</td><td>Mastery Card（TIPSカード）画像送信</td><td>スケジュール</td></tr>
+        <tr><td>毎夜 20:00</td><td>振り返り促進メッセージ</td><td>スケジュール</td></tr>
+        <tr><td>Day 7</td><td>節目メッセージ + 中間確認</td><td>スケジュール</td></tr>
+        <tr><td>Day 14</td><td>節目メッセージ + 継続促進</td><td>スケジュール</td></tr>
+        <tr><td>Day 21</td><td>完了メッセージ + ランク昇段通知</td><td>スケジュール</td></tr>
+        <tr><td>毎週日曜 8:00</td><td>週次稽古サマリー</td><td>スケジュール</td></tr>
+        <tr><td>管理者コメント時</td><td>「道場長からメッセージが届きました」</td><td>HTTP Function</td></tr>
+      </tbody>
+    </table></div>
+    <div class="sub-title">LINE 通知タイムライン（道場）</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>タイミング</th><th>内容</th><th>トリガー</th></tr></thead>
+      <tbody>
+        <tr><td>毎朝 8:00</td><td>「今日の課題が届きました。道場を開いてください。」+ 道場URL</td><td>スケジュール</td></tr>
+        <tr><td>道場招待時</td><td>道場URL・招待メッセージ</td><td>管理者操作</td></tr>
+      </tbody>
+    </table></div>
+    <div class="sub-title">HTMLメール（EmailJS）</div>
+    <div class="info-block gold">
+      コンパス診断完了時、登録メールへ自動送信。<code>buildDiagnosticReportHtml()</code> で生成したHTMLを EmailJS テンプレート <code>template_ss3irfd</code> の <code>{{{html_content}}}</code> へ渡す。
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>セクション</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>プロフィールバッジ</td><td>役割・ライフステージ・緊急度タグ</td></tr>
+        <tr><td>最も強いSpirit</td><td>Spirit名・アイコン・英語名</td></tr>
+        <tr><td>Pentagon Compass スコア</td><td>全5 Spiritのバーチャート</td></tr>
+        <tr><td>10 Skills 内訳</td><td>各スキルの件数・Spirit色バー</td></tr>
+        <tr><td>あなたへのメッセージ</td><td>Spirit基本メッセージ＋役割・ライフ・緊急度コンテキスト</td></tr>
+        <tr><td>SAMURAI MATCH</td><td>マッチ武将2名（プロフィール・名言・マッチ理由）</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 08 画面フロー -->
+  <section class="spec-section" id="screens">
+    <div class="section-eyebrow">08</div>
+    <h2 class="section-title">画面フロー</h2>
+    <div class="sub-title">diagnostic.html — コンパス診断フロー</div>
+    <div class="flow">
+      <div class="flow-node">s-intro<br><small style="font-size:10px;color:var(--muted)">説明</small></div><div class="flow-arrow">→</div>
+      <div class="flow-node">s-profile<br><small style="font-size:10px;color:var(--muted)">プロフィール</small></div><div class="flow-arrow">→</div>
+      <div class="flow-node">s-cards<br><small style="font-size:10px;color:var(--muted)">54枚選択</small></div><div class="flow-arrow">→</div>
+      <div class="flow-node gold">s-result<br><small style="font-size:10px">診断結果</small></div><div class="flow-arrow">→</div>
+      <div class="flow-node">s-complete<br><small style="font-size:10px;color:var(--muted)">完了・メール送信</small></div>
+    </div>
+    <div class="sub-title">dojo.html — 道場フロー（状態分岐）</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>状態</th><th>表示</th></tr></thead>
+      <tbody>
+        <tr><td>submissions あり</td><td>道場メイン（コンパス・稽古記録・履歴）</td></tr>
+        <tr><td>submissions なし / practices あり</td><td>「21日間稽古の途中です」+ 稽古記録へのリンク</td></tr>
+        <tr><td>submissions なし / practices なし</td><td>「まず診断へ」画面</td></tr>
+      </tbody>
+    </table></div>
+    <div class="info-block" style="margin-top:8px">
+      「稽古を記録する」→ 当日のChallenge Card表示 → ジャーナリング → 保存 → AIメッセージ生成・表示
+    </div>
+    <div class="sub-title">practice.html — 21日間稽古</div>
+    <div class="flow">
+      <div class="flow-node">LIDでユーザー識別</div><div class="flow-arrow">→</div>
+      <div class="flow-node">振り返り入力</div><div class="flow-arrow">→</div>
+      <div class="flow-node gold">Firestoreへ保存</div><div class="flow-arrow">→</div>
+      <div class="flow-node">進捗・連続日数表示</div>
+    </div>
+    <div class="info-block" style="margin-top:8px">Day 21 完了時 → ランク「十級」を自動付与</div>
+  </section>
+
+  <!-- 09 管理パネル -->
+  <section class="spec-section" id="admin">
+    <div class="section-eyebrow">09</div>
+    <h2 class="section-title">管理パネル</h2>
+    <div class="info-block gold" style="margin-bottom:18px">
+      <code>/diagnostic.html#admin</code> — PINコード認証。全参加者データの閲覧・操作に使用。
+    </div>
+    <div class="sub-title">タブ構成</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>タブ</th><th>機能</th></tr></thead>
+      <tbody>
+        <tr><td>ダッシュボード</td><td>参加者数・診断完了数・稽古中人数の集計サマリー</td></tr>
+        <tr><td>診断結果一覧</td><td>全参加者の診断結果。詳細閲覧・道場招待・削除</td></tr>
+        <tr><td>入門編一覧</td><td>lite.html参加者の一覧・TopSpirit・診断日</td></tr>
+        <tr><td>振り返り一覧</td><td>稽古記録一覧。未読バッジ・コメント返信・ランク昇段承認</td></tr>
+      </tbody>
+    </table></div>
+    <div class="sub-title">詳細画面の操作</div>
+    <div class="card-grid">
+      <div class="card"><div class="card-name">Pentagon Compass表示</div><div class="card-desc">Spirit分布バーチャート・Skill分布・SAMURAI MATCH</div></div>
+      <div class="card"><div class="card-name">道場招待</div><div class="card-desc">LINE送信 + 道場URLコピー</div></div>
+      <div class="card"><div class="card-name">コメント返信</div><div class="card-desc">管理者コメントをLINE送信 + Firestore保存</div></div>
+      <div class="card"><div class="card-name">ランク昇段承認</div><div class="card-desc">ランク選択 → 承認 → practices更新 + LINE通知</div></div>
+      <div class="card"><div class="card-name">一斉送信</div><div class="card-desc">テンプレート選択 → 全参加者へ一括LINE送信</div></div>
+      <div class="card"><div class="card-name">武蔵BOT</div><div class="card-desc">OpenAI APIで武蔵の言葉風メッセージ生成・LINE送信</div></div>
+    </div>
+  </section>
+
+  <!-- 10 デザインシステム -->
+  <section class="spec-section" id="design">
+    <div class="section-eyebrow">10</div>
+    <h2 class="section-title">デザインシステム</h2>
+    <div class="sub-title">カラートークン</div>
+    <div class="token-grid">
+      <div class="token-swatch"><div class="swatch-color" style="background:#faf8f4;border-bottom:1px solid #ddd4b8"></div><div class="swatch-label"><div class="swatch-name">bg</div>#faf8f4</div></div>
+      <div class="token-swatch"><div class="swatch-color" style="background:#9a7520"></div><div class="swatch-label"><div class="swatch-name">gold</div>#9a7520</div></div>
+      <div class="token-swatch"><div class="swatch-color" style="background:#c9a84c"></div><div class="swatch-label"><div class="swatch-name">gold-hi</div>#c9a84c</div></div>
+      <div class="token-swatch"><div class="swatch-color" style="background:#7a1a1a"></div><div class="swatch-label"><div class="swatch-name">red</div>#7a1a1a</div></div>
+      <div class="token-swatch"><div class="swatch-color" style="background:#1c1610"></div><div class="swatch-label"><div class="swatch-name">text</div>#1c1610</div></div>
+      <div class="token-swatch"><div class="swatch-color" style="background:#0a0a10"></div><div class="swatch-label"><div class="swatch-name">dark</div>#0a0a10</div></div>
+    </div>
+    <div class="sub-title">タイポグラフィ</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>役割</th><th>フォント</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>ブラシ体（和）</td><td>Zen Antique Soft</td><td>見出し・Spirit名・カードタイトル</td></tr>
+        <tr><td>セリフ（英）</td><td>Cormorant Garamond</td><td>英語ロゴ・引用・武将名</td></tr>
+        <tr><td>ボディ</td><td>Inter</td><td>本文・UI要素・説明テキスト</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 11 外部サービス -->
+  <section class="spec-section" id="integrations">
+    <div class="section-eyebrow">11</div>
+    <h2 class="section-title">外部サービス連携</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>サービス</th><th>用途</th><th>認証情報</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Firebase</strong><br><small>プロジェクト: samurai-compass</small></td><td>Firestore / Cloud Functions</td><td>functions/.env / クライアントHTMLにインライン</td></tr>
+        <tr><td><strong>LINE Messaging API</strong></td><td>Webhook受信・メッセージ送信・プロフィール取得</td><td>functions/.env（CHANNEL_ACCESS_TOKEN / CHANNEL_SECRET）</td></tr>
+        <tr><td><strong>EmailJS</strong><br><small>service: service_1dicjgi / template: template_ss3irfd</small></td><td>診断レポートHTMLメール送信</td><td>user_id / accessToken（HTMLにインライン）</td></tr>
+        <tr><td><strong>OpenAI API</strong></td><td>道場AIコメント・武蔵BOTメッセージ生成</td><td>functions/.env（OPENAI_API_KEY）</td></tr>
+      </tbody>
+    </table></div>
+    <div class="sub-title">LINE Webhook キーワード応答</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>キーワード</th><th>応答</th></tr></thead>
+      <tbody>
+        <tr><td>「道場」</td><td>道場URL送信</td></tr>
+        <tr><td>「結果」</td><td>診断結果（TopSpirit・スコア）を再送信</td></tr>
+        <tr><td>友達追加イベント</td><td>lite.html URLと参加案内。profiles / participants コレクションに登録</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 12 デプロイ -->
+  <section class="spec-section" id="deploy">
+    <div class="section-eyebrow">12</div>
+    <h2 class="section-title">デプロイ手順</h2>
+    <div class="sub-title">フロントエンド（GitHub Pages）</div>
+    <pre>cd /Users/tsuguyukiichii/Documents/CLAUDE/files
+git add .
+git commit -m "変更内容"
+git push origin main</pre>
+    <div class="sub-title">英語版の同期</div>
+    <pre>cp -r /Users/tsuguyukiichii/Documents/CLAUDE/files-en/* \
+       /Users/tsuguyukiichii/Documents/CLAUDE/files/en/
+for f in diagnostic.html lite.html practice.html report.html; do
+  sed -i '' 's|../files/|../|g' files/en/$f
+done
+cd files && git add en/ && git commit -m "sync en/" && git push origin main</pre>
+    <div class="sub-title">Cloud Functions</div>
+    <pre>cd /Users/tsuguyukiichii/Documents/samurai-functions
+firebase deploy --only functions</pre>
+    <div class="sub-title">ファイルパス早見表</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>種類</th><th>パス</th></tr></thead>
+      <tbody>
+        <tr><td>日本語版（本体）</td><td><code>/Users/tsuguyukiichii/Documents/CLAUDE/files/</code></td></tr>
+        <tr><td>英語版ローカル開発</td><td><code>/Users/tsuguyukiichii/Documents/CLAUDE/files-en/</code></td></tr>
+        <tr><td>英語版デプロイ先</td><td><code>/Users/tsuguyukiichii/Documents/CLAUDE/files/en/</code></td></tr>
+        <tr><td>Cloud Functions</td><td><code>/Users/tsuguyukiichii/Documents/samurai-functions/functions/</code></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+</main>
+</div><!-- /#app -->
+
+<script>
+const ADMIN_PIN = '1234';
+
+function checkPin() {
+  const input = document.getElementById('pin-input').value;
+  const err   = document.getElementById('pin-error');
+  if (input === ADMIN_PIN) {
+    sessionStorage.setItem('spec-auth', '1');
+    document.getElementById('pin-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  } else {
+    err.textContent = 'PINコードが正しくありません';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+}
+document.getElementById('pin-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPin();
+  document.getElementById('pin-error').textContent = '';
+});
+
+// セッション中は再入力不要
+if (sessionStorage.getItem('spec-auth') === '1') {
+  document.getElementById('pin-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+// テーマ切り替え
+const toggle = document.getElementById('themeToggle');
+const root   = document.documentElement;
+const saved  = localStorage.getItem('spec-theme');
+if (saved) root.setAttribute('data-theme', saved);
+toggle.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('spec-theme', next);
+});
+
+// アクティブTOCリンク
+const sections = document.querySelectorAll('.spec-section');
+const links    = document.querySelectorAll('.toc-link');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting)
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+  });
+}, { rootMargin: '-28% 0px -60% 0px' });
+sections.forEach(s => io.observe(s));
+</script>
+</body>
+</html>
