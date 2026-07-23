@@ -2186,7 +2186,7 @@ async function renderAdminPractices() {
               : entries.map(e => {
                   const ts = e.timestamp ? new Date(e.timestamp) : null;
                   const dateStr = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
-                  const seenUntil = getReadState()[userId] || 0;
+                  const seenUntil = _readStateCache?.[userId] || 0;
                   const isUnread  = ts && ts.getTime() > seenUntil;
                   return `
                     <div data-ts="${ts ? ts.getTime() : 0}" ${isUnread ? 'data-unread="1"' : ''}
