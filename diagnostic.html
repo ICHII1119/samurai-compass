@@ -1552,7 +1552,7 @@ async function submitResponse() {
     // 診断レポートをメールで送信
     if (profile.email) {
       const reportHtml = buildDiagnosticReportHtml(profile, counts, total, topSpirit);
-      emailjs.send('service_1dicjgi', 'template_diagnostic_report', {
+      emailjs.send('service_1dicjgi', 'template_ss3irfd', {
         to_email:     profile.email,
         to_name:      profile.nickname,
         html_content: reportHtml,
