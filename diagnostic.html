@@ -2236,7 +2236,7 @@ async function renderAdminPractices() {
     }).join('');
   } catch(e) {
     console.error(e);
-    container.innerHTML = `<div style="color:var(--muted);padding:2rem;text-align:center">読み込みに失敗しました</div>`;
+    container.innerHTML = `<div style="color:var(--muted);padding:2rem;text-align:center">読み込みに失敗しました<br><small style="font-size:.7rem;opacity:.6">${e.message}</small></div>`;
   }
 }
 
