@@ -1615,14 +1615,16 @@ async function submitResponse() {
     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     profile: { ...profile },
     selectedCards: Array.from(selected),
-    counts, skillCounts, total, topSpirit
+    counts, skillCounts, total, topSpirit,
+    lineUserId: _lidParam || null,
   };
 
   try {
-    await db.collection('submissions').add(submission);
-    // lid パラメータがある場合（道場入門フロー）→ userId でも保存
+    // lid がある場合はユーザーIDをキーに保存（重複防止）、ない場合は自動ID
     if (_lidParam) {
-      await db.collection('submissions').doc(_lidParam).set(submission, { merge: true });
+      await db.collection('submissions').doc(_lidParam).set(submission);
+    } else {
+      await db.collection('submissions').add(submission);
     }
     // 診断レポートをメールで送信
     if (profile.email) {
