@@ -345,12 +345,14 @@ pre { background:var(--bg2); border:1px solid var(--border); border-radius:var(-
     <h2 class="section-title">Firestore データ設計</h2>
     <div class="collection">
       <div class="collection-header">📁 submissions / {docId}</div>
+      <div class="field-row"><span class="field-name">docId</span><span class="field-type">string</span><span class="field-desc">LINE経由（?lid=あり）→ lineUserId が docId。直接アクセス → Firestore自動ID</span></div>
       <div class="field-row"><span class="field-name">profile</span><span class="field-type">object</span><span class="field-desc">nickname, email, role, life[], urgency</span></div>
       <div class="field-row"><span class="field-name">counts</span><span class="field-type">object</span><span class="field-desc">{ hei, jiko, flex, strat, sei } — Spirit別カード枚数</span></div>
       <div class="field-row"><span class="field-name">skillCounts</span><span class="field-type">object</span><span class="field-desc">{ SKILL_NAME: { count, skillJa, spirit } }</span></div>
       <div class="field-row"><span class="field-name">total</span><span class="field-type">number</span><span class="field-desc">選択総枚数</span></div>
       <div class="field-row"><span class="field-name">topSpirit</span><span class="field-type">string</span><span class="field-desc">最も強いSpirit key（hei/jiko/flex/strat/sei）</span></div>
       <div class="field-row"><span class="field-name">selectedCards</span><span class="field-type">array</span><span class="field-desc">選択カードIDリスト</span></div>
+      <div class="field-row"><span class="field-name">lineUserId</span><span class="field-type">string|null</span><span class="field-desc">LINE UID（?lid= パラメータ経由の場合のみ設定）</span></div>
       <div class="field-row"><span class="field-name">timestamp</span><span class="field-type">timestamp</span><span class="field-desc">診断完了日時</span></div>
     </div>
     <div class="collection">
@@ -478,7 +480,7 @@ pre { background:var(--bg2); border:1px solid var(--border); border-radius:var(-
     </div>
     <div class="sub-title">スケジュール実行（JST換算）</div>
     <div class="fn-list">
-      <div class="fn-row"><div class="fn-name">dojoMorningMessage</div><div class="fn-trigger"><span class="tag gold">毎朝 8:00</span></div><div class="fn-desc">Challenge CardをFirestoreへ保存 → LINEで「課題が届いた」通知</div></div>
+      <div class="fn-row"><div class="fn-name">dojoMorningMessage</div><div class="fn-trigger"><span class="tag gold">毎朝 8:00</span></div><div class="fn-desc">Challenge CardをFirestoreへ保存 → LINEで「課題が届いた」通知。日付はJST（Date.now()+9h）で生成</div></div>
       <div class="fn-row"><div class="fn-name">dailyTip</div><div class="fn-trigger"><span class="tag">毎朝 8:00</span></div><div class="fn-desc">21日間参加者にMastery Card（TIPSカード）を画像付きで配信</div></div>
       <div class="fn-row"><div class="fn-name">eveningReminder</div><div class="fn-trigger"><span class="tag">毎夜 20:00</span></div><div class="fn-desc">21日間参加者に振り返り促進メッセージを送信</div></div>
       <div class="fn-row"><div class="fn-name">weeklySummary</div><div class="fn-trigger"><span class="tag">毎週日 8:00</span></div><div class="fn-desc">週次稽古サマリー（稽古日数・連続日数・Spirit分布）をLINE送信</div></div>
@@ -500,6 +502,7 @@ pre { background:var(--bg2); border:1px solid var(--border); border-radius:var(-
       <div class="fn-row"><div class="fn-name">sendDojoInvite</div><div class="fn-trigger"><span class="tag">POST</span></div><div class="fn-desc">個別ユーザーへ道場招待LINEを送信</div></div>
       <div class="fn-row"><div class="fn-name">generateDojoMessage</div><div class="fn-trigger"><span class="tag">POST</span></div><div class="fn-desc">OpenAI APIで武蔵BOTメッセージを生成</div></div>
       <div class="fn-row"><div class="fn-name">resendDailyTip</div><div class="fn-trigger"><span class="tag">POST</span></div><div class="fn-desc">任意のTIPSカードを特定ユーザーへ再送信</div></div>
+      <div class="fn-row"><div class="fn-name">adminSetTodayChallenge</div><div class="fn-trigger"><span class="tag">POST</span></div><div class="fn-desc">管理者が任意の課題を手動設定。日付はJST（Date.now()+9h）で生成</div></div>
     </div>
   </section>
 
