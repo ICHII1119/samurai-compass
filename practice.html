@@ -709,7 +709,7 @@ async function submitPractice(day) {
 
     // Animate the stamp in grid
     renderGrid();
-    const slots = document.querySelectorAll('.stamp-slot.stamped');
+    const slots = document.querySelectorAll('.stamp-slot');
     const slot = slots[day - 1];
     if (slot) {
       const seal = slot.querySelector('.stamp-seal');

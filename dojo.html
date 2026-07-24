@@ -705,43 +705,6 @@ const RANKS_BY_NAME = {
 };
 
 /* ── Challenges（各Spirit 5問） ── */
-const CHALLENGES = {
-  hei: [
-    { title: '感情の波を観る',   body: '今日、感情が乱れそうになった瞬間を一つ選んでください。その時、体のどこかで何かを感じましたか？（胸が締まる、呼吸が浅くなる、など）その感覚にあなたはどう向き合いましたか？' },
-    { title: '正しさを手放す',   body: '今日、自分が「正しい」と強く感じた瞬間はありましたか。その確信を一度手放すとしたら、何が見えてきますか？' },
-    { title: '間を置く稽古',     body: '今日、誰かに反論したくなった瞬間はありましたか。実際に口に出す前に、一呼吸置けましたか？その体験を振り返ってください。' },
-    { title: '平静さを保てた瞬間', body: '今日、平静さを保ちながら対応できた場面を一つ思い出してください。何がそれを可能にしましたか？' },
-    { title: '動揺の源を探る',   body: '今日、あなたを最も動揺させたことは何でしたか。その動揺の根にあるものは何だと思いますか？' },
-  ],
-  jiko: [
-    { title: 'やりたくないことをやった', body: '今日、やりたくなかったけれど、やったことを一つ書いてください。なぜやりましたか？やった後、何が変わりましたか？' },
-    { title: '昨日の自分を超えた瞬間',   body: '今日の行動の中で、昨日の自分より一歩だけ前に進んだ瞬間はどこでしたか？小さなことで構いません。' },
-    { title: '習慣を意識する',           body: '今日、無意識にやっていた習慣を一つ意識できましたか。それはどんな習慣で、なぜその習慣があると思いますか？' },
-    { title: '逃げたくなった瞬間',       body: '今日、目を背けたくなった課題や場面はありましたか。どう向き合いましたか、あるいは向き合えませんでしたか？' },
-    { title: '身体の声を聴く',           body: '今日、疲れやストレスを体で感じた瞬間はありましたか。その時、どのようにケアしましたか？あるいはできませんでしたか？' },
-  ],
-  flex: [
-    { title: '計画が外れた時',     body: '今日、自分の計画や予測が外れた場面を一つ書いてください。その時どう対応しましたか？同じ場面が明日来たら何を変えますか？' },
-    { title: '自分のやり方への固執', body: '今日、自分のやり方に固執しそうになった瞬間はありましたか。どう気づき、どう変えましたか？あるいは変えられませんでしたか？' },
-    { title: '予想外の出来事',     body: '今日、予想外の出来事はありましたか。それをどのように受け入れ、前に進みましたか？' },
-    { title: '別の視点を借りる',   body: '今日の悩みや課題について、全く違う立場の人ならどう見ると思いますか？その視点から見えてくるものを書いてください。' },
-    { title: '形を手放した瞬間',   body: '今日、これまで自分が大切にしてきたやり方を変えてみた瞬間はありましたか。どんな気づきがありましたか？' },
-  ],
-  strat: [
-    { title: '全体を俯瞰する',     body: '今日、目先の問題だけでなく「その先」まで考えて行動できた場面はありましたか？どのような判断をしましたか？' },
-    { title: '相手の立場に立つ',   body: '今日、誰かと意見が食い違った場面を選んでください。相手の立場から見ると、その状況はどう映っていたと思いますか？' },
-    { title: '場全体を読む',       body: '今日、目の前の細部にとらわれず、場全体の流れを読もうとした瞬間はありましたか？何が見えましたか？' },
-    { title: '決断を振り返る',     body: '今日の一番重要な決断を振り返ってください。もし同じ場面が明日来たら、何を変えたいですか、それとも同じ判断をしますか？' },
-    { title: '本当に大切なことを問う', body: '今日、忙しさの中で立ち止まり、「本当に大切なことは何か」を問う時間がありましたか？何が浮かびましたか？' },
-  ],
-  sei: [
-    { title: '自分に正直でいる',   body: '今日、自分に正直でいるために少し勇気が必要だった場面はありましたか。その時どんな選択をしましたか？' },
-    { title: '言えなかったこと',   body: '今日、大切な人との関わりの中で、言えなかったことはありますか。もし伝えるとしたら、何をどう伝えますか？' },
-    { title: '自分への約束',       body: '今日、自分自身への約束を守れましたか。守れた場合も守れなかった場合も、何がそうさせましたか？' },
-    { title: '誠実に向き合えた瞬間', body: '今日、誰かと誠実に向き合えた瞬間を一つ選んでください。その関わりの後、どんな気持ちが残りましたか？' },
-    { title: '本音と建前の間',     body: '今日、本音と建前の間で揺れた場面はありましたか。どちらを選びましたか？その選択の理由は何でしたか？' },
-  ],
-};
 
 const GENERATE_DOJO_MESSAGE_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/generateDojoMessage';
 
@@ -1103,40 +1066,6 @@ function closeRecord() {
   document.getElementById('record-overlay').classList.remove('open');
 }
 
-function renderSpiritGrid() {
-  const grid = document.getElementById('spirit-grid');
-  grid.innerHTML = SPIRITS_ORDER.map(s => {
-    const sp = SPIRITS[s];
-    const active = s === selectedSpirit;
-    return `
-      <div class="spirit-btn" id="sbtn-${s}" onclick="selectSpirit('${s}')"
-           style="border-color:${active ? sp.color : 'var(--border)'}; background:${active ? sp.color + '22' : 'var(--bg3)'}">
-        <div class="spirit-btn-icon">${sp.icon}</div>
-        <div class="spirit-btn-name" style="color:${sp.color}">${sp.name}</div>
-        <div class="spirit-btn-en">${sp.en}</div>
-      </div>`;
-  }).join('');
-}
-
-function selectSpirit(s) {
-  selectedSpirit = s;
-
-  // ランダムに課題を1つ選ぶ
-  const pool = CHALLENGES[s];
-  currentChallenge = pool[Math.floor(Math.random() * pool.length)];
-
-  const sp = SPIRITS[s];
-  const card = document.getElementById('challenge-card');
-  card.style.borderColor = sp.color;
-  document.getElementById('challenge-title').style.color = sp.color;
-  document.getElementById('challenge-title').textContent = currentChallenge.title;
-  document.getElementById('challenge-body').textContent = currentChallenge.body;
-  card.classList.add('visible');
-
-  document.getElementById('spirit-select-section').style.display = 'none';
-  document.getElementById('journal-section').classList.add('visible');
-  document.getElementById('reflection-input').focus();
-}
 
 async function submitRecord() {
   document.getElementById('record-error').textContent = '';

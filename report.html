@@ -333,6 +333,10 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 const SPIRITS = {
   hei:  { name:'平常心', en:'HEIJOSHIN', color:'#60a0b8', desc:'平静な心で状況を観察し、冷静に判断する力。どんな状況でも揺れない軸を持つ。' },
   jiko: { name:'自己鍛錬', en:'JIKO TANREN', color:'#c87840', desc:'自分を磨き続ける意志。日々の小さな積み重ねが、やがて大きな力になる。' },
@@ -376,8 +380,7 @@ function render(lite, practice) {
   const dateStr   = startDate
     ? `${startDate.getFullYear()}年${startDate.getMonth()+1}月${startDate.getDate()}日 開始`
     : '';
-  const dayNum    = startDate ? Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1 : 0;
-  const completed = dayNum > 21;
+  const completed = !!practice?.rank;
 
   document.getElementById('report').innerHTML = `
     <!-- Header -->
@@ -472,7 +475,7 @@ function render(lite, practice) {
               ? `<div class="diary-block">
                    <div class="diary-block-label">振り返り${dateLabel ? `　${dateLabel}` : ''}</div>
                    ${entry.text
-                     ? `<div class="entry-text">${entry.text.replace(/\n/g,'<br>')}</div>`
+                     ? `<div class="entry-text">${escHtml(entry.text).replace(/\n/g,'<br>')}</div>`
                      : `<div class="entry-empty">（テキストなし）</div>`}
                  </div>`
               : '';
@@ -485,7 +488,7 @@ function render(lite, practice) {
                     : '';
                   return `<div class="diary-memo-block">
                    <div class="diary-block-label">🔒 自分用メモ${memoTimeStr}</div>
-                   <div class="entry-text">${memo.text.replace(/\n/g,'<br>')}</div>
+                   <div class="entry-text">${escHtml(memo.text).replace(/\n/g,'<br>')}</div>
                  </div>`;
                 })()
               : '';
@@ -500,7 +503,7 @@ function render(lite, practice) {
                           <span>⚔️ ファシリテーターより</span>
                           ${ctStr ? `<span style="color:var(--muted);font-weight:400">${ctStr}</span>` : ''}
                         </div>
-                        <div class="entry-text">${c.text.replace(/\n/g,'<br>')}</div>
+                        <div class="entry-text">${escHtml(c.text).replace(/\n/g,'<br>')}</div>
                       </div>`;
             }).join('');
 

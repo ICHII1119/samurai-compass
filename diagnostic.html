@@ -1182,6 +1182,10 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 /* ════════════════════════════════════
    DATA — 54 CHALLENGE CARDS
 ════════════════════════════════════ */
@@ -2351,7 +2355,7 @@ async function renderAdminPractices() {
                           ${dateStr ? `<div style="font-size:.65rem;color:var(--muted)">${dateStr}</div>` : ''}
                           ${isUnread ? `<span class="unread-label" style="font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">未読</span>` : ''}
                         </div>
-                        <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? e.text.replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
+                        <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
                         ${(() => {
                           const dayComments = (p.adminComments || []).filter(c => c.day === e.day);
                           if (dayComments.length === 0) return '';
@@ -2362,7 +2366,7 @@ async function renderAdminPractices() {
                               <div style="font-size:.62rem;color:var(--gold);margin-bottom:.25rem;display:flex;gap:.5rem;align-items:center">
                                 <span>⚔️ あなたのコメント</span>${ctStr ? `<span style="color:var(--muted)">${ctStr}</span>` : ''}
                               </div>
-                              <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${c.text.replace(/\n/g,'<br>')}</div>
+                              <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${escHtml(c.text).replace(/\n/g,'<br>')}</div>
                             </div>`;
                           }).join('');
                         })()}
