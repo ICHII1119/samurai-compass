@@ -307,6 +307,212 @@ body {
 }
 .btn-submit:disabled { opacity: .5; cursor: not-allowed }
 
+/* ── Calendar ── */
+.calendar-section {
+  margin: 1.8rem 0 0;
+  padding: 0 1.2rem;
+}
+.calendar-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .9rem;
+}
+.calendar-title {
+  font-family: var(--font-b);
+  font-size: .75rem;
+  letter-spacing: .12em;
+  color: var(--gold);
+  text-transform: uppercase;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid var(--border);
+  flex: 1;
+}
+.cal-nav-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--cream2);
+  border-radius: 6px;
+  width: 28px; height: 28px;
+  cursor: pointer;
+  font-size: .85rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.cal-month-label {
+  font-size: .8rem;
+  color: var(--cream2);
+  min-width: 80px;
+  text-align: center;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.cal-dow {
+  text-align: center;
+  font-size: .6rem;
+  color: var(--muted);
+  padding-bottom: .3rem;
+}
+.cal-day {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  cursor: default;
+  position: relative;
+  background: transparent;
+}
+.cal-day.has-challenge {
+  background: var(--bg3);
+  cursor: pointer;
+}
+.cal-day.has-challenge:active { opacity: .7; }
+.cal-day.reflected {
+  background: var(--bg3);
+  cursor: pointer;
+}
+.cal-day-num {
+  font-size: .72rem;
+  color: var(--muted);
+  line-height: 1;
+}
+.cal-day.has-challenge .cal-day-num { color: var(--cream2); }
+.cal-day.reflected .cal-day-num { color: var(--cream); font-weight: 600; }
+.cal-day.is-today .cal-day-num {
+  color: var(--gold);
+  font-weight: 700;
+}
+.cal-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-top: 3px;
+}
+.cal-check {
+  font-size: .65rem;
+  margin-top: 2px;
+}
+
+/* ── Day detail modal ── */
+.day-detail-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+}
+.day-detail-overlay.open { display: flex; }
+.day-detail-panel {
+  background: var(--bg2);
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 480px;
+  padding: 1.2rem 1.4rem 2.4rem;
+  max-height: 82vh;
+  overflow-y: auto;
+  animation: slideUp .22s ease;
+}
+.day-detail-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto .9rem;
+}
+.day-detail-date {
+  font-size: .72rem;
+  color: var(--muted);
+  margin-bottom: .3rem;
+}
+.day-detail-spirit {
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  margin-bottom: .6rem;
+}
+.day-detail-challenge-box {
+  background: var(--bg3);
+  border-radius: 10px;
+  padding: .8rem 1rem;
+  margin-bottom: .8rem;
+}
+.day-detail-challenge-label {
+  font-size: .62rem;
+  color: var(--muted);
+  letter-spacing: .08em;
+  margin-bottom: .3rem;
+}
+.day-detail-challenge-title {
+  font-family: var(--font-b);
+  font-size: .95rem;
+  color: var(--gold);
+  margin-bottom: .4rem;
+}
+.day-detail-challenge-body {
+  font-size: .8rem;
+  color: var(--cream2);
+  line-height: 1.6;
+}
+.day-detail-reflection-box {
+  background: rgba(201,168,76,.06);
+  border-left: 2px solid var(--gold);
+  border-radius: 0 8px 8px 0;
+  padding: .75rem 1rem;
+  margin-bottom: .8rem;
+}
+.day-detail-reflection-label {
+  font-size: .62rem;
+  color: var(--gold);
+  letter-spacing: .08em;
+  margin-bottom: .3rem;
+}
+.day-detail-reflection-text {
+  font-size: .82rem;
+  color: var(--cream2);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.day-detail-ai-box {
+  font-size: .78rem;
+  color: var(--cream2);
+  line-height: 1.65;
+  padding: .6rem 0;
+  border-top: 1px solid var(--border);
+}
+.day-detail-ai-label {
+  font-size: .62rem;
+  color: var(--muted);
+  letter-spacing: .08em;
+  margin-bottom: .3rem;
+}
+.day-detail-record-btn {
+  width: 100%;
+  padding: .85rem;
+  border-radius: 12px;
+  background: var(--gold-dim);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: .8rem;
+  letter-spacing: .04em;
+}
+.day-detail-close {
+  width: 100%;
+  padding: .6rem;
+  border-radius: 10px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: .78rem;
+  cursor: pointer;
+  margin-top: .5rem;
+}
+
 /* ── Community section ── */
 .community-section {
   margin: 1.8rem 0 0;
@@ -633,6 +839,23 @@ body {
     </div>
   </div>
 
+  <!-- Calendar -->
+  <div class="calendar-section">
+    <div class="calendar-header-row">
+      <div class="calendar-title">📅 稽古カレンダー</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem">
+      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+      <div class="cal-month-label" id="cal-month-label"></div>
+      <button class="cal-nav-btn" onclick="calNext()">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div style="display:flex;gap:1rem;margin-top:.7rem;font-size:.65rem;color:var(--muted)">
+      <span>✅ 振り返り済み</span>
+      <span>⬜ 課題あり・未記録</span>
+    </div>
+  </div>
+
   <!-- Pentagon Compass -->
   <div class="compass-section">
     <div class="compass-title">PENTAGON COMPASS — 成長の軌跡</div>
@@ -682,6 +905,30 @@ body {
 
 <!-- FAB -->
 <button class="fab" id="fab-btn" onclick="openRecord()" style="display:none">⚔️ 稽古を記録する</button>
+
+<!-- Day detail modal -->
+<div class="day-detail-overlay" id="day-detail-overlay" onclick="handleDayDetailClick(event)">
+  <div class="day-detail-panel" id="day-detail-panel">
+    <div class="day-detail-handle"></div>
+    <div class="day-detail-date" id="dd-date"></div>
+    <div class="day-detail-spirit" id="dd-spirit"></div>
+    <div class="day-detail-challenge-box">
+      <div class="day-detail-challenge-label">今日の課題</div>
+      <div class="day-detail-challenge-title" id="dd-challenge-title"></div>
+      <div class="day-detail-challenge-body" id="dd-challenge-body"></div>
+    </div>
+    <div class="day-detail-reflection-box" id="dd-reflection-box">
+      <div class="day-detail-reflection-label">⚔️ 振り返り</div>
+      <div class="day-detail-reflection-text" id="dd-reflection-text"></div>
+    </div>
+    <div class="day-detail-ai-box" id="dd-ai-box">
+      <div class="day-detail-ai-label">武蔵BOTより</div>
+      <div id="dd-ai-text"></div>
+    </div>
+    <button class="day-detail-record-btn" id="dd-record-btn" onclick="openRecordForDate()">この日の振り返りを記録する</button>
+    <button class="day-detail-close" onclick="closeDayDetail()">閉じる</button>
+  </div>
+</div>
 
 <!-- Record panel -->
 <div class="record-overlay" id="record-overlay" onclick="handleOverlayClick(event)">
@@ -777,6 +1024,9 @@ const userId = params.get('lid');
 let dojoData = null;
 let selectedSpirit = null;
 let currentChallenge = null;
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calSelectedDate = null;
 
 /* ── Init ── */
 async function init() {
@@ -823,11 +1073,156 @@ async function init() {
     }
 
     render();
+    renderCalendar();
     loadCommunity();
   } catch(e) {
     console.error(e);
     showError('データの読み込みに失敗しました。');
   }
+}
+
+/* ── Calendar ── */
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  const label = document.getElementById('cal-month-label');
+  if (!grid || !label) return;
+
+  const today = toDateStr(new Date());
+  const challenges = dojoData?.challengeHistory || [];
+  const entries    = dojoData?.entries || [];
+
+  // date → challenge / entry マップを構築
+  const challengeMap = {};
+  challenges.forEach(c => { challengeMap[c.date] = c; });
+  const entryMap = {};
+  entries.forEach(e => { entryMap[e.date] = e; });
+
+  label.textContent = `${calYear}年 ${calMonth + 1}月`;
+
+  const DOWS = ['日','月','火','水','木','金','土'];
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  let html = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  // 空白セル
+  for (let i = 0; i < firstDay; i++) html += '<div class="cal-day"></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const hasChallenge = !!challengeMap[dateStr];
+    const hasEntry     = !!entryMap[dateStr];
+    const isToday      = dateStr === today;
+
+    let cls = 'cal-day';
+    if (hasEntry)     cls += ' reflected';
+    else if (hasChallenge) cls += ' has-challenge';
+    if (isToday)      cls += ' is-today';
+
+    const sp = hasChallenge ? SPIRITS[challengeMap[dateStr].spirit] : null;
+    const dotColor = sp ? sp.color : 'transparent';
+    const indicator = hasEntry
+      ? `<div class="cal-check" style="color:${dotColor}">✅</div>`
+      : hasChallenge
+        ? `<div class="cal-dot" style="background:${dotColor}"></div>`
+        : '';
+
+    const onclick = (hasChallenge || hasEntry) ? `onclick="openDayDetail('${dateStr}')"` : '';
+    html += `<div class="${cls}" ${onclick}><div class="cal-day-num">${d}</div>${indicator}</div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+function calNext() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function openDayDetail(dateStr) {
+  const challenges = dojoData?.challengeHistory || [];
+  const entries    = dojoData?.entries || [];
+  const challenge  = challenges.find(c => c.date === dateStr);
+  const entry      = entries.find(e => e.date === dateStr);
+  if (!challenge) return;
+
+  calSelectedDate = dateStr;
+  const sp = SPIRITS[challenge.spirit] || { icon:'⚔️', name: challenge.spirit, color: 'var(--gold)' };
+
+  // 日付表示
+  const [y, m, d] = dateStr.split('-');
+  document.getElementById('dd-date').textContent = `${y}年${parseInt(m)}月${parseInt(d)}日`;
+  document.getElementById('dd-spirit').innerHTML = `<span style="color:${sp.color}">${sp.icon} ${sp.name}</span>`;
+  document.getElementById('dd-challenge-title').textContent = challenge.title || '';
+  document.getElementById('dd-challenge-body').textContent  = challenge.body  || '';
+
+  // 振り返り
+  const reflBox = document.getElementById('dd-reflection-box');
+  if (entry?.reflection) {
+    document.getElementById('dd-reflection-text').textContent = entry.reflection;
+    reflBox.style.display = 'block';
+  } else {
+    reflBox.style.display = 'none';
+  }
+
+  // 武蔵BOT
+  const aiBox = document.getElementById('dd-ai-box');
+  if (entry?.aiMessage) {
+    document.getElementById('dd-ai-text').textContent = entry.aiMessage;
+    aiBox.style.display = 'block';
+  } else {
+    aiBox.style.display = 'none';
+  }
+
+  // 記録ボタン（未記録の場合のみ表示）
+  const today = toDateStr(new Date());
+  const recordBtn = document.getElementById('dd-record-btn');
+  recordBtn.style.display = (!entry && dateStr <= today) ? 'block' : 'none';
+
+  document.getElementById('day-detail-overlay').classList.add('open');
+}
+
+function closeDayDetail() {
+  document.getElementById('day-detail-overlay').classList.remove('open');
+  calSelectedDate = null;
+}
+
+function handleDayDetailClick(e) {
+  if (e.target === document.getElementById('day-detail-overlay')) closeDayDetail();
+}
+
+function openRecordForDate() {
+  if (!calSelectedDate) return;
+  const challenges = dojoData?.challengeHistory || [];
+  const challenge  = challenges.find(c => c.date === calSelectedDate);
+  if (!challenge) return;
+
+  closeDayDetail();
+  selectedSpirit   = challenge.spirit;
+  currentChallenge = { title: challenge.title, body: challenge.body };
+
+  const sp = SPIRITS[challenge.spirit];
+  const card = document.getElementById('challenge-card');
+  card.style.borderColor = sp?.color || 'var(--gold)';
+  document.getElementById('challenge-title').style.color = sp?.color || 'var(--gold)';
+  document.getElementById('challenge-title').textContent = challenge.title;
+  document.getElementById('challenge-body').textContent  = challenge.body;
+
+  document.getElementById('record-form').style.display = 'block';
+  document.getElementById('success-screen').classList.remove('visible');
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('submit-btn').textContent = '記録する';
+  document.getElementById('journal-section').classList.add('visible');
+  document.getElementById('reflection-input').value = '';
+  document.getElementById('record-error').textContent = '';
+  document.getElementById('record-overlay').classList.add('open');
+  document.getElementById('reflection-input').focus();
 }
 
 /* ── Community board ── */
@@ -1192,7 +1587,7 @@ async function submitRecord() {
     challengeTitle: currentChallenge?.title || '',
     challengeBody:  currentChallenge?.body  || '',
     reflection,
-    date: toDateStr(new Date()),
+    date: calSelectedDate || toDateStr(new Date()),
     timestamp: new Date().toISOString(),
   };
 
@@ -1213,9 +1608,12 @@ async function submitRecord() {
     if (!dojoData.entries) dojoData.entries = [];
     dojoData.entries.push(entry);
 
+    calSelectedDate = null;
+
     // 完了画面に切り替え
     showSuccessScreen(entry);
     render();
+    renderCalendar();
     loadCommunity();
 
     // バックグラウンドでAIメッセージ生成
