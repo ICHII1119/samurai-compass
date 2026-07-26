@@ -1199,17 +1199,20 @@ function handleDayDetailClick(e) {
 
 function openRecordForDate() {
   if (!calSelectedDate) return;
+  const savedDate  = calSelectedDate; // closeDayDetail()でリセットされる前に保存
   const challenges = dojoData?.challengeHistory || [];
-  const challenge  = challenges.find(c => c.date === calSelectedDate);
+  const challenge  = challenges.find(c => c.date === savedDate);
   if (!challenge) return;
 
   closeDayDetail();
+  calSelectedDate  = savedDate; // closeDayDetail()でnullになるので復元
   selectedSpirit   = challenge.spirit;
   currentChallenge = { title: challenge.title, body: challenge.body };
 
   const sp = SPIRITS[challenge.spirit];
   const card = document.getElementById('challenge-card');
   card.style.borderColor = sp?.color || 'var(--gold)';
+  card.classList.add('visible'); // 課題カードを表示
   document.getElementById('challenge-title').style.color = sp?.color || 'var(--gold)';
   document.getElementById('challenge-title').textContent = challenge.title;
   document.getElementById('challenge-body').textContent  = challenge.body;
