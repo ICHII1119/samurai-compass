@@ -1233,16 +1233,22 @@ async function loadCommunity() {
     const today = toDateStr(new Date());
     const snap = await db.collection('dojo_community')
       .where('date', '==', today)
-      .orderBy('timestamp', 'desc')
       .limit(30)
       .get();
 
     if (snap.empty) {
-      container.innerHTML = '<div class="community-empty">今日はまだ誰も共有していません。<br>最初の一人になりましょう。</div>';
+      container.innerHTML = '<div class="community-empty">今日はまだ誰も稽古を記録していません。<br>最初の一人になりましょう。</div>';
       return;
     }
 
-    container.innerHTML = snap.docs.map((doc, i) => {
+    // タイムスタンプで降順ソート（クライアントサイド）
+    const docs = snap.docs.sort((a, b) => {
+      const ta = a.data().timestamp?.toMillis?.() || 0;
+      const tb = b.data().timestamp?.toMillis?.() || 0;
+      return tb - ta;
+    });
+
+    container.innerHTML = docs.map((doc, i) => {
       const d = doc.data();
       const sp = SPIRITS[d.spirit] || { icon: '⚔️', name: d.spirit, color: 'var(--gold)' };
       const ts = d.timestamp?.toDate ? d.timestamp.toDate() : null;
