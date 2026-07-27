@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a1f">
+<title>SAMURAI in You — Begin Your Journey</title>
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="apple-touch-icon" href="../logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+:root {
+  --bg:       #1a1a1f;
+  --bg2:      #222228;
+  --bg3:      #2a2a32;
+  --gold:     #c9a84c;
+  --gold2:    #e8c060;
+  --gold-dim: rgba(201,168,76,.15);
+  --red:      #c04848;
+  --cream:    #f0ece0;
+  --cream2:   #c8b090;
+  --muted:    #7a7060;
+  --border:   rgba(201,168,76,.2);
+  --r:        14px;
+  --font:     'Open Sans', -apple-system, sans-serif;
+  --font-b:   'Cormorant Garamond', serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+html { -webkit-text-size-adjust: 100%; font-size: 16px }
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--font);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Screens ── */
+.screen {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.screen.active { display: flex }
+
+/* ── Intro Screen ── */
+.intro-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+.intro-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 24px rgba(201,168,76,.3);
+}
+.intro-brand {
+  font-family: var(--font-b);
+  font-size: .8rem;
+  letter-spacing: .25em;
+  color: var(--gold);
+  margin-bottom: .6rem;
+  text-transform: uppercase;
+}
+.intro-title {
+  font-family: var(--font-b);
+  font-size: 2.4rem;
+  font-weight: 600;
+  color: var(--cream);
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+.intro-divider {
+  width: 48px;
+  height: 1px;
+  background: var(--gold);
+  margin: 0 auto 1.5rem;
+  opacity: .5;
+}
+.intro-body {
+  font-size: .9rem;
+  color: var(--cream2);
+  line-height: 1.9;
+  margin-bottom: 2.5rem;
+}
+.intro-quote {
+  font-family: var(--font-b);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--gold);
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  padding: 1.2rem 1.5rem;
+  border-left: 2px solid var(--gold);
+  text-align: left;
+}
+.intro-quote cite {
+  display: block;
+  font-style: normal;
+  font-size: .72rem;
+  color: var(--muted);
+  margin-top: .4rem;
+  letter-spacing: .1em;
+}
+.btn-primary {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #b8902a, #e8c060);
+  color: #1a1a1f;
+  font-family: var(--font-b);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(201,168,76,.35);
+  transition: opacity .15s;
+}
+.btn-primary:hover { opacity: .9 }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed }
+
+/* ── Form Screen ── */
+.form-wrap {
+  flex: 1;
+  padding: 2.5rem 1.5rem 3rem;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+.form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.form-header img {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  margin-bottom: .8rem;
+}
+.form-title {
+  font-family: var(--font-b);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: .25rem;
+}
+.form-sub {
+  font-size: .78rem;
+  color: var(--muted);
+  letter-spacing: .06em;
+}
+.field {
+  margin-bottom: 1.2rem;
+}
+.field label {
+  display: block;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin-bottom: .4rem;
+  text-transform: uppercase;
+}
+.field input,
+.field select {
+  width: 100%;
+  padding: .85rem 1rem;
+  background: var(--bg2);
+  border: 1px solid rgba(201,168,76,.25);
+  border-radius: var(--r);
+  color: var(--cream);
+  font-family: var(--font);
+  font-size: .95rem;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color .15s;
+}
+.field input:focus,
+.field select:focus { border-color: var(--gold) }
+.field input::placeholder { color: var(--muted) }
+.field select option { background: #222228; color: #f0ece0 }
+
+.select-wrap {
+  position: relative;
+}
+.select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  font-size: .85rem;
+}
+
+.gdpr-row {
+  display: flex;
+  gap: .85rem;
+  align-items: flex-start;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+}
+.gdpr-row input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+.gdpr-label {
+  font-size: .8rem;
+  color: var(--cream2);
+  line-height: 1.6;
+}
+
+.form-error {
+  font-size: .78rem;
+  color: var(--red);
+  margin-bottom: .8rem;
+  min-height: 1.2em;
+  text-align: center;
+}
+
+/* ── Success Screen ── */
+.success-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+.success-icon { font-size: 3rem; margin-bottom: 1.2rem }
+.success-title {
+  font-family: var(--font-b);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: .6rem;
+}
+.success-body {
+  font-size: .88rem;
+  color: var(--cream2);
+  line-height: 1.9;
+  margin-bottom: 2.5rem;
+}
+.success-detail {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 2rem;
+  text-align: left;
+  width: 100%;
+}
+.success-detail-label {
+  font-size: .65rem;
+  letter-spacing: .15em;
+  color: var(--muted);
+  margin-bottom: .3rem;
+  text-transform: uppercase;
+}
+.success-detail-value {
+  font-size: .9rem;
+  color: var(--cream);
+}
+</style>
+</head>
+<body>
+
+<!-- Screen 1: Intro -->
+<div class="screen active" id="s-intro">
+  <div class="intro-wrap">
+    <img src="../logo.png" alt="SAMURAI in You" class="intro-logo">
+    <div class="intro-brand">SAMURAI in You</div>
+    <h1 class="intro-title">Begin Your<br>Journey</h1>
+    <div class="intro-divider"></div>
+    <p class="intro-body">
+      Every morning, a single challenge arrives in your inbox.<br><br>
+      Reflect. Record. Grow.<br><br>
+      21 days of practice, rooted in the way of the samurai.
+    </p>
+    <blockquote class="intro-quote">
+      "The thousand days of training are called <em>tan</em>.<br>
+      The ten thousand days are called <em>ren</em>."
+      <cite>— Miyamoto Musashi, The Book of Five Rings</cite>
+    </blockquote>
+    <button class="btn-primary" onclick="showForm()">Start Registration →</button>
+  </div>
+</div>
+
+<!-- Screen 2: Form -->
+<div class="screen" id="s-form">
+  <div class="form-wrap">
+    <div class="form-header">
+      <img src="../logo.png" alt="SAMURAI in You">
+      <div class="form-title">Your Path Begins Here</div>
+      <div class="form-sub">Register to receive your daily challenge</div>
+    </div>
+
+    <div class="field">
+      <label for="f-name">Your Name</label>
+      <input type="text" id="f-name" placeholder="e.g. Alex" autocomplete="given-name">
+    </div>
+
+    <div class="field">
+      <label for="f-email">Email Address</label>
+      <input type="email" id="f-email" placeholder="you@example.com" autocomplete="email">
+    </div>
+
+    <div class="field">
+      <label for="f-tz">Your Timezone</label>
+      <div class="select-wrap">
+        <select id="f-tz">
+          <optgroup label="United States">
+            <option value="America/New_York">Eastern Time (ET) — New York, Miami</option>
+            <option value="America/Chicago">Central Time (CT) — Chicago, Dallas</option>
+            <option value="America/Denver">Mountain Time (MT) — Denver, Phoenix</option>
+            <option value="America/Los_Angeles">Pacific Time (PT) — Los Angeles, Seattle</option>
+            <option value="America/Anchorage">Alaska Time (AKT) — Anchorage</option>
+            <option value="Pacific/Honolulu">Hawaii Time (HT) — Honolulu</option>
+          </optgroup>
+          <optgroup label="Europe">
+            <option value="Europe/London">GMT/BST — London, Dublin, Lisbon</option>
+            <option value="Europe/Paris">CET — Paris, Amsterdam, Brussels</option>
+            <option value="Europe/Berlin">CET — Berlin, Vienna, Zurich</option>
+            <option value="Europe/Rome">CET — Rome, Milan</option>
+            <option value="Europe/Madrid">CET — Madrid, Barcelona</option>
+            <option value="Europe/Stockholm">CET — Stockholm, Oslo, Copenhagen</option>
+            <option value="Europe/Warsaw">CET — Warsaw, Prague, Budapest</option>
+            <option value="Europe/Helsinki">EET — Helsinki, Riga, Tallinn</option>
+            <option value="Europe/Athens">EET — Athens, Bucharest</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="Asia/Tokyo">JST — Tokyo, Osaka</option>
+            <option value="Australia/Sydney">AEDT — Sydney, Melbourne</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+
+    <label class="gdpr-row" for="f-gdpr">
+      <input type="checkbox" id="f-gdpr">
+      <span class="gdpr-label">
+        I agree to receive a daily challenge email from SAMURAI in You. I can unsubscribe at any time by contacting <strong>dojo@samurai-in-you.com</strong>.
+      </span>
+    </label>
+
+    <div class="form-error" id="form-error"></div>
+    <button class="btn-primary" id="submit-btn" onclick="submitForm()">Begin the Practice →</button>
+  </div>
+</div>
+
+<!-- Screen 3: Success -->
+<div class="screen" id="s-success">
+  <div class="success-wrap">
+    <div class="success-icon">⚔️</div>
+    <div class="success-title">You're In</div>
+    <p class="success-body">
+      A welcome email is on its way.<br><br>
+      Your first challenge will arrive tomorrow morning at <strong style="color:var(--gold)">8:00 AM</strong> in your timezone.
+    </p>
+    <div class="success-detail">
+      <div class="success-detail-label">Practitioner</div>
+      <div class="success-detail-value" id="s-name">—</div>
+    </div>
+    <div class="success-detail">
+      <div class="success-detail-label">Email</div>
+      <div class="success-detail-value" id="s-email">—</div>
+    </div>
+    <button class="btn-primary" id="dojo-btn" onclick="goToDojo()">Go to Your Dojo →</button>
+    <div style="margin-top:1.5rem;font-size:.72rem;color:var(--muted);line-height:1.8">
+      "Still becoming." — the practice never ends.
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC1qm7kUjSRk7QRwxK-W7bH1q-pqH3lklU",
+  authDomain: "samurai-compass.firebaseapp.com",
+  projectId: "samurai-compass",
+  storageBucket: "samurai-compass.firebasestorage.app",
+  messagingSenderId: "502771859953",
+  appId: "1:502771859953:web:89e801832fdd42c6cb0450"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let generatedUid = null;
+
+function showForm() {
+  document.getElementById('s-intro').classList.remove('active');
+  document.getElementById('s-form').classList.add('active');
+  document.getElementById('f-name').focus();
+}
+
+async function submitForm() {
+  const name  = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const tz    = document.getElementById('f-tz').value;
+  const gdpr  = document.getElementById('f-gdpr').checked;
+  const errEl = document.getElementById('form-error');
+
+  errEl.textContent = '';
+
+  if (!name)  { errEl.textContent = 'Please enter your name.'; return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Please enter a valid email address.'; return;
+  }
+  if (!tz)   { errEl.textContent = 'Please select your timezone.'; return; }
+  if (!gdpr) { errEl.textContent = 'Please agree to receive emails to continue.'; return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Registering…';
+
+  try {
+    // Generate uid
+    generatedUid = 'EN' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
+
+    await db.collection('en_profiles').doc(generatedUid).set({
+      uid:          generatedUid,
+      name,
+      email,
+      timezone:     tz,
+      gdprConsent:  true,
+      active:       true,
+      createdAt:    firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    localStorage.setItem('siyen_uid', generatedUid);
+
+    // Show success screen
+    document.getElementById('s-name').textContent  = name;
+    document.getElementById('s-email').textContent = email;
+    document.getElementById('s-form').classList.remove('active');
+    document.getElementById('s-success').classList.add('active');
+
+  } catch(e) {
+    console.error(e);
+    errEl.textContent = 'Registration failed. Please try again.';
+    btn.disabled = false;
+    btn.textContent = 'Begin the Practice →';
+  }
+}
+
+function goToDojo() {
+  if (generatedUid) {
+    location.href = `dojo.html?uid=${generatedUid}`;
+  }
+}
+</script>
+</body>
+</html>

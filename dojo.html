@@ -764,6 +764,43 @@ body {
   padding: .6rem 0 0;
   line-height: 1.6;
 }
+
+/* ── Spirit picker (past-date recording without challenge) ── */
+.spirit-picker-section {
+  display: none;
+  margin-bottom: 1rem;
+}
+.spirit-picker-label {
+  font-size: .7rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin-bottom: .6rem;
+  text-transform: uppercase;
+}
+.spirit-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: .4rem;
+}
+.spirit-picker-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .2rem;
+  padding: .6rem .3rem;
+  background: var(--bg3);
+  border: 1.5px solid rgba(201,168,76,.2);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.spirit-picker-btn:hover { background: rgba(201,168,76,.08) }
+.spirit-picker-btn.selected {
+  border-color: var(--gold);
+  background: rgba(201,168,76,.12);
+}
+.spirit-picker-icon { font-size: 1.2rem }
+.spirit-picker-name { font-size: .55rem; color: var(--cream2); line-height: 1.3; text-align: center }
 </style>
 </head>
 <body>
@@ -853,6 +890,7 @@ body {
     <div style="display:flex;gap:1rem;margin-top:.7rem;font-size:.65rem;color:var(--muted)">
       <span>✅ 振り返り済み</span>
       <span>⬜ 課題あり・未記録</span>
+      <span style="opacity:.5">過去の日付はタップで記録できます</span>
     </div>
   </div>
 
@@ -912,7 +950,7 @@ body {
     <div class="day-detail-handle"></div>
     <div class="day-detail-date" id="dd-date"></div>
     <div class="day-detail-spirit" id="dd-spirit"></div>
-    <div class="day-detail-challenge-box">
+    <div class="day-detail-challenge-box" id="dd-challenge-box">
       <div class="day-detail-challenge-label">今日の課題</div>
       <div class="day-detail-challenge-title" id="dd-challenge-title"></div>
       <div class="day-detail-challenge-body" id="dd-challenge-body"></div>
@@ -937,13 +975,40 @@ body {
 
     <!-- フォームビュー -->
     <div id="record-form">
-      <div class="panel-title">今日の稽古を記録する</div>
+      <div class="panel-title" id="record-panel-title">今日の稽古を記録する</div>
 
       <!-- 今日の課題 -->
       <div class="challenge-card" id="challenge-card">
         <div class="challenge-label">今日の課題</div>
         <div class="challenge-title" id="challenge-title"></div>
         <div class="challenge-body" id="challenge-body"></div>
+      </div>
+
+      <!-- Spirit picker（課題がない過去日用） -->
+      <div class="spirit-picker-section" id="spirit-picker-section">
+        <div class="spirit-picker-label">Spirit を選んでください</div>
+        <div class="spirit-picker-grid">
+          <button class="spirit-picker-btn" onclick="selectSpiritForRecord('hei')"   id="sp-btn-hei">
+            <span class="spirit-picker-icon">☁️</span>
+            <span class="spirit-picker-name">平常心</span>
+          </button>
+          <button class="spirit-picker-btn" onclick="selectSpiritForRecord('jiko')"  id="sp-btn-jiko">
+            <span class="spirit-picker-icon">🌿</span>
+            <span class="spirit-picker-name">自己鍛錬</span>
+          </button>
+          <button class="spirit-picker-btn" onclick="selectSpiritForRecord('flex')"  id="sp-btn-flex">
+            <span class="spirit-picker-icon">🐦</span>
+            <span class="spirit-picker-name">柔軟な<br>適応力</span>
+          </button>
+          <button class="spirit-picker-btn" onclick="selectSpiritForRecord('strat')" id="sp-btn-strat">
+            <span class="spirit-picker-icon">🔥</span>
+            <span class="spirit-picker-name">戦略的<br>思考</span>
+          </button>
+          <button class="spirit-picker-btn" onclick="selectSpiritForRecord('sei')"   id="sp-btn-sei">
+            <span class="spirit-picker-icon">🌀</span>
+            <span class="spirit-picker-name">誠実さ</span>
+          </button>
+        </div>
       </div>
 
       <!-- ジャーナル -->
@@ -1127,7 +1192,8 @@ function renderCalendar() {
         ? `<div class="cal-dot" style="background:${dotColor}"></div>`
         : '';
 
-    const onclick = (hasChallenge || hasEntry) ? `onclick="openDayDetail('${dateStr}')"` : '';
+    // 過去日（今日含む）はすべてタップ可能
+    const onclick = dateStr <= today ? `onclick="openDayDetail('${dateStr}')"` : '';
     html += `<div class="${cls}" ${onclick}><div class="cal-day-num">${d}</div>${indicator}</div>`;
   }
 
@@ -1146,21 +1212,32 @@ function calNext() {
 }
 
 function openDayDetail(dateStr) {
+  const today      = toDateStr(new Date());
+  if (dateStr > today) return;
+
   const challenges = dojoData?.challengeHistory || [];
   const entries    = dojoData?.entries || [];
   const challenge  = challenges.find(c => c.date === dateStr);
   const entry      = entries.find(e => e.date === dateStr);
-  if (!challenge) return;
 
   calSelectedDate = dateStr;
-  const sp = SPIRITS[challenge.spirit] || { icon:'⚔️', name: challenge.spirit, color: 'var(--gold)' };
 
   // 日付表示
   const [y, m, d] = dateStr.split('-');
   document.getElementById('dd-date').textContent = `${y}年${parseInt(m)}月${parseInt(d)}日`;
-  document.getElementById('dd-spirit').innerHTML = `<span style="color:${sp.color}">${sp.icon} ${sp.name}</span>`;
-  document.getElementById('dd-challenge-title').textContent = challenge.title || '';
-  document.getElementById('dd-challenge-body').textContent  = challenge.body  || '';
+
+  // 課題がある場合はSpirit・課題を表示
+  const challengeBox = document.getElementById('dd-challenge-box');
+  if (challenge) {
+    const sp = SPIRITS[challenge.spirit] || { icon:'⚔️', name: challenge.spirit, color: 'var(--gold)' };
+    document.getElementById('dd-spirit').innerHTML = `<span style="color:${sp.color}">${sp.icon} ${sp.name}</span>`;
+    document.getElementById('dd-challenge-title').textContent = challenge.title || '';
+    document.getElementById('dd-challenge-body').textContent  = challenge.body  || '';
+    challengeBox.style.display = 'block';
+  } else {
+    document.getElementById('dd-spirit').innerHTML = '';
+    challengeBox.style.display = 'none';
+  }
 
   // 振り返り
   const reflBox = document.getElementById('dd-reflection-box');
@@ -1181,9 +1258,8 @@ function openDayDetail(dateStr) {
   }
 
   // 記録ボタン（未記録の場合のみ表示）
-  const today = toDateStr(new Date());
   const recordBtn = document.getElementById('dd-record-btn');
-  recordBtn.style.display = (!entry && dateStr <= today) ? 'block' : 'none';
+  recordBtn.style.display = !entry ? 'block' : 'none';
 
   document.getElementById('day-detail-overlay').classList.add('open');
 }
@@ -1199,33 +1275,62 @@ function handleDayDetailClick(e) {
 
 function openRecordForDate() {
   if (!calSelectedDate) return;
-  const savedDate  = calSelectedDate; // closeDayDetail()でリセットされる前に保存
+  const savedDate  = calSelectedDate;
   const challenges = dojoData?.challengeHistory || [];
   const challenge  = challenges.find(c => c.date === savedDate);
-  if (!challenge) return;
 
   closeDayDetail();
-  calSelectedDate  = savedDate; // closeDayDetail()でnullになるので復元
-  selectedSpirit   = challenge.spirit;
-  currentChallenge = { title: challenge.title, body: challenge.body };
+  calSelectedDate = savedDate; // closeDayDetail()でnullになるので復元
 
-  const sp = SPIRITS[challenge.spirit];
-  const card = document.getElementById('challenge-card');
-  card.style.borderColor = sp?.color || 'var(--gold)';
-  card.classList.add('visible'); // 課題カードを表示
-  document.getElementById('challenge-title').style.color = sp?.color || 'var(--gold)';
-  document.getElementById('challenge-title').textContent = challenge.title;
-  document.getElementById('challenge-body').textContent  = challenge.body;
+  const [y, m, d] = savedDate.split('-');
+  document.getElementById('record-panel-title').textContent = `${y}年${parseInt(m)}月${parseInt(d)}日の稽古を記録する`;
+
+  const card         = document.getElementById('challenge-card');
+  const pickerSec    = document.getElementById('spirit-picker-section');
+
+  if (challenge) {
+    // 課題履歴あり → 課題カードを表示、Spirit pickerは非表示
+    selectedSpirit   = challenge.spirit;
+    currentChallenge = { title: challenge.title, body: challenge.body };
+    const sp = SPIRITS[challenge.spirit];
+    card.style.borderColor = sp?.color || 'var(--gold)';
+    card.classList.add('visible');
+    document.getElementById('challenge-title').style.color = sp?.color || 'var(--gold)';
+    document.getElementById('challenge-title').textContent = challenge.title;
+    document.getElementById('challenge-body').textContent  = challenge.body;
+    pickerSec.style.display = 'none';
+    document.getElementById('submit-btn').disabled = false;
+  } else {
+    // 課題履歴なし → Spirit pickerを表示して自由記録
+    selectedSpirit   = null;
+    currentChallenge = null;
+    card.classList.remove('visible');
+    pickerSec.style.display = 'block';
+    // 選択状態をリセット
+    document.querySelectorAll('.spirit-picker-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('submit-btn').disabled = true;
+  }
 
   document.getElementById('record-form').style.display = 'block';
   document.getElementById('success-screen').classList.remove('visible');
-  document.getElementById('submit-btn').disabled = false;
   document.getElementById('submit-btn').textContent = '記録する';
   document.getElementById('journal-section').classList.add('visible');
   document.getElementById('reflection-input').value = '';
   document.getElementById('record-error').textContent = '';
   document.getElementById('record-overlay').classList.add('open');
   document.getElementById('reflection-input').focus();
+}
+
+function selectSpiritForRecord(spirit) {
+  selectedSpirit = spirit;
+  const sp = SPIRITS[spirit];
+  document.querySelectorAll('.spirit-picker-btn').forEach(b => b.classList.remove('selected'));
+  const btn = document.getElementById(`sp-btn-${spirit}`);
+  if (btn) {
+    btn.classList.add('selected');
+    btn.style.borderColor = sp?.color || 'var(--gold)';
+  }
+  document.getElementById('submit-btn').disabled = false;
 }
 
 /* ── Community board ── */
@@ -1529,10 +1634,14 @@ function escHtml(s) {
 function openRecord() {
   selectedSpirit = null;
   currentChallenge = null;
+  calSelectedDate = null;
   document.getElementById('reflection-input').value = '';
   document.getElementById('record-error').textContent = '';
   document.getElementById('record-form').style.display = 'block';
   document.getElementById('success-screen').classList.remove('visible');
+  document.getElementById('record-panel-title').textContent = '今日の稽古を記録する';
+  document.getElementById('spirit-picker-section').style.display = 'none';
+  document.querySelectorAll('.spirit-picker-btn').forEach(b => b.classList.remove('selected'));
   const btn = document.getElementById('submit-btn');
   btn.disabled = false;
   btn.textContent = '記録する';
