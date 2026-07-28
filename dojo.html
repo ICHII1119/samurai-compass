@@ -388,13 +388,16 @@ body {
   font-weight: 700;
 }
 .cal-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
+  width: 7px; height: 7px;
+  border-radius: 1px;
+  border: 1.5px solid var(--gold);
+  background: transparent;
   margin-top: 3px;
 }
 .cal-check {
   font-size: .65rem;
   margin-top: 2px;
+  line-height: 1;
 }
 
 /* ── Day detail modal ── */
@@ -889,7 +892,7 @@ body {
     <div class="cal-grid" id="cal-grid"></div>
     <div style="display:flex;gap:1rem;margin-top:.7rem;font-size:.65rem;color:var(--muted)">
       <span>✅ 振り返り済み</span>
-      <span>⬜ 課題あり・未記録</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border:1.5px solid rgba(255,255,255,.55);border-radius:1px;vertical-align:middle;margin-right:2px"></span>課題あり・未記録</span>
       <span style="opacity:.5">過去の日付はタップで記録できます</span>
     </div>
   </div>
@@ -1094,6 +1097,7 @@ let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let calSelectedDate = null;
 let calDetailChallenge = null; // 日付詳細で表示中の課題オブジェクト
+let pendingGeneratedChallenge = false; // AI生成課題路線で記録中のフラグ
 
 /* ── Init ── */
 async function init() {
@@ -1186,12 +1190,16 @@ function renderCalendar() {
     else if (hasChallenge) cls += ' has-challenge';
     if (isToday)      cls += ' is-today';
 
-    const sp = hasChallenge ? SPIRITS[challengeMap[dateStr].spirit] : null;
-    const dotColor = sp ? sp.color : 'transparent';
+    const sp = hasChallenge
+      ? SPIRITS[challengeMap[dateStr].spirit]
+      : hasEntry
+        ? SPIRITS[entryMap[dateStr].spirit]
+        : null;
+    const dotColor = sp?.color || 'var(--gold)';
     const indicator = hasEntry
-      ? `<div class="cal-check" style="color:${dotColor}">✅</div>`
+      ? `<div class="cal-check">✅</div>`
       : hasChallenge
-        ? `<div class="cal-dot" style="background:${dotColor}"></div>`
+        ? `<div class="cal-dot" style="border-color:${dotColor}"></div>`
         : '';
 
     // 過去日（今日含む）はすべてタップ可能
@@ -1296,6 +1304,7 @@ function openRecordForDate() {
 
   if (challenge) {
     // 課題履歴あり → そのまま課題カードを表示
+    pendingGeneratedChallenge = false;
     selectedSpirit   = challenge.spirit;
     currentChallenge = { title: challenge.title, body: challenge.body };
     const sp = SPIRITS[challenge.spirit];
@@ -1307,6 +1316,7 @@ function openRecordForDate() {
     document.getElementById('submit-btn').disabled = false;
   } else {
     // 課題履歴なし → AIで課題を生成してカードに表示
+    pendingGeneratedChallenge = true;
     selectedSpirit   = null;
     currentChallenge = null;
     card.style.borderColor = 'var(--gold)';
@@ -1661,6 +1671,7 @@ function openRecord() {
   selectedSpirit = null;
   currentChallenge = null;
   calSelectedDate = null;
+  pendingGeneratedChallenge = false;
   document.getElementById('reflection-input').value = '';
   document.getElementById('record-error').textContent = '';
   document.getElementById('record-form').style.display = 'block';
@@ -1739,6 +1750,22 @@ async function submitRecord() {
     await db.collection('dojo_practices').doc(userId).set({
       entries: firebase.firestore.FieldValue.arrayUnion(entry),
     }, { merge: true });
+
+    // AI生成課題の場合、challengeHistory にも保存してカレンダーに反映
+    if (pendingGeneratedChallenge && currentChallenge) {
+      const challengeRecord = {
+        spirit: selectedSpirit,
+        title:  currentChallenge.title,
+        body:   currentChallenge.body,
+        date:   entry.date,
+      };
+      await db.collection('dojo_practices').doc(userId).set({
+        challengeHistory: firebase.firestore.FieldValue.arrayUnion(challengeRecord),
+      }, { merge: true });
+      if (!dojoData.challengeHistory) dojoData.challengeHistory = [];
+      dojoData.challengeHistory.push(challengeRecord);
+      pendingGeneratedChallenge = false;
+    }
 
     // 稽古記録を匿名でコミュニティボードに自動書き込み（内容は共有しない）
     const entryCount = (dojoData.entries || []).length + 1;
