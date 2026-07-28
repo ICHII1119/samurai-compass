@@ -1092,6 +1092,7 @@ let currentChallenge = null;
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let calSelectedDate = null;
+let calDetailChallenge = null; // 日付詳細で表示中の課題オブジェクト
 
 /* ── Init ── */
 async function init() {
@@ -1220,7 +1221,8 @@ function openDayDetail(dateStr) {
   const challenge  = challenges.find(c => c.date === dateStr);
   const entry      = entries.find(e => e.date === dateStr);
 
-  calSelectedDate = dateStr;
+  calSelectedDate    = dateStr;
+  calDetailChallenge = challenge || null; // 再検索不要にするため保存
 
   // 日付表示
   const [y, m, d] = dateStr.split('-');
@@ -1266,7 +1268,8 @@ function openDayDetail(dateStr) {
 
 function closeDayDetail() {
   document.getElementById('day-detail-overlay').classList.remove('open');
-  calSelectedDate = null;
+  calSelectedDate    = null;
+  calDetailChallenge = null;
 }
 
 function handleDayDetailClick(e) {
@@ -1275,9 +1278,9 @@ function handleDayDetailClick(e) {
 
 function openRecordForDate() {
   if (!calSelectedDate) return;
-  const savedDate  = calSelectedDate;
-  const challenges = dojoData?.challengeHistory || [];
-  const challenge  = challenges.find(c => c.date === savedDate);
+  const savedDate = calSelectedDate;
+  // openDayDetail()で保存済みのオブジェクトを使う（再検索しない）
+  const challenge = calDetailChallenge;
 
   closeDayDetail();
   calSelectedDate = savedDate; // closeDayDetail()でnullになるので復元
