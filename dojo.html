@@ -1081,7 +1081,8 @@ const RANKS_BY_NAME = {
 
 /* ── Challenges（各Spirit 5問） ── */
 
-const GENERATE_DOJO_MESSAGE_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/generateDojoMessage';
+const GENERATE_DOJO_MESSAGE_URL    = 'https://us-central1-samurai-compass.cloudfunctions.net/generateDojoMessage';
+const GENERATE_DOJO_CHALLENGE_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/generateDojoChallenge';
 
 /* ── State ── */
 const params = new URLSearchParams(location.search);
@@ -1291,8 +1292,10 @@ function openRecordForDate() {
   const card         = document.getElementById('challenge-card');
   const pickerSec    = document.getElementById('spirit-picker-section');
 
+  pickerSec.style.display = 'none';
+
   if (challenge) {
-    // 課題履歴あり → 課題カードを表示、Spirit pickerは非表示
+    // 課題履歴あり → そのまま課題カードを表示
     selectedSpirit   = challenge.spirit;
     currentChallenge = { title: challenge.title, body: challenge.body };
     const sp = SPIRITS[challenge.spirit];
@@ -1301,17 +1304,18 @@ function openRecordForDate() {
     document.getElementById('challenge-title').style.color = sp?.color || 'var(--gold)';
     document.getElementById('challenge-title').textContent = challenge.title;
     document.getElementById('challenge-body').textContent  = challenge.body;
-    pickerSec.style.display = 'none';
     document.getElementById('submit-btn').disabled = false;
   } else {
-    // 課題履歴なし → Spirit pickerを表示して自由記録
+    // 課題履歴なし → AIで課題を生成してカードに表示
     selectedSpirit   = null;
     currentChallenge = null;
-    card.classList.remove('visible');
-    pickerSec.style.display = 'block';
-    // 選択状態をリセット
-    document.querySelectorAll('.spirit-picker-btn').forEach(b => b.classList.remove('selected'));
+    card.style.borderColor = 'var(--gold)';
+    card.classList.add('visible');
+    document.getElementById('challenge-title').style.color = 'var(--muted)';
+    document.getElementById('challenge-title').textContent = '課題を生成中...';
+    document.getElementById('challenge-body').textContent  = '直近の稽古記録をもとに、あなた専用の課題を作成しています。';
     document.getElementById('submit-btn').disabled = true;
+    generateChallengeForDate(savedDate);
   }
 
   document.getElementById('record-form').style.display = 'block';
@@ -1324,16 +1328,35 @@ function openRecordForDate() {
   document.getElementById('reflection-input').focus();
 }
 
-function selectSpiritForRecord(spirit) {
-  selectedSpirit = spirit;
-  const sp = SPIRITS[spirit];
-  document.querySelectorAll('.spirit-picker-btn').forEach(b => b.classList.remove('selected'));
-  const btn = document.getElementById(`sp-btn-${spirit}`);
-  if (btn) {
-    btn.classList.add('selected');
-    btn.style.borderColor = sp?.color || 'var(--gold)';
+async function generateChallengeForDate(dateStr) {
+  try {
+    const res = await fetch(GENERATE_DOJO_CHALLENGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    const data = await res.json();
+    if (!data.ok || !data.challenge) throw new Error('生成に失敗しました');
+
+    const challenge = data.challenge;
+    selectedSpirit   = challenge.spirit;
+    currentChallenge = { title: challenge.title, body: challenge.body };
+
+    const sp   = SPIRITS[challenge.spirit] || {};
+    const card = document.getElementById('challenge-card');
+    card.style.borderColor = sp.color || 'var(--gold)';
+    document.getElementById('challenge-title').style.color = sp.color || 'var(--gold)';
+    document.getElementById('challenge-title').textContent = challenge.title;
+    document.getElementById('challenge-body').textContent  = challenge.body;
+
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('reflection-input').focus();
+  } catch(e) {
+    console.error('generateChallengeForDate error:', e);
+    document.getElementById('challenge-title').textContent = '課題の生成に失敗しました';
+    document.getElementById('challenge-body').textContent  = '再度お試しいただくか、画面を閉じてやり直してください。';
+    document.getElementById('record-error').textContent = e.message;
   }
-  document.getElementById('submit-btn').disabled = false;
 }
 
 /* ── Community board ── */
