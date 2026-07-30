@@ -921,6 +921,17 @@ body {
   <!-- Compass history -->
   <div class="compass-history-section" id="compass-history-area"></div>
 
+  <!-- 21日間達成 → ミーティング予約CTA -->
+  <div id="review-cta-section" style="display:none;margin:1.2rem 0;padding:1.2rem 1.4rem;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.3);border-radius:14px;text-align:center">
+    <div style="font-size:.75rem;color:var(--gold);letter-spacing:.12em;margin-bottom:.4rem">🏆 21日間の稽古 達成</div>
+    <div style="font-size:1rem;font-weight:700;color:var(--cream);margin-bottom:.5rem">振り返りミーティングのご案内</div>
+    <div style="font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">21日間の稽古を終えられました。<br>あなたの記録をもとに、次のステージへ向けた<br>振り返りミーティングをご用意しています。</div>
+    <a href="https://cal.com/samurai-in-you/21dayafterfeedback" target="_blank" rel="noopener"
+       style="display:inline-block;padding:.65rem 1.6rem;background:var(--gold);color:#1a1a1f;border-radius:8px;font-size:.85rem;font-weight:700;text-decoration:none;letter-spacing:.05em">
+      ミーティングを予約する →
+    </a>
+  </div>
+
   <!-- Rank history -->
   <div class="rank-history-section" id="rank-history-area"></div>
 
@@ -1436,6 +1447,10 @@ function render() {
   renderCompassHistory();
   renderEntries(entries);
   renderRankHistory();
+
+  // 21日間達成CTA
+  const ctaSection = document.getElementById('review-cta-section');
+  if (ctaSection) ctaSection.style.display = uniqueDays >= 21 ? 'block' : 'none';
 }
 
 /* ── Pentagon Compass ── */
