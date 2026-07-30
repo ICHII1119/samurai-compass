@@ -1190,18 +1190,11 @@ function renderCalendar() {
     else if (hasChallenge) cls += ' has-challenge';
     if (isToday)      cls += ' is-today';
 
-    const sp = hasChallenge
-      ? SPIRITS[challengeMap[dateStr].spirit]
-      : hasEntry
-        ? SPIRITS[entryMap[dateStr].spirit]
-        : null;
     const isPast = dateStr <= today;
-    // 課題ありはSpirit色、それ以外の未記録過去日は白ボックス
-    const boxColor = hasChallenge ? (sp?.color || 'var(--gold)') : 'rgba(255,255,255,.4)';
     const indicator = hasEntry
       ? `<div class="cal-check">✅</div>`
       : isPast
-        ? `<div class="cal-dot" style="border-color:${boxColor}"></div>`
+        ? `<div class="cal-dot"></div>`
         : '';
 
     // 過去日（今日含む）はすべてタップ可能
