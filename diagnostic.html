@@ -1975,7 +1975,8 @@ async function renderAdminLite() {
       const phase = completed ? '完了' : dayNum >= 1 ? `Day ${dayNum}` : '';
       const rankLabel = rank === '十級' ? '十級' : completed ? '十級' : '見習';
       const rankColor = rankLabel === '十級' ? 'var(--gold)' : 'var(--muted)';
-      const reportUrl = `report.html?lid=${userId}`;
+      const reportUrl     = `report.html?lid=${userId}`;
+      const dojoReportUrl = `dojo-report.html?lid=${userId}`;
       const dojoUrl = `https://ichii1119.github.io/samurai-compass/dojo.html?lid=${userId}`;
 
       const docId = p.id;
@@ -1999,10 +2000,16 @@ async function renderAdminLite() {
                 ${dateStr ? `<span style="font-size:.68rem;color:var(--muted)">登録 ${dateStr}</span>` : ''}
               </div>
             </div>
-            <a href="${reportUrl}" target="_blank"
-               style="flex-shrink:0;font-size:.72rem;padding:.3rem .7rem;border-radius:100px;background:var(--bg3);color:var(--gold);border:1px solid var(--border);text-decoration:none">
-              レポート
-            </a>
+            <div style="display:flex;flex-direction:column;gap:.3rem;flex-shrink:0">
+              <a href="${reportUrl}" target="_blank"
+                 style="font-size:.72rem;padding:.3rem .7rem;border-radius:100px;background:var(--bg3);color:var(--gold);border:1px solid var(--border);text-decoration:none;text-align:center">
+                入門レポート
+              </a>
+              ${completed ? `<a href="${dojoReportUrl}" target="_blank"
+                 style="font-size:.72rem;padding:.3rem .7rem;border-radius:100px;background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.4);text-decoration:none;text-align:center;font-weight:600">
+                道場レポート
+              </a>` : ''}
+            </div>
           </div>
           ${completed ? `
           <div style="margin-top:.75rem;padding:.7rem .9rem;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:calc(var(--r) - 4px)">

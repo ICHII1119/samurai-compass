@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>道場 振り返りレポート — SAMURAI in You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Zen+Antique+Soft&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #faf8f4;
+  --bg2:   #f3f0e8;
+  --bg3:   #e8e4d8;
+  --cream: #1c1610;
+  --cream2:#3a3020;
+  --gold:  #9a7520;
+  --gold2: #c9a84c;
+  --red:   #7a1a1a;
+  --muted: #7a7060;
+  --border:#d8d0c0;
+  --font-brush: 'Cormorant Garamond', 'Zen Antique Soft', serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0 }
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 2rem 4rem;
+}
+
+/* ── Print controls ── */
+.print-bar {
+  display: flex;
+  gap: .8rem;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.btn-print {
+  padding: .5rem 1.2rem;
+  background: var(--gold);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: .04em;
+}
+.btn-ai {
+  padding: .5rem 1.2rem;
+  background: var(--bg2);
+  color: var(--gold);
+  border: 1px solid var(--gold2);
+  border-radius: 6px;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: .04em;
+}
+.btn-ai:disabled { opacity: .5; cursor: default }
+
+/* ── Header ── */
+.report-header {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--gold2);
+  margin-bottom: 2rem;
+}
+.header-logo {
+  font-family: var(--font-brush);
+  font-size: 1rem;
+  color: var(--gold);
+  letter-spacing: .12em;
+  white-space: nowrap;
+}
+.header-pic {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gold2);
+}
+.header-pic-placeholder {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.header-info { flex: 1 }
+.header-name {
+  font-family: var(--font-brush);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--cream);
+}
+.header-meta {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-top: .25rem;
+  display: flex;
+  gap: .8rem;
+  flex-wrap: wrap;
+}
+.spirit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .2rem .7rem;
+  border-radius: 100px;
+  font-size: .72rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+/* ── Section ── */
+.section {
+  margin-bottom: 2.2rem;
+}
+.section-title {
+  font-family: var(--font-brush);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: .08em;
+  border-left: 3px solid var(--gold2);
+  padding-left: .7rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Compass comparison ── */
+.compass-pair {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.compass-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+}
+.compass-box-label {
+  font-size: .72rem;
+  color: var(--muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.compass-box svg {
+  width: 200px; height: 200px;
+}
+
+/* ── Stats row ── */
+.stats-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+}
+.stat-card {
+  flex: 1;
+  min-width: 100px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .8rem 1rem;
+  text-align: center;
+}
+.stat-num {
+  font-family: var(--font-brush);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+.stat-label {
+  font-size: .68rem;
+  color: var(--muted);
+  margin-top: .3rem;
+}
+
+/* ── Spirit bars ── */
+.spirit-bars { display: flex; flex-direction: column; gap: .6rem }
+.spirit-bar-row { display: flex; align-items: center; gap: .7rem }
+.spirit-bar-label {
+  width: 80px;
+  font-size: .72rem;
+  color: var(--cream2);
+  flex-shrink: 0;
+}
+.spirit-bar-track {
+  flex: 1;
+  height: 10px;
+  background: var(--bg3);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.spirit-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width .4s;
+}
+.spirit-bar-count {
+  font-size: .7rem;
+  color: var(--muted);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Calendar ── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: .6rem;
+  color: var(--muted);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  position: relative;
+}
+.cal-cell.reflected {
+  background: rgba(154,117,32,.12);
+  border-color: rgba(154,117,32,.4);
+  color: var(--gold);
+  font-weight: 600;
+}
+.cal-cell.today {
+  border-color: var(--gold2);
+}
+.cal-dow {
+  font-size: .6rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 2px 0;
+}
+.cal-check { font-size: .7rem; line-height: 1 }
+.cal-legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: .6rem;
+  font-size: .68rem;
+  color: var(--muted);
+}
+
+/* ── AI Summary ── */
+.ai-summary-box {
+  background: var(--bg2);
+  border: 1px solid rgba(154,117,32,.3);
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  line-height: 1.8;
+  font-size: .84rem;
+  color: var(--cream2);
+  white-space: pre-wrap;
+}
+.ai-summary-placeholder {
+  color: var(--muted);
+  font-size: .82rem;
+  text-align: center;
+  padding: 1.5rem;
+}
+
+/* ── Reflections ── */
+.reflection-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .9rem 1.1rem;
+  margin-bottom: .8rem;
+}
+.reflection-meta {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  margin-bottom: .4rem;
+  flex-wrap: wrap;
+}
+.reflection-date { font-size: .68rem; color: var(--muted) }
+.reflection-spirit {
+  font-size: .68rem;
+  padding: .1rem .5rem;
+  border-radius: 100px;
+  border: 1px solid;
+}
+.reflection-challenge {
+  font-size: .78rem;
+  color: var(--cream2);
+  font-style: italic;
+  margin-bottom: .35rem;
+  border-left: 2px solid var(--gold2);
+  padding-left: .5rem;
+}
+.reflection-text {
+  font-size: .82rem;
+  color: var(--cream);
+  line-height: 1.7;
+}
+
+/* ── Footer ── */
+.report-footer {
+  text-align: center;
+  font-family: var(--font-brush);
+  font-size: .85rem;
+  color: var(--muted);
+  letter-spacing: .1em;
+  border-top: 1px solid var(--border);
+  padding-top: 1.2rem;
+  margin-top: 2rem;
+}
+
+/* ── Loading / Error ── */
+#loading, #error-msg {
+  text-align: center;
+  padding: 4rem;
+  color: var(--muted);
+  font-size: .9rem;
+}
+#report-body { display: none }
+
+/* ── Print ── */
+@media print {
+  .print-bar { display: none !important }
+  body { background: #fff }
+  .page { padding: 1rem 1.5rem }
+  .section { page-break-inside: avoid }
+  .compass-pair { page-break-inside: avoid }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div id="loading">読み込み中...</div>
+  <div id="error-msg" style="display:none"></div>
+
+  <div id="report-body">
+    <!-- Print bar -->
+    <div class="print-bar">
+      <button class="btn-ai" id="btn-ai-summary" onclick="generateSummary()">⚔️ AI振り返り要約を生成</button>
+      <button class="btn-print" onclick="window.print()">🖨 PDFで保存 / 印刷</button>
+    </div>
+
+    <!-- Header -->
+    <div class="report-header">
+      <div id="header-pic-wrap">
+        <div class="header-pic-placeholder">侍</div>
+      </div>
+      <div class="header-info">
+        <div class="header-logo">SAMURAI in You — 道場 振り返りレポート</div>
+        <div class="header-name" id="header-name">——</div>
+        <div class="header-meta">
+          <span id="header-spirit-badge"></span>
+          <span id="header-period"></span>
+          <span id="header-rank"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. Pentagon Compass 比較 -->
+    <div class="section">
+      <div class="section-title">PENTAGON COMPASS — 入門前 vs 21日後</div>
+      <div class="compass-pair">
+        <div class="compass-box">
+          <div class="compass-box-label">入門診断（ベースライン）</div>
+          <svg id="compass-before" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="compass-box">
+          <div class="compass-box-label">21日間の稽古（現在）</div>
+          <svg id="compass-after" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+      <p id="compass-note" style="text-align:center;font-size:.7rem;color:var(--muted);margin-top:.8rem"></p>
+    </div>
+
+    <!-- 2. 21日間 統計 + Spirit 分布 -->
+    <div class="section">
+      <div class="section-title">21日間の稽古パターン</div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-label">総記録数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-days">0</div>
+          <div class="stat-label">稽古日数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-streak">0</div>
+          <div class="stat-label">最長連続</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-rate">0%</div>
+          <div class="stat-label">継続率</div>
+        </div>
+      </div>
+      <div class="spirit-bars" id="spirit-bars"></div>
+    </div>
+
+    <!-- 3. 稽古カレンダー -->
+    <div class="section">
+      <div class="section-title">稽古カレンダー</div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <span>✅ 振り返り済み</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border:1px solid var(--border);border-radius:2px;vertical-align:middle"></span> 未記録</span>
+      </div>
+    </div>
+
+    <!-- 4. AI振り返り要約 -->
+    <div class="section">
+      <div class="section-title">AI振り返り要約</div>
+      <div class="ai-summary-box" id="ai-summary-box">
+        <div class="ai-summary-placeholder">「AI振り返り要約を生成」ボタンを押してください。<br>21日間の振り返りをもとに、成長の傾向と次のステップを要約します。</div>
+      </div>
+    </div>
+
+    <!-- 5. 注目の振り返り -->
+    <div class="section">
+      <div class="section-title">注目の振り返り（上位5件）</div>
+      <div id="highlight-entries"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="report-footer">
+      SAMURAI in You — Still Becoming.
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyB9oaTvBGRaExnVLVD--OdkjPTHbYYf9HY",
+  authDomain: "samurai-compass.firebaseapp.com",
+  projectId: "samurai-compass",
+  storageBucket: "samurai-compass.firebasestorage.app",
+  messagingSenderId: "738902963894",
+  appId: "1:738902963894:web:47e22be6f47e43a87b15f9"
+});
+const db = firebase.firestore();
+
+const SPIRITS = {
+  hei:   { name:'平常心',     en:'EQUANIMITY',       icon:'☁️', color:'#60a0b8' },
+  jiko:  { name:'自己鍛錬',   en:'SELF-CULTIVATION', icon:'🌿', color:'#4aaa5a' },
+  flex:  { name:'柔軟な適応力', en:'FLEXIBILITY',     icon:'🐦', color:'#4a88d8' },
+  strat: { name:'戦略的思考', en:'STRATEGIC',         icon:'🔥', color:'#e86040' },
+  sei:   { name:'誠実さ',     en:'INTEGRITY',         icon:'🌀', color:'#a060e0' },
+};
+const SPIRITS_ORDER = ['hei','jiko','flex','strat','sei'];
+
+let allEntries = [];
+let reportUserId = '';
+
+/* ── データ読み込み ── */
+async function init() {
+  const params = new URLSearchParams(location.search);
+  const userId = params.get('lid');
+  reportUserId = userId || '';
+  if (!userId) { showError('URLが正しくありません。'); return; }
+
+  try {
+    const [dojoSnap, submissionSnap, profileSnap, liteSnap] = await Promise.all([
+      db.collection('dojo_practices').doc(userId).get(),
+      db.collection('submissions').doc(userId).get(),
+      db.collection('profiles').doc(userId).get(),
+      db.collection('lite_results').doc(userId).get(),
+    ]);
+
+    const dojo       = dojoSnap.exists    ? dojoSnap.data()       : {};
+    const submission = submissionSnap.exists ? submissionSnap.data() : {};
+    const profile    = profileSnap.exists  ? profileSnap.data()    : {};
+    const lite       = liteSnap.exists     ? liteSnap.data()       : {};
+
+    const entries    = dojo.entries || [];
+    const aiScores   = dojo.compassScores || null;
+    const diagCounts = dojo.diagnosticCounts || submission.counts || null;
+    const diagTotal  = dojo.diagnosticTotal  || submission.total  || 1;
+    const rank       = dojo.rank || '十級';
+    const spirit     = lite.spirit || submission.spirit || '';
+    const nickname   = lite.nickname || profile.displayName || '';
+    const pic        = profile.pictureUrl || '';
+
+    allEntries = entries;
+
+    renderHeader({ nickname, pic, spirit, rank, entries, lite });
+    renderCompassBefore({ diagCounts, diagTotal });
+    renderCompassAfter({ entries, aiScores, diagCounts, diagTotal });
+    renderStats(entries, lite);
+    renderSpiritBars(entries);
+    renderCalendar(entries, lite);
+    renderHighlights(entries);
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('report-body').style.display = 'block';
+
+  } catch(e) {
+    showError('データの読み込みに失敗しました: ' + e.message);
+  }
+}
+
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  const el = document.getElementById('error-msg');
+  el.style.display = 'block';
+  el.textContent = msg;
+}
+
+/* ── Header ── */
+function renderHeader({ nickname, pic, spirit, rank, entries, lite }) {
+  document.getElementById('header-name').textContent = nickname || '——';
+
+  const picWrap = document.getElementById('header-pic-wrap');
+  if (pic) {
+    picWrap.innerHTML = `<img src="${pic}" class="header-pic" alt="">`;
+  }
+
+  const sp = SPIRITS[spirit];
+  if (sp) {
+    document.getElementById('header-spirit-badge').innerHTML =
+      `<span class="spirit-badge" style="color:${sp.color};border-color:${sp.color}66;background:${sp.color}11">${sp.icon} ${sp.name}</span>`;
+  }
+
+  const ts = lite.timestamp?.toDate?.();
+  if (ts) {
+    const start = ts.toLocaleDateString('ja-JP');
+    const end   = new Date(ts.getTime() + 21*24*60*60*1000).toLocaleDateString('ja-JP');
+    document.getElementById('header-period').textContent = `${start} 〜 ${end}`;
+  }
+
+  document.getElementById('header-rank').textContent = `段位：${rank}`;
+}
+
+/* ── Pentagon Compass ── */
+function drawCompass(svgId, values, color) {
+  const svg = document.getElementById(svgId);
+  const cx = 100, cy = 100, maxR = 72;
+  const angles = SPIRITS_ORDER.map((_, i) => (-90 + i * 72) * Math.PI / 180);
+
+  const toPath = pts => pts.map((p,i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
+  const pts = angles.map((a, i) => ({
+    x: cx + maxR * values[i] * Math.cos(a),
+    y: cy + maxR * values[i] * Math.sin(a),
+  }));
+
+  let grid = '';
+  [0.33, 0.66, 1].forEach((f, idx) => {
+    const gPts = angles.map(a => ({
+      x: (cx + maxR * f * Math.cos(a)).toFixed(1),
+      y: (cy + maxR * f * Math.sin(a)).toFixed(1),
+    }));
+    grid += `<path d="${gPts.map((p,i)=>`${i===0?'M':'L'}${p.x},${p.y}`).join(' ')} Z" fill="none" stroke="rgba(0,0,0,.12)" stroke-width="${idx===2?1.2:.6}"/>`;
+  });
+
+  const axes = angles.map(a =>
+    `<line x1="${cx}" y1="${cy}" x2="${(cx+maxR*Math.cos(a)).toFixed(1)}" y2="${(cy+maxR*Math.sin(a)).toFixed(1)}" stroke="rgba(0,0,0,.08)" stroke-width="1"/>`
+  ).join('');
+
+  const labels = SPIRITS_ORDER.map((s, i) => {
+    const offset = 16;
+    const x = cx + (maxR + offset) * Math.cos(angles[i]);
+    const y = cy + (maxR + offset) * Math.sin(angles[i]);
+    const sp = SPIRITS[s];
+    return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="${sp.color}" font-family="Inter,sans-serif" font-weight="600">${sp.name}</text>`;
+  }).join('');
+
+  svg.innerHTML = grid + axes +
+    `<path d="${toPath(pts)}" fill="${color}22" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>` +
+    labels;
+}
+
+function renderCompassBefore({ diagCounts, diagTotal }) {
+  if (!diagCounts) {
+    drawCompass('compass-before', [0.4,0.4,0.4,0.4,0.4], '#9a7520');
+    document.getElementById('compass-note').textContent = '※ 詳細診断データがありません。簡易診断のみ受診した場合はベースラインが表示されません。';
+    return;
+  }
+  const values = SPIRITS_ORDER.map(s => Math.min((diagCounts[s] || 0) / diagTotal, 1));
+  drawCompass('compass-before', values, '#9a7520');
+}
+
+function renderCompassAfter({ entries, aiScores, diagCounts, diagTotal }) {
+  let values;
+  if (aiScores) {
+    values = SPIRITS_ORDER.map(s => (aiScores[s] || 0) / 100);
+  } else {
+    const counts = {};
+    SPIRITS_ORDER.forEach(s => counts[s] = 0);
+    entries.forEach(e => { if (counts[e.spirit] !== undefined) counts[e.spirit]++; });
+    const maxCount = Math.max(...Object.values(counts), 1);
+    values = SPIRITS_ORDER.map(s => counts[s] / maxCount);
+  }
+  drawCompass('compass-after', values, '#4a88d8');
+  if (!aiScores) {
+    document.getElementById('compass-note').textContent = '※ 「現在」のチャートは稽古件数の分布を示しています。AIスコアが更新されると詳細な評価に切り替わります。';
+  }
+}
+
+/* ── Stats ── */
+function renderStats(entries, lite) {
+  document.getElementById('stat-total').textContent = entries.length;
+  const uniqueDays = new Set(entries.map(e => e.date)).size;
+  document.getElementById('stat-days').textContent = uniqueDays;
+
+  // 最長連続日数
+  const dates = [...new Set(entries.map(e => e.date))].sort();
+  let maxStreak = 0, streak = 0, prev = null;
+  dates.forEach(d => {
+    if (prev) {
+      const diff = (new Date(d) - new Date(prev)) / 86400000;
+      streak = diff === 1 ? streak + 1 : 1;
+    } else { streak = 1; }
+    maxStreak = Math.max(maxStreak, streak);
+    prev = d;
+  });
+  document.getElementById('stat-streak').textContent = maxStreak;
+
+  // 継続率（21日間基準）
+  const rate = Math.round(uniqueDays / 21 * 100);
+  document.getElementById('stat-rate').textContent = Math.min(rate, 100) + '%';
+}
+
+/* ── Spirit bars ── */
+function renderSpiritBars(entries) {
+  const counts = {};
+  SPIRITS_ORDER.forEach(s => counts[s] = 0);
+  entries.forEach(e => { if (counts[e.spirit] !== undefined) counts[e.spirit]++; });
+  const max = Math.max(...Object.values(counts), 1);
+
+  document.getElementById('spirit-bars').innerHTML = SPIRITS_ORDER.map(s => {
+    const sp = SPIRITS[s];
+    const w  = Math.round(counts[s] / max * 100);
+    return `
+      <div class="spirit-bar-row">
+        <div class="spirit-bar-label">${sp.icon} ${sp.name}</div>
+        <div class="spirit-bar-track">
+          <div class="spirit-bar-fill" style="width:${w}%;background:${sp.color}"></div>
+        </div>
+        <div class="spirit-bar-count">${counts[s]}</div>
+      </div>`;
+  }).join('');
+}
+
+/* ── Calendar ── */
+function renderCalendar(entries, lite) {
+  const ts = lite.timestamp?.toDate?.();
+  const startDate = ts ? new Date(ts) : (() => {
+    const sorted = [...entries].sort((a,b) => a.date.localeCompare(b.date));
+    return sorted.length ? new Date(sorted[0].date) : new Date();
+  })();
+
+  const entryDates = new Set(entries.map(e => e.date));
+  const today = new Date();
+  const toStr = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+  const DOWS = ['日','月','火','水','木','金','土'];
+  let html = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  // 開始日の曜日までの空白
+  const startDay = new Date(startDate);
+  startDay.setHours(0,0,0,0);
+  const firstDow = startDay.getDay();
+  for (let i = 0; i < firstDow; i++) html += '<div></div>';
+
+  for (let i = 0; i < 28; i++) {
+    const d = new Date(startDay);
+    d.setDate(d.getDate() + i);
+    if (d > today) break;
+    const dateStr = toStr(d);
+    const reflected = entryDates.has(dateStr);
+    const cls = `cal-cell${reflected ? ' reflected' : ''}`;
+    html += `<div class="${cls}">
+      <span>${d.getDate()}</span>
+      ${reflected ? '<span class="cal-check">✅</span>' : ''}
+    </div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+/* ── Highlight reflections ── */
+function renderHighlights(entries) {
+  if (!entries.length) {
+    document.getElementById('highlight-entries').innerHTML = '<p style="color:var(--muted);font-size:.82rem">記録がありません。</p>';
+    return;
+  }
+
+  // 振り返りテキストが長い順に5件
+  const top5 = [...entries]
+    .filter(e => e.reflection)
+    .sort((a,b) => (b.reflection || '').length - (a.reflection || '').length)
+    .slice(0, 5);
+
+  document.getElementById('highlight-entries').innerHTML = top5.map(e => {
+    const sp = SPIRITS[e.spirit] || { name: e.spirit, icon:'⚔️', color:'var(--gold)' };
+    return `
+      <div class="reflection-card">
+        <div class="reflection-meta">
+          <span class="reflection-date">${e.date}</span>
+          <span class="reflection-spirit" style="color:${sp.color};border-color:${sp.color}66;background:${sp.color}11">${sp.icon} ${sp.name}</span>
+        </div>
+        ${e.challengeTitle ? `<div class="reflection-challenge">課題：${e.challengeTitle}</div>` : ''}
+        <div class="reflection-text">${e.reflection}</div>
+      </div>`;
+  }).join('');
+}
+
+/* ── AI Summary ── */
+async function generateSummary() {
+  const apiKey = localStorage.getItem('musashi_api_key') || '';
+  if (!apiKey) {
+    alert('APIキーが設定されていません。管理画面の武蔵BOTセクションでAPIキーを設定してください。');
+    return;
+  }
+
+  const btn = document.getElementById('btn-ai-summary');
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+
+  const box = document.getElementById('ai-summary-box');
+  box.innerHTML = '<div class="ai-summary-placeholder">AIが振り返り記録を分析しています...</div>';
+
+  const entries = allEntries;
+  if (!entries.length) {
+    box.innerHTML = '<div class="ai-summary-placeholder">振り返り記録がありません。</div>';
+    btn.disabled = false;
+    btn.textContent = '⚔️ AI振り返り要約を生成';
+    return;
+  }
+
+  const SPIRIT_NAMES = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
+
+  const journalText = [...entries]
+    .sort((a,b) => a.date.localeCompare(b.date))
+    .map(e => `【${e.date} / ${SPIRIT_NAMES[e.spirit] || e.spirit}】課題「${e.challengeTitle || ''}」\n振り返り：${e.reflection || ''}`)
+    .join('\n\n');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
+        system: `あなたはSAMURAI in Youの道場長として、21日間の稽古を終えた参加者へ振り返りレポートを作成します。
+客観的かつ温かみのある文体で、以下の4点を簡潔にまとめてください：
+
+1. 【稽古の全体傾向】どのSpiritの課題に多く取り組み、どのようなテーマが繰り返し現れたか
+2. 【成長が見られた点】21日間を通じて気づきや変化が感じられる振り返りの特徴
+3. 【まだ伸びしろがある点】触れられていない視点や浅い気づきにとどまっている部分
+4. 【月額道場へのすすめ】この参加者に次のステージとして何を勧めるか
+
+箇条書きではなく、道場長からの手紙のような温かみのある文章で。800字以内。`,
+        messages: [{
+          role: 'user',
+          content: `以下は参加者の21日間の振り返り記録です。\n\n${journalText}`,
+        }],
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || res.status);
+    const text = data.content?.[0]?.text?.trim() || '';
+    box.textContent = text;
+  } catch(e) {
+    box.innerHTML = `<div class="ai-summary-placeholder">生成に失敗しました：${e.message}</div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⚔️ AI振り返り要約を再生成';
+}
+
+init();
+</script>
+</body>
+</html>
