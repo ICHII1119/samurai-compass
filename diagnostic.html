@@ -1977,7 +1977,7 @@ async function renderAdminLite() {
       const rankColor = rankLabel === '十級' ? 'var(--gold)' : 'var(--muted)';
       const reportUrl     = `report.html?lid=${userId}`;
       const dojoReportUrl = `dojo-report.html?lid=${userId}`;
-      const dojoUrl = `https://ichii1119.github.io/samurai-compass/dojo.html?lid=${userId}`;
+      const dojoUrl = `https://dojo.samurai-in-you.com/dojo.html?lid=${userId}`;
 
       const docId = p.id;
       const isChecked = adminSelectedIds.has(docId);
@@ -2501,8 +2501,8 @@ async function executeBroadcast() {
   }
 
   const sampleUrl = templateType === 'practice'
-    ? 'https://ichii1119.github.io/samurai-compass/practice.html?lid=（各自のID）'
-    : 'https://ichii1119.github.io/samurai-compass/lite.html?lid=（各自のID）';
+    ? 'https://dojo.samurai-in-you.com/practice.html?lid=（各自のID）'
+    : 'https://dojo.samurai-in-you.com/lite.html?lid=（各自のID）';
   const urlLabel = templateType === 'practice' ? '📋 稽古ページ（practice.html）' : '📋 診断ページ（lite.html）';
 
   const confirmed = window.confirm(
