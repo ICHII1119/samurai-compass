@@ -483,12 +483,17 @@ async function init() {
   if (!userId) { showError('URLが正しくありません。'); return; }
 
   try {
-    const [dojoSnap, submissionSnap, profileSnap, liteSnap] = await Promise.all([
+    const [dojoSnap, submissionSnap, profileSnap, liteSnap, configSnap] = await Promise.all([
       db.collection('dojo_practices').doc(userId).get(),
       db.collection('submissions').doc(userId).get(),
       db.collection('profiles').doc(userId).get(),
       db.collection('lite_results').doc(userId).get(),
+      db.collection('config').doc('admin').get(),
     ]);
+
+    // Firestore からAPIキーを取得してlocalStorageに同期
+    const apiKey = configSnap.data()?.musashiApiKey;
+    if (apiKey) localStorage.setItem('musashi_api_key', apiKey);
 
     const dojo       = dojoSnap.exists    ? dojoSnap.data()       : {};
     const submission = submissionSnap.exists ? submissionSnap.data() : {};
