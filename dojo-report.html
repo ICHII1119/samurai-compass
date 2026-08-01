@@ -708,10 +708,21 @@ function renderHighlights(entries) {
     return;
   }
 
-  // 振り返りテキストが長い順に5件
-  const top5 = [...entries]
-    .filter(e => e.reflection)
-    .sort((a,b) => (b.reflection || '').length - (a.reflection || '').length)
+  // Spirit ごとに最も深い（長い）振り返りを1件選出
+  // 稽古回数が多い Spirit 順に並べて最大5件
+  const countBySpirit = {};
+  SPIRITS_ORDER.forEach(s => countBySpirit[s] = 0);
+  entries.forEach(e => { if (countBySpirit[e.spirit] !== undefined) countBySpirit[e.spirit]++; });
+
+  const spiritsSorted = [...SPIRITS_ORDER].sort((a,b) => countBySpirit[b] - countBySpirit[a]);
+
+  const top5 = spiritsSorted
+    .map(spirit => {
+      const candidates = entries.filter(e => e.spirit === spirit && e.reflection);
+      if (!candidates.length) return null;
+      return candidates.sort((a,b) => (b.reflection || '').length - (a.reflection || '').length)[0];
+    })
+    .filter(Boolean)
     .slice(0, 5);
 
   document.getElementById('highlight-entries').innerHTML = top5.map(e => {
