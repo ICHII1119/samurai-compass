@@ -1125,7 +1125,6 @@ body {
         <button class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem" onclick="refreshAdmin()">🔄 更新</button>
         <button id="btn-select-mode" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;display:none" onclick="toggleSelectMode()">選択</button>
         <button id="btn-delete-selected" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;color:var(--red);border-color:rgba(139,40,40,.3);display:none" onclick="deleteSelected()">選択削除 (<span id="sel-count">0</span>件)</button>
-        <button id="btn-all-delete" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;color:var(--red);border-color:rgba(139,40,40,.3)" onclick="clearAdminData()">全削除</button>
       </div>
     </div>
     <!-- 武蔵BOT APIキー設定バナー -->
@@ -1663,8 +1662,7 @@ function checkAdminPin() {
     err.textContent = '';
     document.getElementById('admin-pin-input').value = '';
     document.getElementById('btn-select-mode').style.display = '';
-    document.getElementById('btn-all-delete').style.display  = '';
-    loadMusashiKeyFromFirestore();
+      loadMusashiKeyFromFirestore();
     renderAdminLite();
     showScreen('s-admin-list');
   } else {
@@ -1826,7 +1824,6 @@ function switchAdminTab(tab) {
   document.getElementById('admin-count').style.display = tab === 'diag' ? '' : 'none';
   const canSelect = (tab === 'lite' || tab === 'practice' || tab === 'diag');
   document.getElementById('btn-select-mode').style.display = canSelect ? '' : 'none';
-  document.getElementById('btn-all-delete').style.display  = canSelect ? '' : 'none';
   const banner = document.getElementById('musashi-key-banner');
   if (banner) banner.style.display = (tab === 'practice') ? '' : 'none';
 
