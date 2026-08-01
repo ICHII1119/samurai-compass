@@ -1120,20 +1120,12 @@ async function init() {
       db.collection('submissions').doc(userId).get(),
     ]);
 
-    // フル診断がまだの場合
+    // フル診断がまだの場合 → 入門稽古の有無に関わらず診断へ誘導
     if (!submissionDoc.exists) {
       document.getElementById('loading').style.display = 'none';
-      if (practiceDoc.exists) {
-        // 21日間の入門稽古中
-        const practiceUrl = `practice.html?lid=${userId}`;
-        document.getElementById('practice-link').href = practiceUrl;
-        document.getElementById('in-practice-screen').style.display = 'block';
-      } else {
-        // 診断自体がまだ
-        const diagUrl = `diagnostic.html?lid=${userId}`;
-        document.getElementById('diagnostic-link').href = diagUrl;
-        document.getElementById('pre-diagnostic-screen').style.display = 'block';
-      }
+      const diagUrl = `diagnostic.html?lid=${userId}`;
+      document.getElementById('diagnostic-link').href = diagUrl;
+      document.getElementById('pre-diagnostic-screen').style.display = 'block';
       return;
     }
 
