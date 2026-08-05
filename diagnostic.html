@@ -2720,24 +2720,25 @@ async function generateMusashiDojo(userId, entryKey, btn) {
 - 「素晴らしい」「頑張りましたね」「すごい」など現代的な軽い褒め言葉
 - 「〜せよ」「〜しろ」「必ず」「絶対」「すべき」など命令・強制表現
 - 「お前」という表現
-- 抽象的な言葉だけで終わること（具体的な行動をひとつ示す）`,
+- 抽象的な言葉だけで終わること（具体的な行動をひとつ示す）
+- マークダウン記号（**、#、-など）を一切使わない`,
         messages: [{
           role: 'user',
           content:
             `【稽古者が取り組んだ課題】${entry.challengeTitle || '—'}\n` +
             `【課題のSpirit】${spiritName}\n` +
             `【稽古者の振り返り】\n${entry.reflection}\n\n` +
-            `以下の形式で出力してください：\n\n` +
+            `以下の形式で出力してください（マークダウン記号は使わない）：\n\n` +
             `武蔵のメッセージ: （稽古者の振り返りに応える言葉。60〜120文字）\n` +
             `翌日Spirit: hei/jiko/flex/strat/sei のいずれか\n` +
             `翌日タイトル: （10文字以内）\n` +
-            `翌日課題: （60〜100文字。「今日は〜してみよ」形式。強制表現不使用）`,
+            `翌日課題: （60〜100文字。「今日は〜してみてはどうか」形式。強制表現不使用）`,
         }],
       }),
     });
     if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || res.status); }
     const data = await res.json();
-    const text = data.content[0].text.trim();
+    const text = data.content[0].text.trim().replace(/\*\*/g, '');
 
     const msgMatch     = text.match(/武蔵のメッセージ:\s*([\s\S]+?)(?=\n翌日Spirit:)/);
     const spiritMatch  = text.match(/翌日Spirit:\s*(hei|jiko|flex|strat|sei)/i);
