@@ -1284,6 +1284,7 @@ const SEND_COMMENT_URL    = 'https://sendadmincomment-6wuzckrpiq-uc.a.run.app';
 const SEND_BROADCAST_URL  = 'https://sendbroadcast-6wuzckrpiq-uc.a.run.app';
 const RESEND_DAILY_TIP_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/resendDailyTip';
 const SEND_DOJO_INVITE_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendDojoInvite';
+const MUSASHI_DOJO_BOT_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/musashiDojoBot';
 
 let selected = new Set();
 let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
@@ -2061,7 +2062,14 @@ async function renderAdminLite() {
                 </div>
               </div>
             </div>`;
-          })()}` : ''}
+          })()}
+          <div style="margin-top:.6rem;border:1px solid var(--border);border-radius:calc(var(--r) - 4px);overflow:hidden">
+            <button onclick="toggleDojoEntries('${userId}', this)"
+              style="font-size:.75rem;padding:.5rem .9rem;background:transparent;border:none;color:var(--muted);cursor:pointer;width:100%;text-align:left;display:flex;align-items:center;gap:.4rem">
+              <span>⚔️</span><span>道場の振り返りを確認</span><span style="margin-left:auto">›</span>
+            </button>
+            <div id="dojo-entries-${userId}" style="display:none;padding:.2rem .9rem .8rem"></div>
+          </div>` : ''}
         </div>`;
     }).join('');
   } catch(e) {
@@ -2603,6 +2611,95 @@ function updateMusashiBanner() {
     status.textContent = 'APIキーを入力して「保存」を押してください';
     status.style.color = 'var(--muted)';
     clearBtn.style.display = 'none';
+  }
+}
+
+const _dojoEntryMap = {}; // userId-date → entry object
+
+async function toggleDojoEntries(userId, btn) {
+  const container = document.getElementById(`dojo-entries-${userId}`);
+  if (container.style.display !== 'none') {
+    container.style.display = 'none';
+    btn.querySelector('span:last-child').textContent = '›';
+    return;
+  }
+  container.style.display = 'block';
+  btn.querySelector('span:last-child').textContent = '∨';
+  if (container.dataset.loaded) return;
+
+  container.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:.5rem 0">読み込み中...</div>';
+  try {
+    const doc = await db.collection('dojo_practices').doc(userId).get();
+    if (!doc.exists || !(doc.data().entries || []).length) {
+      container.innerHTML = '<div style="font-size:.8rem;color:var(--muted);padding:.5rem 0">道場の振り返り記録はまだありません</div>';
+      container.dataset.loaded = '1';
+      return;
+    }
+    const data = doc.data();
+    const entries = [...(data.entries || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const nextDaySrc = data.nextDayChallenge?.sourceDate;
+
+    const SPIRIT_COLORS = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
+    const SPIRIT_JP = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
+
+    container.innerHTML = entries.map(e => {
+      const key = `${userId}-${e.date}`;
+      _dojoEntryMap[key] = { date: e.date, spirit: e.spirit, challengeTitle: e.challengeTitle || '', reflection: e.reflection || '' };
+      const col = SPIRIT_COLORS[e.spirit] || 'var(--gold)';
+      const spName = SPIRIT_JP[e.spirit] || e.spirit;
+      const alreadySent = nextDaySrc === e.date;
+      return `
+        <div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+          <div style="font-size:.65rem;color:${col};margin-bottom:.2rem">${e.date}　${spName}</div>
+          ${e.challengeTitle ? `<div style="font-size:.7rem;color:var(--muted);margin-bottom:.2rem">課題：${escHtml(e.challengeTitle)}</div>` : ''}
+          <div style="font-size:.82rem;color:var(--cream2);line-height:1.6;margin-bottom:.4rem">
+            ${e.reflection ? escHtml(e.reflection).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">（記録なし）</span>'}
+          </div>
+          <div id="musashi-result-${key}" style="display:none;margin-bottom:.4rem;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
+          <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
+            style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:${alreadySent ? 'rgba(100,200,100,.1)' : 'rgba(201,168,76,.1)'};border:1px solid ${alreadySent ? 'rgba(100,200,100,.4)' : 'rgba(201,168,76,.35)'};color:${alreadySent ? '#6dc46d' : 'var(--gold)'};cursor:pointer">
+            ${alreadySent ? '✅ 武蔵BOT送信済み' : '⚔️ 武蔵BOT発動'}
+          </button>
+        </div>`;
+    }).join('');
+    container.dataset.loaded = '1';
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">読み込みに失敗しました</div>';
+  }
+}
+
+async function generateMusashiDojo(userId, entryKey, btn) {
+  const entry = _dojoEntryMap[entryKey];
+  if (!entry?.reflection?.trim()) { alert('振り返りが空のため発動できません。'); return; }
+  if (!confirm(`「${entry.date}」の振り返りに武蔵BOTを発動し、メッセージをLINEで送信します。\nよろしいですか？`)) return;
+
+  btn.disabled = true;
+  btn.textContent = '生成・送信中...';
+  const resultDiv = document.getElementById(`musashi-result-${entryKey}`);
+
+  try {
+    const res = await fetch(MUSASHI_DOJO_BOT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, entry }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '送信失敗');
+
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `<div style="font-size:.62rem;color:var(--gold);margin-bottom:.25rem">⚔️ 武蔵からの言葉（LINE送信済み）</div>${escHtml(data.musashiMessage).replace(/\n/g,'<br>')}`;
+    btn.textContent = '✅ 送信完了';
+    btn.style.background = 'rgba(100,200,100,.1)';
+    btn.style.borderColor = 'rgba(100,200,100,.4)';
+    btn.style.color = '#6dc46d';
+    btn.disabled = false;
+  } catch(e) {
+    console.error('武蔵道場BOTエラー:', e);
+    btn.textContent = '⚠ 失敗';
+    btn.style.color = 'var(--red)';
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = '⚔️ 武蔵BOT発動'; btn.style.color = 'var(--gold)'; }, 3000);
   }
 }
 
