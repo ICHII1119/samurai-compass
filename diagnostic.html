@@ -2268,15 +2268,18 @@ async function renderAdminPractices() {
   const container = document.getElementById('admin-practice-body');
   container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
   try {
-    const [practiceSnap, profileSnap] = await Promise.all([
+    const [practiceSnap, profileSnap, dojoSnap] = await Promise.all([
       db.collection('practices').get(),
       db.collection('profiles').get(),
-      loadReadState(),
+      db.collection('dojo_practices').get(),
     ]);
-    if (practiceSnap.empty) {
-      container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r)">振り返り記録はまだありません</div>`;
-      return;
-    }
+    await loadReadState();
+
+    /* dojoMapを構築 */
+    const dojoMap = {};
+    dojoSnap.forEach(d => {
+      dojoMap[d.id] = d.data();
+    });
 
     const nameMap = {};
     profileSnap.forEach(d => {
@@ -2284,39 +2287,81 @@ async function renderAdminPractices() {
       if (data.displayName) nameMap[d.id] = { name: data.displayName, pic: data.pictureUrl || '' };
     });
 
+    /* 21日間練習とdojo両方からユーザーを収集 */
+    const userIds = new Set([
+      ...practiceSnap.docs.map(d => d.id),
+      ...Object.keys(dojoMap),
+    ]);
+
+    if (userIds.size === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r)">振り返り記録はまだありません</div>`;
+      return;
+    }
+
+    /* practiceMapを構築 */
+    const practiceMap = {};
+    practiceSnap.docs.forEach(d => { practiceMap[d.id] = d.data(); practiceMap[d.id]._docId = d.id; });
+
     /* 最新投稿日時（新しい順）でユーザーを並べる */
-    const docs = practiceSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => {
-        const latestA = Math.max(...(a.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0), 0);
-        const latestB = Math.max(...(b.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0), 0);
-        return latestB - latestA;
-      });
+    const docs = [...userIds].map(uid => {
+      const p = practiceMap[uid] || {};
+      p.id = uid;
+      return p;
+    }).sort((a, b) => {
+      const pA = Math.max(...((practiceMap[a.id]?.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0)), 0);
+      const dA = Math.max(...((dojoMap[a.id]?.entries || []).map(e => e.date ? new Date(e.date).getTime() : 0)), 0);
+      const pB = Math.max(...((practiceMap[b.id]?.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0)), 0);
+      const dB = Math.max(...((dojoMap[b.id]?.entries || []).map(e => e.date ? new Date(e.date).getTime() : 0)), 0);
+      return Math.max(pB, dB) - Math.max(pA, dA);
+    });
+
+    const SPIRIT_COLORS_P = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
+    const SPIRIT_JP_P    = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
 
     container.innerHTML = docs.map(p => {
-      /* エントリも新しい順（Day降順） */
-      const entries   = (p.entries || []).sort((a, b) => {
+      const userId  = p.lineUserId || p.id;
+      const pData   = practiceMap[userId] || {};
+      const dData   = dojoMap[userId]     || {};
+
+      /* 21日間エントリ（新しい順） */
+      const entries = ((pData.entries || []).sort((a, b) => {
         const ta = a.timestamp ? new Date(a.timestamp).getTime() : a.day;
         const tb = b.timestamp ? new Date(b.timestamp).getTime() : b.day;
         return tb - ta;
+      }));
+      const count  = entries.length;
+      const rank   = pData.rank || '見習い';
+
+      /* 道場エントリ（新しい順） */
+      const dojoEntries = [...(dData.entries || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const nextDaySrc  = dData.nextDayChallenge?.sourceDate;
+      dojoEntries.forEach(e => {
+        const key = `${userId}-${e.date}`;
+        _dojoEntryMap[key] = { date: e.date, spirit: e.spirit, challengeTitle: e.challengeTitle || '', reflection: e.reflection || '' };
       });
-      const count     = entries.length;
-      const rank      = p.rank || '見習い';
-      const userId    = p.lineUserId || p.id;
+
+      const hasPractice = entries.length > 0;
+      const hasDojo     = dojoEntries.length > 0;
+
       const profile   = nameMap[userId];
       const name      = profile?.name || '';
       const pic       = profile?.pic  || '';
       const reportUrl = `report.html?lid=${userId}`;
       const unread    = getUnreadCount(userId, entries);
 
-      /* 最新投稿日時ラベル */
-      const latestEntry = entries[0];
-      const latestTs    = latestEntry?.timestamp ? new Date(latestEntry.timestamp) : null;
-      const latestLabel = latestTs && !isNaN(latestTs)
-        ? `${latestTs.getMonth()+1}/${latestTs.getDate()} ${String(latestTs.getHours()).padStart(2,'0')}:${String(latestTs.getMinutes()).padStart(2,'0')}`
+      /* 最新投稿日時（21日間とdojoの新しい方） */
+      const latestPracticeTs  = entries[0]?.timestamp ? new Date(entries[0].timestamp) : null;
+      const latestDojoDate    = dojoEntries[0]?.date   ? new Date(dojoEntries[0].date)  : null;
+      const latestAny = latestPracticeTs && latestDojoDate
+        ? (latestPracticeTs > latestDojoDate ? latestPracticeTs : latestDojoDate)
+        : (latestPracticeTs || latestDojoDate);
+      const latestLabel = latestAny && !isNaN(latestAny)
+        ? `${latestAny.getMonth()+1}/${latestAny.getDate()}`
         : '';
 
-      const pDocId = p.id;
+      const pDocId   = p.id;
       const pChecked = adminSelectedIds.has(pDocId);
+
       return `
         <div id="pcard-${userId}" style="background:var(--bg2);border:1px solid ${adminSelectMode && pChecked ? 'rgba(139,40,40,.5)' : unread > 0 ? 'rgba(201,168,76,.5)' : 'var(--border)'};border-radius:var(--r);margin-bottom:1rem;overflow:hidden">
           <div style="padding:.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;cursor:pointer;border-bottom:1px solid rgba(201,168,76,.08)"
@@ -2334,22 +2379,23 @@ async function renderAdminPractices() {
                 </div>
                 <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.2rem">
                   <span style="font-size:.72rem;padding:.15rem .55rem;border-radius:100px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,.3)">${rank}</span>
-                  <span style="font-size:.78rem;color:var(--muted)">${count} / 21 日記録</span>
+                  ${hasPractice ? `<span style="font-size:.72rem;color:var(--muted)">体験 ${count}/21日</span>` : ''}
+                  ${hasDojo ? `<span style="font-size:.72rem;padding:.1rem .45rem;border-radius:100px;background:rgba(122,26,26,.2);color:#c47e7e;border:1px solid rgba(122,26,26,.3)">道場 ${dojoEntries.length}件</span>` : ''}
                   ${latestLabel ? `<span style="font-size:.72rem;color:var(--muted)">最終: ${latestLabel}</span>` : ''}
                 </div>
               </div>
             </div>
             <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
-              <a href="${reportUrl}" target="_blank"
+              ${hasPractice ? `<a href="${reportUrl}" target="_blank"
                  style="font-size:.72rem;padding:.3rem .7rem;border-radius:100px;background:var(--bg3);color:var(--gold);border:1px solid var(--border);text-decoration:none"
-                 onclick="event.stopPropagation()">レポート</a>
+                 onclick="event.stopPropagation()">レポート</a>` : ''}
               <span style="color:var(--muted);font-size:1rem">›</span>
             </div>
           </div>
           <div id="pdetail-${userId}" style="display:none;padding:.8rem 1.1rem">
-            ${entries.length === 0
-              ? `<div style="font-size:.83rem;color:var(--muted);padding:.5rem 0">記録なし</div>`
-              : entries.map(e => {
+            ${hasPractice ? `
+              <div style="font-size:.63rem;font-weight:600;color:var(--gold);letter-spacing:.08em;margin-bottom:.5rem;padding-bottom:.3rem;border-bottom:1px solid rgba(201,168,76,.15)">⚔ 21日間の振り返り（${count}件）</div>
+              ${entries.map(e => {
                   const ts = e.timestamp ? new Date(e.timestamp) : null;
                   const dateStr = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
                   const seenUntil = _readStateCache?.[userId] || 0;
@@ -2369,7 +2415,7 @@ async function renderAdminPractices() {
                         </div>
                         <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
                         ${(() => {
-                          const dayComments = (p.adminComments || []).filter(c => c.day === e.day);
+                          const dayComments = (pData.adminComments || []).filter(c => c.day === e.day);
                           if (dayComments.length === 0) return '';
                           return dayComments.map(c => {
                             const ct = c.sentAt?.toDate ? c.sentAt.toDate() : (c.sentAt ? new Date(c.sentAt) : null);
@@ -2397,6 +2443,30 @@ async function renderAdminPractices() {
                       </div>
                     </div>`;
                 }).join('')}
+            ` : ''}
+            ${hasDojo ? `
+              <div style="font-size:.63rem;font-weight:600;color:#c47e7e;letter-spacing:.08em;margin:${hasPractice ? '1rem' : '0'} 0 .5rem;padding-bottom:.3rem;border-bottom:1px solid rgba(196,126,126,.2)">⚔ 道場の振り返り（${dojoEntries.length}件）</div>
+              ${dojoEntries.map(e => {
+                const key     = `${userId}-${e.date}`;
+                const col     = SPIRIT_COLORS_P[e.spirit] || 'var(--gold)';
+                const spName  = SPIRIT_JP_P[e.spirit]    || e.spirit;
+                const alreadySent = nextDaySrc === e.date;
+                return `
+                  <div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+                    <div style="font-size:.65rem;color:${col};margin-bottom:.2rem">${e.date}　${spName}</div>
+                    ${e.challengeTitle ? `<div style="font-size:.7rem;color:var(--muted);margin-bottom:.2rem">課題：${escHtml(e.challengeTitle)}</div>` : ''}
+                    <div style="font-size:.82rem;color:var(--cream2);line-height:1.6;margin-bottom:.4rem">
+                      ${e.reflection ? escHtml(e.reflection).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">（記録なし）</span>'}
+                    </div>
+                    <div id="musashi-result-${key}" style="display:none;margin-bottom:.4rem;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
+                    <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
+                      style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:${alreadySent ? 'rgba(100,200,100,.1)' : 'rgba(201,168,76,.1)'};border:1px solid ${alreadySent ? 'rgba(100,200,100,.4)' : 'rgba(201,168,76,.35)'};color:${alreadySent ? '#6dc46d' : 'var(--gold)'};cursor:pointer">
+                      ${alreadySent ? '✅ 武蔵BOT送信済み' : '⚔️ 武蔵BOT発動'}
+                    </button>
+                  </div>`;
+              }).join('')}
+            ` : ''}
+            ${!hasPractice && !hasDojo ? `<div style="font-size:.83rem;color:var(--muted);padding:.5rem 0">記録なし</div>` : ''}
           </div>
         </div>`;
     }).join('');
