@@ -1284,7 +1284,7 @@ const SEND_COMMENT_URL    = 'https://sendadmincomment-6wuzckrpiq-uc.a.run.app';
 const SEND_BROADCAST_URL  = 'https://sendbroadcast-6wuzckrpiq-uc.a.run.app';
 const RESEND_DAILY_TIP_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/resendDailyTip';
 const SEND_DOJO_INVITE_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendDojoInvite';
-const MUSASHI_DOJO_BOT_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/musashiDojoBot';
+const MUSASHI_DOJO_SEND_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/sendMusashiDojoMessage';
 
 let selected = new Set();
 let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
@@ -2615,6 +2615,8 @@ function updateMusashiBanner() {
 }
 
 const _dojoEntryMap = {}; // userId-date → entry object
+const _pendingDojoChallenge = {}; // entryKey → {spirit, title, body}
+const SPIRIT_JP_NAMES = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
 
 async function toggleDojoEntries(userId, btn) {
   const container = document.getElementById(`dojo-entries-${userId}`);
@@ -2672,34 +2674,163 @@ async function toggleDojoEntries(userId, btn) {
 async function generateMusashiDojo(userId, entryKey, btn) {
   const entry = _dojoEntryMap[entryKey];
   if (!entry?.reflection?.trim()) { alert('振り返りが空のため発動できません。'); return; }
-  if (!confirm(`「${entry.date}」の振り返りに武蔵BOTを発動し、メッセージをLINEで送信します。\nよろしいですか？`)) return;
+
+  const apiKey = getMusashiKey();
+  if (!apiKey) {
+    alert('APIキーが設定されていません。\n管理画面上部の「⚔️ 武蔵BOT」バナーにキーを入力してください。');
+    document.getElementById('musashi-key-banner').style.display = '';
+    return;
+  }
 
   btn.disabled = true;
-  btn.textContent = '生成・送信中...';
+  btn.textContent = '生成中...';
   const resultDiv = document.getElementById(`musashi-result-${entryKey}`);
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">武蔵が言葉を選んでいます...</div>';
+
+  const spiritName = SPIRIT_JP_NAMES[entry.spirit] || entry.spirit;
 
   try {
-    const res = await fetch(MUSASHI_DOJO_BOT_URL, {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, entry }),
-    });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || '送信失敗');
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 500,
+        system: `あなたは宮本武蔵です。五輪書の著者であり、剣術・兵法の達人として生涯を稽古に捧げた求道者です。
 
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `<div style="font-size:.62rem;color:var(--gold);margin-bottom:.25rem">⚔️ 武蔵からの言葉（LINE送信済み）</div>${escHtml(data.musashiMessage).replace(/\n/g,'<br>')}`;
-    btn.textContent = '✅ 送信完了';
-    btn.style.background = 'rgba(100,200,100,.1)';
-    btn.style.borderColor = 'rgba(100,200,100,.4)';
-    btn.style.color = '#6dc46d';
+あなたのスタイル：
+- 同じ道を歩む仲間として、穏やかに語りかける
+- 振り返りの内容を具体的に受け止め、明日から試せる小さな一歩をそっと示す
+- 「〜してみてはどうか」「〜かもしれぬ」「〜ではなかろうか」など、問いかけや提案の形で語る
+- 相手を指すときは「お主」を使う（「お前」は使わない）
+- 4〜5文以内。命令せず、そっと寄り添う言葉で。
+
+認める言葉について：
+- 振り返りの内容がよければ、武蔵らしい言葉で素直に認めること
+- 「よう気づいた」「それでよい」「その眼、大事にせよ」「よく見ておる」など
+- ただし、内容が薄い場合は認めず、問いかけに留める
+
+禁止事項：
+- 「素晴らしい」「頑張りましたね」「すごい」など現代的な軽い褒め言葉
+- 「〜せよ」「〜しろ」「必ず」「絶対」「すべき」など命令・強制表現
+- 「お前」という表現
+- 抽象的な言葉だけで終わること（具体的な行動をひとつ示す）`,
+        messages: [{
+          role: 'user',
+          content:
+            `【稽古者が取り組んだ課題】${entry.challengeTitle || '—'}\n` +
+            `【課題のSpirit】${spiritName}\n` +
+            `【稽古者の振り返り】\n${entry.reflection}\n\n` +
+            `以下の形式で出力してください：\n\n` +
+            `武蔵のメッセージ: （稽古者の振り返りに応える言葉。60〜120文字）\n` +
+            `翌日Spirit: hei/jiko/flex/strat/sei のいずれか\n` +
+            `翌日タイトル: （10文字以内）\n` +
+            `翌日課題: （60〜100文字。「今日は〜してみよ」形式。強制表現不使用）`,
+        }],
+      }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || res.status); }
+    const data = await res.json();
+    const text = data.content[0].text.trim();
+
+    const msgMatch     = text.match(/武蔵のメッセージ:\s*([\s\S]+?)(?=\n翌日Spirit:)/);
+    const spiritMatch  = text.match(/翌日Spirit:\s*(hei|jiko|flex|strat|sei)/i);
+    const titleMatch   = text.match(/翌日タイトル:\s*(.+)/);
+    const bodyMatch    = text.match(/翌日課題:\s*([\s\S]+)/);
+
+    const musashiMessage = msgMatch?.[1]?.trim() || text;
+    const nextSpirit  = spiritMatch?.[1]?.toLowerCase() || entry.spirit;
+    const nextTitle   = titleMatch?.[1]?.trim() || '明日の課題';
+    const nextBody    = bodyMatch?.[1]?.trim() || '';
+    const nextSpiritJp = SPIRIT_JP_NAMES[nextSpirit] || nextSpirit;
+
+    _pendingDojoChallenge[entryKey] = { spirit: nextSpirit, title: nextTitle, body: nextBody };
+
+    resultDiv.innerHTML = `
+      <div style="font-size:.62rem;color:var(--gold);margin-bottom:.3rem">⚔️ 武蔵からの言葉（送信前に編集できます）</div>
+      <textarea id="musashi-msg-${entryKey}" rows="4"
+        style="width:100%;box-sizing:border-box;background:var(--bg2);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:var(--cream);font-size:.82rem;padding:.5rem .7rem;resize:vertical;font-family:inherit;line-height:1.6;margin-bottom:.5rem">${musashiMessage}</textarea>
+      <div style="font-size:.62rem;color:var(--muted);margin-bottom:.15rem">翌日の課題｜${nextSpiritJp}「${escHtml(nextTitle)}」</div>
+      <div style="font-size:.78rem;color:var(--cream2);margin-bottom:.6rem;padding:.4rem .6rem;background:rgba(255,255,255,.04);border-radius:4px;line-height:1.55">${escHtml(nextBody)}</div>
+      <div style="display:flex;gap:.4rem;justify-content:flex-end">
+        <button onclick="cancelMusashiDojo('${entryKey}')"
+          style="font-size:.73rem;padding:.3rem .8rem;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer">
+          キャンセル
+        </button>
+        <button onclick="sendMusashiDojo('${userId}','${entryKey}',this)"
+          style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
+          ⚔️ LINEで送信
+        </button>
+      </div>`;
+
+    btn.textContent = '✏️ 生成済み';
     btn.disabled = false;
   } catch(e) {
     console.error('武蔵道場BOTエラー:', e);
+    resultDiv.innerHTML = '';
+    resultDiv.style.display = 'none';
     btn.textContent = '⚠ 失敗';
     btn.style.color = 'var(--red)';
     btn.disabled = false;
     setTimeout(() => { btn.textContent = '⚔️ 武蔵BOT発動'; btn.style.color = 'var(--gold)'; }, 3000);
+  }
+}
+
+function cancelMusashiDojo(entryKey) {
+  const resultDiv = document.getElementById(`musashi-result-${entryKey}`);
+  resultDiv.style.display = 'none';
+  resultDiv.innerHTML = '';
+  delete _pendingDojoChallenge[entryKey];
+  const btn = document.getElementById(`musashi-btn-${entryKey}`);
+  if (btn) { btn.textContent = '⚔️ 武蔵BOT発動'; btn.disabled = false; }
+}
+
+async function sendMusashiDojo(userId, entryKey, btn) {
+  const textarea = document.getElementById(`musashi-msg-${entryKey}`);
+  const message = textarea?.value?.trim();
+  if (!message) { alert('メッセージが空です。'); return; }
+  const challenge = _pendingDojoChallenge[entryKey];
+  if (!challenge) { alert('課題データが見つかりません。再度生成してください。'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  try {
+    const res = await fetch(MUSASHI_DOJO_SEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId, message, nextChallenge: challenge,
+        sourceDate: _dojoEntryMap[entryKey]?.date,
+      }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '送信失敗');
+
+    const resultDiv = document.getElementById(`musashi-result-${entryKey}`);
+    resultDiv.innerHTML = `
+      <div style="font-size:.62rem;color:var(--gold);margin-bottom:.25rem">⚔️ 武蔵からの言葉（LINE送信済み）</div>
+      <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${escHtml(message).replace(/\n/g,'<br>')}</div>`;
+
+    const musashiBtn = document.getElementById(`musashi-btn-${entryKey}`);
+    if (musashiBtn) {
+      musashiBtn.textContent = '✅ 送信完了';
+      musashiBtn.style.background = 'rgba(100,200,100,.1)';
+      musashiBtn.style.borderColor = 'rgba(100,200,100,.4)';
+      musashiBtn.style.color = '#6dc46d';
+    }
+    delete _pendingDojoChallenge[entryKey];
+  } catch(e) {
+    console.error('sendMusashiDojo error:', e);
+    btn.textContent = '⚠ 失敗';
+    btn.style.color = 'var(--red)';
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = '⚔️ LINEで送信'; btn.style.color = 'var(--gold)'; btn.disabled = false; }, 3000);
   }
 }
 
