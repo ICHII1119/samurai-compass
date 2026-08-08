@@ -2838,10 +2838,10 @@ async function generateMusashiDojo(userId, entryKey, btn) {
     const data = await res.json();
     const text = data.content[0].text.trim().replace(/\*\*/g, '');
 
-    const msgMatch     = text.match(/武蔵のメッセージ:\s*([\s\S]+?)(?=\n翌日Spirit:)/);
-    const spiritMatch  = text.match(/翌日Spirit:\s*(hei|jiko|flex|strat|sei)/i);
-    const titleMatch   = text.match(/翌日タイトル:\s*(.+)/);
-    const bodyMatch    = text.match(/翌日課題:\s*([\s\S]+)/);
+    const msgMatch     = text.match(/武蔵のメッセージ:\s*\n?([\s\S]+?)(?=\n+翌日Spirit:)/);
+    const spiritMatch  = text.match(/翌日Spirit:\s*\n?\s*(hei|jiko|flex|strat|sei)/i);
+    const titleMatch   = text.match(/翌日タイトル:\s*\n?\s*(.+)/);
+    const bodyMatch    = text.match(/翌日課題:\s*\n?\s*([\s\S]+)/);
 
     const musashiMessage = msgMatch?.[1]?.trim() || text;
     const nextSpirit  = spiritMatch?.[1]?.toLowerCase() || entry.spirit;
