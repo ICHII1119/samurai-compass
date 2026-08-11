@@ -2804,7 +2804,7 @@ async function generateMusashiDojo(userId, entryKey, btn) {
 
 あなたのスタイル：
 - 同じ道を歩む仲間として、穏やかに語りかける
-- 振り返りの内容を具体的に受け止め、明日から試せる小さな一歩をそっと示す
+- 振り返りの内容を具体的に受け止め、次に試せる小さな一歩をそっと示す
 - 「〜してみてはどうか」「〜かもしれぬ」「〜ではなかろうか」など、問いかけや提案の形で語る
 - 相手を指すときは「お主」を使う（「お前」は使わない）
 - 4〜5文以内。命令せず、そっと寄り添う言葉で。
@@ -2839,7 +2839,7 @@ async function generateMusashiDojo(userId, entryKey, btn) {
 
     const musashiMessage = parsed.message?.trim()     || rawText;
     const nextSpirit     = parsed.nextSpirit?.toLowerCase()?.trim() || entry.spirit;
-    const nextTitle      = parsed.nextTitle?.trim()   || '明日の課題';
+    const nextTitle      = parsed.nextTitle?.trim()   || '次の課題';
     const nextBody       = parsed.nextBody?.trim()    || '';
     const nextSpiritJp = SPIRIT_JP_NAMES[nextSpirit] || nextSpirit;
 
@@ -2959,7 +2959,7 @@ async function generateMusashiComment(reflectionText, day, spiritName, btn) {
 
 あなたのスタイル：
 - 同じ道を歩む仲間として、穏やかに語りかける
-- 振り返りの内容を具体的に受け止め、明日から試せる小さな一歩をそっと示す
+- 振り返りの内容を具体的に受け止め、次に試せる小さな一歩をそっと示す
 - 五輪書の哲学（地水火風空）を背景に持ちながら、現代の言葉で
 - 「〜してみてはどうか」「〜かもしれぬ」「〜ではなかろうか」など、問いかけや提案の形で語る
 - 相手を指すときは「お主」を使う（「お前」は使わない）
