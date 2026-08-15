@@ -10,21 +10,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:       #1a1a1f;
-  --bg2:      #222228;
-  --bg3:      #2a2a32;
-  --cream:    #f0ead8;
-  --cream2:   #c8bfa8;
-  --muted:    #7a7060;
-  --gold:     #c9a84c;
-  --gold2:    #a07828;
-  --gold-dim: rgba(201,168,76,.12);
-  --red:      #8b1a1a;
-  --red-dim:  rgba(139,26,26,.15);
-  --border:   rgba(201,168,76,.18);
-  --r:        12px;
-  --font:     'Open Sans', -apple-system, sans-serif;
-  --font-b:   'Zen Old Mincho', serif;
+  --bg:        #1a1a1f;
+  --bg2:       #222228;
+  --bg3:       #2a2a32;
+  --cream:     #f0ead8;
+  --cream2:    #c8bfa8;
+  --muted:     #7a7060;
+  --gold:      #c9a84c;
+  --gold2:     #a07828;
+  --gold-dim:  rgba(201,168,76,.12);
+  --red:       #8b1a1a;
+  --border:    rgba(201,168,76,.18);
+  --green:     #3a7a4a;
+  --green-dim: rgba(58,122,74,.18);
+  --r:         12px;
+  --font:      'Open Sans', -apple-system, sans-serif;
+  --font-b:    'Zen Old Mincho', serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 html { -webkit-text-size-adjust: 100% }
@@ -41,68 +42,55 @@ body {
 /* ── Header ── */
 .page-header {
   text-align: center;
-  padding: 2rem 1.2rem 1.2rem;
+  padding: 1.4rem 1.2rem .9rem;
   border-bottom: 1px solid var(--border);
 }
-.logo-img { width: 48px; height: 48px; object-fit: contain; margin-bottom: .5rem }
+.logo-img { width: 38px; height: 38px; object-fit: contain; margin-bottom: .35rem }
 .page-title {
   font-family: var(--font-b);
-  font-size: 1rem;
-  letter-spacing: .2em;
+  font-size: .9rem;
+  letter-spacing: .22em;
   color: var(--gold);
 }
 
-/* ── Rank Badge ── */
-.rank-section {
-  text-align: center;
-  padding: 1.8rem 1.2rem 1rem;
-}
-.rank-mon {
-  width: 80px; height: 80px;
-  margin: 0 auto 1rem;
-  position: relative;
-}
-.rank-mon svg { width: 100%; height: 100% }
-.rank-name {
-  font-family: var(--font-b);
-  font-size: 2rem;
-  font-weight: 900;
-  color: var(--cream);
-  letter-spacing: .1em;
-  line-height: 1;
-}
-.rank-sub {
-  font-size: .78rem;
-  color: var(--muted);
-  letter-spacing: .15em;
-  margin-top: .4rem;
-}
-.rank-desc {
-  font-size: .85rem;
-  color: var(--cream2);
-  margin-top: .8rem;
-  line-height: 1.7;
-  max-width: 320px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* ── Progress Bar ── */
-.progress-section {
-  padding: 0 1.2rem 1.4rem;
+/* ── Rank Strip ── */
+.rank-strip {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: .9rem 1.3rem;
+  border-bottom: 1px solid rgba(201,168,76,.1);
   max-width: 480px;
   margin: 0 auto;
 }
-.progress-label {
+.rank-strip-mon { width: 44px; height: 44px; flex-shrink: 0 }
+.rank-strip-mon svg { width: 100%; height: 100% }
+.rank-strip-info { flex-shrink: 0 }
+.rank-strip-name {
+  font-family: var(--font-b);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--cream);
+  letter-spacing: .06em;
+  line-height: 1;
+}
+.rank-strip-sub {
+  font-size: .6rem;
+  color: var(--muted);
+  letter-spacing: .15em;
+  margin-top: .15rem;
+}
+.rank-strip-progress { flex: 1; min-width: 0 }
+.rank-strip-progress-label {
   display: flex;
   justify-content: space-between;
-  font-size: .78rem;
+  font-size: .68rem;
   color: var(--muted);
-  margin-bottom: .5rem;
+  margin-bottom: .28rem;
 }
-.progress-count { color: var(--gold); font-weight: 600 }
+.pcount { color: var(--gold); font-weight: 600 }
 .progress-bar-bg {
-  height: 6px;
+  height: 5px;
   background: var(--bg3);
   border-radius: 100px;
   overflow: hidden;
@@ -114,75 +102,196 @@ body {
   transition: width .6s ease;
 }
 
-/* ── Stamp Grid ── */
-.stamp-section {
-  padding: 0 1rem 1.5rem;
-  max-width: 480px;
-  margin: 0 auto;
+/* ── Section wrap ── */
+.sw { padding: .75rem 1.2rem; max-width: 480px; margin: 0 auto }
+
+/* ── Calendar Card ── */
+.cal-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: .85rem .75rem .5rem;
 }
-.stamp-grid {
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .55rem;
+}
+.cal-month-label {
+  font-family: var(--font-b);
+  font-size: .95rem;
+  color: var(--cream);
+  letter-spacing: .04em;
+}
+.cal-nav-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: .1rem .5rem;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color .15s, background .15s;
+}
+.cal-nav-btn:hover { color: var(--gold); background: var(--gold-dim) }
+.cal-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: .45rem;
+  margin-bottom: .2rem;
 }
-.stamp-slot {
-  aspect-ratio: 1;
-  border-radius: 8px;
+.cal-wd {
+  text-align: center;
+  font-size: .6rem;
+  color: var(--muted);
+  padding: .12rem 0;
+}
+.cal-wd:first-child { color: #b06060 }
+.cal-wd:last-child  { color: #6090b0 }
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: .12rem;
+}
+.cal-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  position: relative;
-  border: 1.5px solid rgba(201,168,76,.2);
-  background: var(--bg2);
+  justify-content: flex-start;
+  padding-top: .3rem;
+  height: 44px;
+  border-radius: 50%;
   cursor: default;
+  position: relative;
+  transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.cal-cell.in-period { cursor: pointer }
+.cal-cell.in-period:active { background: rgba(201,168,76,.12) }
+.cal-cell.selected {
+  box-shadow: 0 0 0 2px var(--gold);
+  background: rgba(201,168,76,.07);
+}
+.cal-cell.today-unrecorded { background: rgba(201,168,76,.1) }
+.cal-num {
+  font-size: .8rem;
+  line-height: 1;
+  color: var(--cream2);
+  display: block;
+}
+.cal-cell.out-period .cal-num { color: rgba(255,255,255,.08) }
+.cal-cell.sun-col .cal-num   { color: #c08080 }
+.cal-cell.sat-col .cal-num   { color: #7090b8 }
+.cal-cell.completed .cal-num { color: var(--cream) }
+.cal-cell.today-unrecorded .cal-num { color: var(--gold) }
+
+/* Icons */
+.cal-icon { margin-top: 2px; display: flex; align-items: center; justify-content: center }
+.cal-check {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  font-size: .56rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  line-height: 1;
+}
+.cal-dot { width: 5px; height: 5px; border-radius: 50% }
+.gold-dot { background: var(--gold) }
+.gray-dot { background: var(--muted); opacity: .45 }
+.cal-star  { font-size: .68rem; line-height: 1 }
+
+/* Legend */
+.cal-legend {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+  padding: .55rem .2rem .1rem;
+  justify-content: center;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: .28rem;
+  font-size: .62rem;
+  color: var(--muted);
+}
+
+/* ── Streak bar ── */
+.streak-bar {
+  margin-top: .55rem;
+  padding: .5rem .85rem;
+  background: rgba(201,168,76,.05);
+  border: 1px solid rgba(201,168,76,.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+.streak-inner { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap }
+.streak-flames { font-size: .95rem; line-height: 1 }
+.streak-text {
+  font-family: var(--font-b);
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: .04em;
+}
+.streak-max { font-size: .65rem; color: var(--muted) }
+
+/* ── Day detail ── */
+.day-detail-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem 1.15rem;
+  position: relative;
   overflow: hidden;
 }
-.stamp-slot.stamped {
-  border-color: var(--gold2);
-  background: var(--gold-dim);
+.day-detail-card::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: 15%; right: 15%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
-.stamp-slot.today-slot {
-  border-color: var(--gold);
-  background: var(--gold-dim);
-  box-shadow: 0 0 0 2px rgba(201,168,76,.15);
+.day-detail-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .6rem;
 }
-.stamp-slot.future {
-  opacity: .35;
-}
-.stamp-day-num {
-  font-size: .58rem;
-  color: var(--muted);
-  line-height: 1;
-  margin-bottom: .15rem;
-}
-.stamp-slot.stamped .stamp-day-num { color: rgba(201,168,76,.5) }
-.stamp-slot.today-slot .stamp-day-num { color: var(--gold) }
-
-/* 印 (seal) for stamped days */
-.stamp-seal {
+.day-detail-date {
   font-family: var(--font-b);
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: var(--gold);
-  line-height: 1;
+  font-size: .92rem;
+  color: var(--cream);
+  letter-spacing: .03em;
 }
-.stamp-slot.today-slot .stamp-seal-today {
-  font-size: .9rem;
-  color: var(--gold);
+.done-badge {
+  font-size: .68rem;
+  padding: .18rem .55rem;
+  border-radius: 100px;
+  background: var(--green-dim);
+  color: #6dc46d;
+  border: 1px solid rgba(58,122,74,.4);
+}
+.day-reflection-text {
+  font-size: .84rem;
+  color: var(--cream2);
+  line-height: 1.75;
 }
 
-/* ── Today's Reflection ── */
-.reflection-section {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 0 1.2rem 1.5rem;
-}
+/* ── Reflection form ── */
+.reflection-section { max-width: 480px; margin: 0 auto; padding: 0 1.2rem .8rem }
 .reflection-card {
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 1.4rem;
+  padding: 1.25rem;
   position: relative;
   overflow: hidden;
 }
@@ -194,17 +303,17 @@ body {
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 .reflection-day-label {
-  font-size: .7rem;
+  font-size: .68rem;
   letter-spacing: .2em;
   color: var(--muted);
-  margin-bottom: .3rem;
+  margin-bottom: .28rem;
 }
 .reflection-title {
   font-family: var(--font-b);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: var(--cream);
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: .85rem;
 }
 .reflection-textarea {
   width: 100%;
@@ -213,28 +322,27 @@ body {
   border-radius: 8px;
   color: var(--cream);
   font-family: var(--font);
-  font-size: .92rem;
+  font-size: .9rem;
   line-height: 1.7;
-  padding: .8rem 1rem;
+  padding: .72rem .9rem;
   resize: none;
-  min-height: 100px;
+  min-height: 88px;
   outline: none;
   transition: border-color .2s;
 }
 .reflection-textarea:focus { border-color: var(--gold) }
 .reflection-textarea::placeholder { color: var(--muted) }
-
 .btn-submit {
   display: block;
   width: 100%;
-  margin-top: .9rem;
-  padding: .85rem;
+  margin-top: .82rem;
+  padding: .78rem;
   background: linear-gradient(135deg, #8b1a1a, #a02020);
   border: none;
   border-radius: 8px;
   color: var(--cream);
   font-family: var(--font-b);
-  font-size: 1rem;
+  font-size: .93rem;
   font-weight: 700;
   letter-spacing: .1em;
   cursor: pointer;
@@ -242,24 +350,18 @@ body {
 }
 .btn-submit:hover { opacity: .88 }
 .btn-submit:disabled { opacity: .4; cursor: not-allowed }
-
-/* Already stamped notice */
 .already-stamped {
   text-align: center;
-  padding: 1.2rem;
+  padding: 1rem;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  font-size: .9rem;
+  font-size: .86rem;
   color: var(--cream2);
   line-height: 1.7;
 }
-.already-stamped .done-mark {
-  font-size: 1.6rem;
-  margin-bottom: .5rem;
-}
 
-/* ── Completion Screen ── */
+/* ── Completion ── */
 .completion-screen {
   display: none;
   text-align: center;
@@ -268,113 +370,110 @@ body {
   margin: 0 auto;
 }
 .completion-screen.visible { display: block }
-.completion-mon {
-  width: 100px; height: 100px;
-  margin: 0 auto 1.2rem;
-}
+.completion-mon { width: 90px; height: 90px; margin: 0 auto 1rem }
 .completion-title {
   font-family: var(--font-b);
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 900;
   color: var(--gold);
   letter-spacing: .05em;
-  margin-bottom: .5rem;
+  margin-bottom: .4rem;
 }
 .completion-rank {
   font-family: var(--font-b);
-  font-size: 2.8rem;
+  font-size: 2.5rem;
   font-weight: 900;
   color: var(--cream);
   letter-spacing: .1em;
-  margin-bottom: .8rem;
-}
-.completion-desc {
-  font-size: .92rem;
-  color: var(--cream2);
-  line-height: 1.8;
+  margin-bottom: .7rem;
 }
 .completion-divider {
-  margin: 1.5rem auto;
+  margin: 1.2rem auto;
   width: 60px;
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
+.completion-desc { font-size: .9rem; color: var(--cream2); line-height: 1.8 }
 
 /* ── Loading / Error ── */
-.loading-screen {
-  text-align: center;
-  padding: 4rem 1.5rem;
-  color: var(--muted);
-  font-size: .9rem;
-}
-.error-screen {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  color: var(--muted);
-}
-
-/* ── Stamp animation ── */
-@keyframes stampIn {
-  0%   { transform: scale(2) rotate(-15deg); opacity: 0 }
-  60%  { transform: scale(.9) rotate(-6deg); opacity: 1 }
-  100% { transform: scale(1) rotate(-8deg); opacity: 1 }
-}
-.stamp-anim { animation: stampIn .4s cubic-bezier(.22,1,.36,1) forwards }
+.loading-screen { text-align: center; padding: 4rem 1.5rem; color: var(--muted); font-size: .9rem }
+.error-screen   { text-align: center; padding: 3rem 1.5rem; color: var(--muted) }
 
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(16px) }
+  from { opacity: 0; transform: translateY(12px) }
   to   { opacity: 1; transform: translateY(0) }
 }
-.fade-up { animation: fadeSlideUp .5s ease forwards }
+.fade-up { animation: fadeSlideUp .35s ease forwards }
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="page-header">
   <img src="logo.png" alt="SAMURAI in You" class="logo-img">
   <div class="page-title">稽古の記録</div>
-  <div id="report-link-area" style="margin-top:.7rem;display:none">
-    <a id="report-link" href="#" style="font-size:.75rem;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.35);padding:.3rem .8rem;border-radius:100px;display:inline-block">
+  <div id="report-link-area" style="margin-top:.55rem;display:none">
+    <a id="report-link" href="#" style="font-size:.72rem;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.35);padding:.26rem .72rem;border-radius:100px;display:inline-block">
       📜 自分の記録・メモを見る
     </a>
   </div>
 </div>
 
-<!-- Loading -->
 <div class="loading-screen" id="loading">読み込み中...</div>
 
-<!-- Main content (hidden until loaded) -->
 <div id="main-content" style="display:none">
 
-  <!-- Rank Section -->
-  <div class="rank-section">
-    <div class="rank-mon" id="rank-mon"></div>
-    <div class="rank-name" id="rank-name">見習い</div>
-    <div class="rank-sub" id="rank-sub">MINARAI</div>
-    <div class="rank-desc" id="rank-desc">21日間の無料体験でSAMURAIの精神を体感します。</div>
-  </div>
-
-  <!-- Progress -->
-  <div class="progress-section">
-    <div class="progress-label">
-      <span>修行の進捗</span>
-      <span class="progress-count"><span id="stamped-count">0</span> / 21 日</span>
+  <!-- Rank strip -->
+  <div class="rank-strip">
+    <div class="rank-strip-mon" id="rank-mon"></div>
+    <div class="rank-strip-info">
+      <div class="rank-strip-name" id="rank-name">見習い</div>
+      <div class="rank-strip-sub"  id="rank-sub">MINARAI</div>
     </div>
-    <div class="progress-bar-bg">
-      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    <div class="rank-strip-progress">
+      <div class="rank-strip-progress-label">
+        <span>修行の進捗</span>
+        <span class="pcount"><span id="stamped-count">0</span> / 21 日</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+      </div>
     </div>
   </div>
 
-  <!-- Stamp Grid -->
-  <div class="stamp-section">
-    <div class="stamp-grid" id="stamp-grid"></div>
+  <!-- Calendar -->
+  <div class="sw">
+    <div class="cal-card">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+        <span class="cal-month-label" id="cal-month-label"></span>
+        <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="cal-weekdays">
+        <div class="cal-wd">日</div><div class="cal-wd">月</div>
+        <div class="cal-wd">火</div><div class="cal-wd">水</div>
+        <div class="cal-wd">木</div><div class="cal-wd">金</div>
+        <div class="cal-wd">土</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="cal-check" style="width:12px;height:12px;font-size:.5rem">✓</div><span>稽古完了</span></div>
+        <div class="legend-item"><div class="cal-dot gold-dot"></div><span>今日の稽古</span></div>
+        <div class="legend-item"><div class="cal-dot gray-dot"></div><span>未記録</span></div>
+        <div class="legend-item"><span class="cal-star">⭐</span><span>連続達成</span></div>
+      </div>
+    </div>
+    <div class="streak-bar" id="streak-bar" style="display:none"></div>
   </div>
 
-  <!-- Rank History -->
+  <!-- Past day detail -->
+  <div class="sw" id="day-detail-wrap" style="display:none">
+    <div id="day-detail-area"></div>
+  </div>
+
+  <!-- Rank history -->
   <div id="rank-history-area"></div>
 
-  <!-- Reflection or Already Done -->
+  <!-- Today's reflection -->
   <div class="reflection-section" id="reflection-area"></div>
 
   <!-- Completion -->
@@ -382,13 +481,11 @@ body {
 
 </div>
 
-<!-- Error -->
 <div class="error-screen" id="error-screen" style="display:none">
   <div style="font-size:1.5rem;margin-bottom:.8rem">⚠️</div>
   <div id="error-msg" style="color:var(--cream2)">URLが正しくありません。<br>LINEのメッセージから開いてください。</div>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
@@ -402,7 +499,7 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-/* ── Rank definitions ── */
+/* ── Ranks ── */
 const RANKS_BY_ID = {
   minarai: {
     id: 'minarai', name: '見習い', sub: 'MINARAI',
@@ -460,42 +557,51 @@ const RANKS_BY_ID = {
   },
 };
 const RANK_NAME_TO_ID = { '見習い':'minarai', '十級':'jukyu', '九級':'kukyu', '八級':'hachikyu', '七級':'nanakyu' };
-const RANKS = [RANKS_BY_ID.minarai, RANKS_BY_ID.jukyu];
 
 /* ── URL params ── */
-const params = new URLSearchParams(location.search);
-const userId = params.get('lid');
+const params  = new URLSearchParams(location.search);
+const userId  = params.get('lid');
 const todayDay = parseInt(params.get('day')) || null;
 
 /* ── State ── */
-let practiceData = null;
-let stampedDays = new Set();
+let practiceData  = null;
+let stampedDays   = new Set();
+let startDate     = null;
+let dateEntryMap  = {};
+let calYear, calMonth;
+let selectedDateStr = null;
 
+/* ── Utils ── */
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function dateToStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function addDays(d, n) {
+  const r = new Date(d);
+  r.setDate(r.getDate() + n);
+  return r;
+}
+function localDate(str) {
+  // Parse YYYY-MM-DD as local time
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/* ── Init ── */
 async function init() {
-  if (!userId) {
-    showError('LINEのメッセージからアクセスしてください。');
-    return;
-  }
-  /* レポートリンクを設定 */
-  const reportLinkArea = document.getElementById('report-link-area');
-  const reportLink = document.getElementById('report-link');
-  if (reportLinkArea && reportLink) {
-    reportLink.href = `report.html?lid=${userId}`;
-    reportLinkArea.style.display = '';
-  }
-
+  if (!userId) { showError('LINEのメッセージからアクセスしてください。'); return; }
+  const rl = document.getElementById('report-link');
+  if (rl) { rl.href = `report.html?lid=${userId}`; document.getElementById('report-link-area').style.display = ''; }
   try {
-    const docRef = db.collection('practices').doc(userId);
-    const doc = await docRef.get();
-    if (doc.exists) {
-      practiceData = doc.data();
-    } else {
-      practiceData = { lineUserId: userId, entries: [], cycle: 1 };
-    }
-
-    // Build stamped days set
+    const doc = await db.collection('practices').doc(userId).get();
+    practiceData = doc.exists ? doc.data() : { lineUserId: userId, entries: [], cycle: 1 };
     (practiceData.entries || []).forEach(e => stampedDays.add(e.day));
-
+    computeStartDate();
+    buildDateEntryMap();
     render();
   } catch(e) {
     console.error(e);
@@ -503,104 +609,279 @@ async function init() {
   }
 }
 
+function computeStartDate() {
+  const entries = practiceData.entries || [];
+  // Day 1 entry timestamp
+  const d1 = entries.find(e => e.day === 1);
+  if (d1?.timestamp) {
+    const d = new Date(d1.timestamp);
+    startDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    return;
+  }
+  // Earliest entry
+  if (entries.length) {
+    const earliest = [...entries].sort((a,b) => a.day - b.day)[0];
+    if (earliest.timestamp) {
+      const d = new Date(earliest.timestamp);
+      const base = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      base.setDate(base.getDate() - (earliest.day - 1));
+      startDate = base;
+      return;
+    }
+  }
+  // todayDay URL param
+  if (todayDay >= 1) {
+    const t = new Date();
+    const base = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+    base.setDate(base.getDate() - (todayDay - 1));
+    startDate = base;
+    return;
+  }
+  const t = new Date();
+  startDate = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+}
+
+function buildDateEntryMap() {
+  dateEntryMap = {};
+  if (!startDate) return;
+  (practiceData.entries || []).forEach(e => {
+    if (!e.day) return;
+    const d = addDays(startDate, e.day - 1);
+    dateEntryMap[dateToStr(d)] = e;
+  });
+}
+
+function calcStreak() {
+  if (!stampedDays.size) return 0;
+  const sorted = [...stampedDays].sort((a,b) => b - a);
+  let streak = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === sorted[i-1] - 1) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function calcMaxStreak() {
+  if (!stampedDays.size) return 0;
+  const sorted = [...stampedDays].sort((a,b) => a - b);
+  let max = 1, cur = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    cur = (sorted[i] === sorted[i-1] + 1) ? cur + 1 : 1;
+    if (cur > max) max = cur;
+  }
+  return max;
+}
+
+/* ── Render ── */
 function render() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('main-content').style.display = 'block';
 
-  const count = stampedDays.size;
+  const count     = stampedDays.size;
   const completed = count >= 21;
+  const rankId    = RANK_NAME_TO_ID[practiceData?.rank] || (completed ? 'jukyu' : 'minarai');
+  const rank      = RANKS_BY_ID[rankId] || RANKS_BY_ID.minarai;
 
-  // Use Firestore rank if set, otherwise derive from completion
-  const storedRankName = practiceData?.rank;
-  const rankId = RANK_NAME_TO_ID[storedRankName] || (completed ? 'jukyu' : 'minarai');
-  const rank = RANKS_BY_ID[rankId] || RANKS_BY_ID.minarai;
-
-  // Rank display
   document.getElementById('rank-mon').innerHTML = rank.mon;
   document.getElementById('rank-name').textContent = rank.name;
-  document.getElementById('rank-sub').textContent = rank.sub;
-  document.getElementById('rank-desc').textContent = rank.desc;
-
-  // Rank history
-  renderRankHistory();
-
-  // Progress
+  document.getElementById('rank-sub').textContent  = rank.sub;
   document.getElementById('stamped-count').textContent = count;
   document.getElementById('progress-fill').style.width = `${Math.min(count / 21 * 100, 100)}%`;
 
-  // Stamp grid
-  renderGrid();
+  renderRankHistory();
 
-  // Reflection or completion
+  const now = new Date();
+  calYear  = now.getFullYear();
+  calMonth = now.getMonth();
+  renderCalendar();
+
   if (completed) {
     showCompletion();
-  } else if (todayDay && todayDay >= 1 && todayDay <= 21) {
+  } else if (todayDay >= 1 && todayDay <= 21) {
     renderReflection(todayDay);
   } else {
     document.getElementById('reflection-area').innerHTML = `
       <div class="already-stamped">
-        <div style="font-size:.82rem;color:var(--muted)">LINEのメッセージのリンクから<br>今日の稽古を記録してください。</div>
+        <div style="font-size:.8rem;color:var(--muted)">LINEのメッセージのリンクから<br>今日の稽古を記録してください。</div>
       </div>`;
   }
 }
 
+function renderCalendar() {
+  document.getElementById('cal-month-label').textContent = `${calYear}年${calMonth + 1}月`;
+
+  const firstDay   = new Date(calYear, calMonth, 1);
+  const lastDay    = new Date(calYear, calMonth + 1, 0);
+  const startDow   = firstDay.getDay();
+  const todayStr   = dateToStr(new Date());
+  const periodStartStr = startDate ? dateToStr(startDate)          : null;
+  const periodEndStr   = startDate ? dateToStr(addDays(startDate, 20)) : null;
+  const todayPracticeStr = (todayDay >= 1 && startDate)
+    ? dateToStr(addDays(startDate, todayDay - 1)) : null;
+
+  let html = '';
+  for (let i = 0; i < startDow; i++) html += `<div class="cal-cell"></div>`;
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dow     = (startDow + d - 1) % 7;
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const inPeriod   = periodStartStr && dateStr >= periodStartStr && dateStr <= periodEndStr;
+    const entry      = dateEntryMap[dateStr];
+    const isCompleted = !!entry;
+    const isTodayPractice = dateStr === todayPracticeStr;
+    const isSelected = dateStr === selectedDateStr;
+    const isPast     = dateStr < todayStr;
+
+    let dayNum = null;
+    if (inPeriod && startDate) {
+      dayNum = Math.round((localDate(dateStr) - startDate) / 86400000) + 1;
+    }
+
+    let icon = '';
+    if (isCompleted && dayNum && dayNum % 7 === 0) {
+      icon = `<div class="cal-icon"><span class="cal-star">⭐</span></div>`;
+    } else if (isCompleted) {
+      icon = `<div class="cal-icon"><div class="cal-check">✓</div></div>`;
+    } else if (isTodayPractice) {
+      icon = `<div class="cal-icon"><div class="cal-dot gold-dot"></div></div>`;
+    } else if (inPeriod && isPast) {
+      icon = `<div class="cal-icon"><div class="cal-dot gray-dot"></div></div>`;
+    }
+
+    let cls = 'cal-cell';
+    if (!inPeriod) cls += ' out-period';
+    else {
+      cls += ' in-period';
+      if (isCompleted)                        cls += ' completed';
+      if (isTodayPractice && !isCompleted)    cls += ' today-unrecorded';
+      if (isSelected)                         cls += ' selected';
+    }
+    if (dow === 0) cls += ' sun-col';
+    if (dow === 6) cls += ' sat-col';
+
+    const click = inPeriod ? `onclick="selectCalDate('${dateStr}',${dayNum})"` : '';
+    html += `<div class="${cls}" ${click}>
+      <span class="cal-num">${d}</span>${icon}
+    </div>`;
+  }
+
+  const totalCells = startDow + lastDay.getDate();
+  const rem = totalCells % 7;
+  if (rem) for (let i = 0; i < 7 - rem; i++) html += `<div class="cal-cell"></div>`;
+
+  document.getElementById('cal-grid').innerHTML = html;
+
+  // Streak
+  const streak    = calcStreak();
+  const maxStreak = calcMaxStreak();
+  const bar = document.getElementById('streak-bar');
+  if (streak >= 2) {
+    const flames = '🔥'.repeat(Math.min(streak, 5));
+    bar.innerHTML = `<div class="streak-inner">
+      <span class="streak-flames">${flames}</span>
+      <span class="streak-text">${streak}日連続！</span>
+      ${maxStreak > streak ? `<span class="streak-max">最高記録: ${maxStreak}日</span>` : ''}
+    </div>`;
+    bar.style.display = 'flex';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function selectCalDate(dateStr, dayNum) {
+  selectedDateStr = dateStr;
+  renderCalendar();
+
+  const entry = dateEntryMap[dateStr];
+  const d = localDate(dateStr);
+  const DOW = ['日','月','火','水','木','金','土'];
+  const label = `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`;
+
+  const wrap = document.getElementById('day-detail-wrap');
+  const area = document.getElementById('day-detail-area');
+
+  const todayPracticeStr = (todayDay >= 1 && startDate)
+    ? dateToStr(addDays(startDate, todayDay - 1)) : null;
+
+  // Today's practice day → scroll to form
+  if (dateStr === todayPracticeStr && !entry) {
+    wrap.style.display = 'none';
+    document.getElementById('reflection-area').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  wrap.style.display = '';
+
+  if (entry) {
+    const savedMemo = (practiceData.memos || {})[String(dayNum)]?.text || '';
+    area.innerHTML = `
+      <div class="day-detail-card fade-up">
+        <div class="day-detail-hd">
+          <span class="day-detail-date">${label}</span>
+          <span class="done-badge">✓ Day ${dayNum}</span>
+        </div>
+        <div class="day-reflection-text">
+          ${entry.text ? escHtml(entry.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">（振り返りの記録なし）</span>'}
+        </div>
+        ${savedMemo ? `
+          <div style="margin-top:.75rem;padding:.55rem .75rem;background:var(--bg3);border-radius:6px">
+            <div style="font-size:.6rem;color:var(--muted);letter-spacing:.1em;margin-bottom:.2rem">自分用メモ</div>
+            <div style="font-size:.78rem;color:var(--muted);line-height:1.6">${escHtml(savedMemo).replace(/\n/g,'<br>')}</div>
+          </div>` : ''}
+      </div>`;
+  } else {
+    const isPast = dateStr < dateToStr(new Date());
+    area.innerHTML = `
+      <div class="day-detail-card fade-up">
+        <div class="day-detail-hd">
+          <span class="day-detail-date">${label}</span>
+          <span style="font-size:.68rem;color:var(--muted)">Day ${dayNum}</span>
+        </div>
+        <div class="day-reflection-text" style="color:var(--muted)">
+          ${isPast ? 'この日の記録はありません。' : '稽古の日を楽しみに。'}
+        </div>
+      </div>`;
+  }
+
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+/* ── Rank history ── */
 function renderRankHistory() {
   const area = document.getElementById('rank-history-area');
   if (!area) return;
   const history = practiceData?.rankHistory;
-  if (!history || history.length === 0) { area.innerHTML = ''; return; }
-
+  if (!history?.length) { area.innerHTML = ''; return; }
   const items = [...history]
-    .sort((a, b) => {
-      const ta = a.approvedAt?.toMillis?.() || 0;
-      const tb = b.approvedAt?.toMillis?.() || 0;
-      return tb - ta;
-    })
+    .sort((a,b) => (b.approvedAt?.toMillis?.() || 0) - (a.approvedAt?.toMillis?.() || 0))
     .map(h => {
       const ts = h.approvedAt?.toDate?.();
-      const dateStr = ts
-        ? `${ts.getFullYear()}/${ts.getMonth()+1}/${ts.getDate()}`
-        : '';
+      const dateStr = ts ? `${ts.getFullYear()}/${ts.getMonth()+1}/${ts.getDate()}` : '';
       return `
-        <div style="display:flex;gap:.75rem;align-items:flex-start;padding:.75rem 0;border-bottom:1px solid rgba(201,168,76,.1)">
-          <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;font-family:var(--font-b);font-size:.85rem;color:var(--gold);font-weight:700">${h.rank}</div>
+        <div style="display:flex;gap:.7rem;align-items:flex-start;padding:.7rem 0;border-bottom:1px solid rgba(201,168,76,.08)">
+          <div style="flex-shrink:0;width:34px;height:34px;border-radius:50%;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;font-family:var(--font-b);font-size:.82rem;color:var(--gold);font-weight:700">${h.rank}</div>
           <div style="flex:1;min-width:0">
             <div style="font-size:.78rem;color:var(--cream2);line-height:1.6">${h.comment}</div>
-            ${dateStr ? `<div style="font-size:.65rem;color:var(--muted);margin-top:.2rem">${dateStr} 道場長より</div>` : ''}
+            ${dateStr ? `<div style="font-size:.62rem;color:var(--muted);margin-top:.18rem">${dateStr} 道場長より</div>` : ''}
           </div>
         </div>`;
     }).join('');
-
   area.innerHTML = `
-    <div style="margin:0 1.5rem 1.5rem;padding:1rem 1.2rem;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:14px">
-      <div style="font-size:.7rem;letter-spacing:.12em;color:var(--muted);margin-bottom:.5rem">道場長からの言葉</div>
+    <div style="margin:.2rem 1.5rem 1rem;padding:.9rem 1.1rem;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:14px">
+      <div style="font-size:.68rem;letter-spacing:.12em;color:var(--muted);margin-bottom:.45rem">道場長からの言葉</div>
       ${items}
     </div>`;
 }
 
-function renderGrid() {
-  const grid = document.getElementById('stamp-grid');
-  grid.innerHTML = '';
-  for (let d = 1; d <= 21; d++) {
-    const el = document.createElement('div');
-    const isStamped = stampedDays.has(d);
-    const isToday = d === todayDay;
-    el.className = 'stamp-slot' +
-      (isStamped ? ' stamped' : isToday ? ' today-slot' : ' future');
-
-    const dayLabel = `<div class="stamp-day-num">${d}</div>`;
-
-    if (isStamped) {
-      el.innerHTML = dayLabel + `<div class="stamp-seal">練</div>`;
-    } else if (isToday) {
-      el.innerHTML = dayLabel + `<div style="font-size:.75rem;color:var(--gold);font-weight:600">今日</div>`;
-    } else {
-      el.innerHTML = dayLabel;
-    }
-    grid.appendChild(el);
-  }
-}
-
+/* ── Reflection form ── */
 function renderReflection(day) {
   const area = document.getElementById('reflection-area');
   const savedMemo = (practiceData.memos || {})[String(day)]?.text || '';
@@ -608,15 +889,13 @@ function renderReflection(day) {
   if (stampedDays.has(day)) {
     const entry = (practiceData.entries || []).find(e => e.day === day);
     area.innerHTML = `
-      <div class="already-stamped fade-up">
-        <div class="done-mark">
-        <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="26" cy="26" r="22" stroke="#c9a84c" stroke-width="2.5"/>
-          <polyline points="15,26 22,34 37,17" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-        <div style="font-weight:600;margin-bottom:.5rem">Day ${day} の稽古を記録しました</div>
-        ${entry?.text ? `<div style="font-size:.83rem;color:var(--muted);line-height:1.7;margin-top:.5rem;padding:.6rem .8rem;background:var(--bg3);border-radius:6px">${entry.text}</div>` : ''}
+      <div class="reflection-card fade-up">
+        <div class="reflection-day-label">DAY ${day} · 記録済み</div>
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">
+          <svg width="28" height="28" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="22" stroke="#3a7a4a" stroke-width="2.5"/><polyline points="15,26 22,34 37,17" stroke="#3a7a4a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size:.88rem;color:var(--cream2)">Day ${day} の稽古を記録しました</span>
+        </div>
+        ${entry?.text ? `<div style="font-size:.82rem;color:var(--muted);line-height:1.7;padding:.55rem .75rem;background:var(--bg3);border-radius:6px">${escHtml(entry.text).replace(/\n/g,'<br>')}</div>` : ''}
       </div>
       ${memoBlock(day, savedMemo)}`;
     return;
@@ -626,7 +905,7 @@ function renderReflection(day) {
     <div class="reflection-card fade-up">
       <div class="reflection-day-label">DAY ${day} · 今日の気づき</div>
       <div class="reflection-title">稽古の振り返り</div>
-      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem">ファシリテーターに届きます</div>
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:.5rem">ファシリテーターに届きます</div>
       <textarea class="reflection-textarea" id="reflection-text"
         placeholder="今日の稽古から何を感じましたか？どんな小さな気づきでも構いません。" rows="4"></textarea>
       <button class="btn-submit" id="submit-btn" onclick="submitPractice(${day})">
@@ -638,25 +917,25 @@ function renderReflection(day) {
 
 function memoBlock(day, savedText) {
   return `
-    <div class="reflection-card fade-up" style="margin-top:1rem;border-color:rgba(201,168,76,.1)">
+    <div class="reflection-card fade-up" style="margin-top:.9rem;border-color:rgba(201,168,76,.1)">
       <div class="reflection-day-label">自分用メモ</div>
-      <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem">あなただけが見るメモです。ファシリテーターには届きません。</div>
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:.55rem">あなただけが見るメモです。ファシリテーターには届きません。</div>
       <textarea class="reflection-textarea" id="memo-text" rows="3"
-        placeholder="気づき、感情、アイデア、なんでも。">${savedText}</textarea>
+        placeholder="気づき、感情、アイデア、なんでも。">${escHtml(savedText)}</textarea>
       <button class="btn-submit" id="memo-btn" onclick="saveMemo(${day})"
-        style="margin-top:.7rem;background:linear-gradient(135deg,#2a3a2a,#3a5a3a)">
+        style="margin-top:.65rem;background:linear-gradient(135deg,#2a3a2a,#3a5a3a)">
         📝 メモを保存する
       </button>
-      <div id="memo-result" style="text-align:center;font-size:.8rem;margin-top:.5rem;color:var(--muted)"></div>
+      <div id="memo-result" style="text-align:center;font-size:.78rem;margin-top:.45rem;color:var(--muted)"></div>
     </div>`;
 }
 
+/* ── Save memo ── */
 async function saveMemo(day) {
-  const text = document.getElementById('memo-text')?.value ?? '';
-  const btn = document.getElementById('memo-btn');
+  const text   = document.getElementById('memo-text')?.value ?? '';
+  const btn    = document.getElementById('memo-btn');
   const result = document.getElementById('memo-result');
-  btn.disabled = true;
-  btn.textContent = '保存中...';
+  btn.disabled = true; btn.textContent = '保存中...';
   try {
     await db.collection('practices').doc(userId).set({
       memos: { [String(day)]: { text, updatedAt: new Date().toISOString() } }
@@ -665,30 +944,24 @@ async function saveMemo(day) {
     practiceData.memos[String(day)] = { text };
     result.style.color = 'var(--gold)';
     result.textContent = '✓ 保存しました';
-    setTimeout(() => { result.textContent = ''; }, 2500);
+    setTimeout(() => { result.textContent = '' }, 2500);
   } catch(e) {
     console.error(e);
     result.style.color = 'var(--red)';
     result.textContent = '保存に失敗しました';
   } finally {
-    btn.disabled = false;
-    btn.textContent = '📝 メモを保存する';
+    btn.disabled = false; btn.textContent = '📝 メモを保存する';
   }
 }
 
+/* ── Submit practice ── */
 async function submitPractice(day) {
   const textEl = document.getElementById('reflection-text');
-  const text = textEl?.value?.trim() || '';
-  const btn = document.getElementById('submit-btn');
-
+  const text   = textEl?.value?.trim() || '';
+  const btn    = document.getElementById('submit-btn');
   if (btn) { btn.disabled = true; btn.textContent = '記録中...' }
 
-  const entry = {
-    day,
-    text,
-    timestamp: new Date().toISOString(),
-    cycle: practiceData.cycle || 1
-  };
+  const entry = { day, text, timestamp: new Date().toISOString(), cycle: practiceData.cycle || 1 };
 
   try {
     await db.collection('practices').doc(userId).set({
@@ -702,23 +975,16 @@ async function submitPractice(day) {
     if (!practiceData.entries) practiceData.entries = [];
     practiceData.entries.push({ ...entry, timestamp: new Date() });
 
-    // Update progress
+    // Rebuild date map with new entry
+    buildDateEntryMap();
+
     const count = stampedDays.size;
     document.getElementById('stamped-count').textContent = count;
     document.getElementById('progress-fill').style.width = `${Math.min(count / 21 * 100, 100)}%`;
 
-    // Animate the stamp in grid
-    renderGrid();
-    const slots = document.querySelectorAll('.stamp-slot');
-    const slot = slots[day - 1];
-    if (slot) {
-      const seal = slot.querySelector('.stamp-seal');
-      if (seal) seal.classList.add('stamp-anim');
-    }
+    renderCalendar();
 
-    // Show result
     if (count >= 21) {
-      // Save rank
       await db.collection('practices').doc(userId).set({ rank: '十級' }, { merge: true });
       setTimeout(showCompletion, 600);
     } else {
@@ -731,6 +997,7 @@ async function submitPractice(day) {
   }
 }
 
+/* ── Completion ── */
 function showCompletion() {
   document.getElementById('completion-screen').innerHTML = `
     <div class="fade-up">
@@ -746,13 +1013,11 @@ function showCompletion() {
       <div class="completion-rank">十 級</div>
       <div class="completion-divider"></div>
       <div class="completion-desc">
-        あなたは続けた。<br>
-        それだけで、すでに侍だ。<br><br>
-        道場への入門を果たし、<br>
-        修行の道が正式に始まります。
+        あなたは続けた。<br>それだけで、すでに侍だ。<br><br>
+        道場への入門を果たし、<br>修行の道が正式に始まります。
       </div>
-      <div style="margin-top:1.5rem">
-        <a href="report.html?lid=${userId}" style="display:inline-block;font-size:.85rem;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.4);padding:.55rem 1.4rem;border-radius:100px;background:rgba(201,168,76,.08)">
+      <div style="margin-top:1.4rem">
+        <a href="report.html?lid=${userId}" style="display:inline-block;font-size:.84rem;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.4);padding:.5rem 1.3rem;border-radius:100px;background:rgba(201,168,76,.08)">
           📜 21日間の記録を見る
         </a>
       </div>
