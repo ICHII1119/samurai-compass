@@ -1289,7 +1289,9 @@ const SEND_COMMENT_URL    = 'https://sendadmincomment-6wuzckrpiq-uc.a.run.app';
 const SEND_BROADCAST_URL  = 'https://sendbroadcast-6wuzckrpiq-uc.a.run.app';
 const RESEND_DAILY_TIP_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/resendDailyTip';
 const SEND_DOJO_INVITE_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendDojoInvite';
-const MUSASHI_DOJO_SEND_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/sendMusashiDojoMessage';
+const MUSASHI_DOJO_SEND_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendMusashiDojoMessage';
+const START_DOJO_URL         = 'https://us-central1-samurai-compass.cloudfunctions.net/startDojo';
+const ADVANCE_DOJO_PHASE_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/advanceDojoPhase';
 
 let selected = new Set();
 let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
@@ -2434,14 +2436,25 @@ async function renderAdminDojo() {
         return latestB - latestA;
       });
 
+    const PHASE_STATUS_LABELS = {
+      active: { label: '稽古中', color: '#6dc46d', bg: 'rgba(100,200,100,.1)', border: 'rgba(100,200,100,.4)' },
+      waiting_review: { label: '振り返り待ち', color: 'var(--gold)', bg: 'rgba(201,168,76,.1)', border: 'rgba(201,168,76,.4)' },
+      completed: { label: '全Phase完了', color: '#7eb8d4', bg: 'rgba(126,184,212,.1)', border: 'rgba(126,184,212,.4)' },
+    };
+
     container.innerHTML = docs.map(d => {
-      const userId      = d.id;
-      const entries     = [...(d.entries || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
-      const nextDaySrc  = d.nextDayChallenge?.sourceDate;
+      const userId       = d.id;
+      const entries      = [...(d.entries || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const spiritPlan   = d.spiritPlan || null;
+      const currentPhase = d.currentPhase ?? null;
+      const currentDay   = d.currentDay  ?? null;
+      const phaseStatus  = d.phaseStatus || null;
+
       entries.forEach(e => {
         const key = `${userId}-${e.date}`;
         _dojoEntryMap[key] = { date: e.date, spirit: e.spirit, challengeTitle: e.challengeTitle || '', reflection: e.reflection || '' };
       });
+
       const profile  = nameMap[userId];
       const name     = profile?.name || '';
       const pic      = profile?.pic  || '';
@@ -2449,6 +2462,46 @@ async function renderAdminDojo() {
       const latestLabel = latestDate && !isNaN(latestDate)
         ? `${latestDate.getMonth()+1}/${latestDate.getDate()}`
         : '';
+
+      // Phase情報パネル
+      let phaseHtml = '';
+      if (!spiritPlan) {
+        phaseHtml = `
+          <div style="padding:.7rem 1.1rem;border-bottom:1px solid rgba(201,168,76,.08);display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap">
+            <span style="font-size:.75rem;color:var(--muted)">道場未開始</span>
+            <button id="start-dojo-btn-${userId}" onclick="adminStartDojo('${userId}',this)"
+              style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
+              ⛩ 道場開始
+            </button>
+          </div>`;
+      } else {
+        const spirit    = spiritPlan[currentPhase] || '—';
+        const spName    = SPIRIT_JP_D[spirit] || spirit;
+        const statusCfg = PHASE_STATUS_LABELS[phaseStatus] || { label: phaseStatus || '—', color: 'var(--muted)', bg: 'transparent', border: 'var(--border)' };
+        const planLine  = spiritPlan.map((s, i) => {
+          const done = i < currentPhase;
+          const cur  = i === currentPhase;
+          const col  = done ? '#6dc46d' : cur ? 'var(--gold)' : 'var(--muted)';
+          return `<span style="color:${col};font-size:.68rem">${done ? '✓' : cur ? '▶' : '○'} ${SPIRIT_JP_D[s] || s}</span>`;
+        }).join('<span style="color:var(--border);margin:0 .2rem">›</span>');
+
+        phaseHtml = `
+          <div style="padding:.6rem 1.1rem;border-bottom:1px solid rgba(201,168,76,.08);background:rgba(0,0,0,.1)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.4rem">
+              <div>
+                <span style="font-size:.72rem;padding:.15rem .5rem;border-radius:100px;background:${statusCfg.bg};border:1px solid ${statusCfg.border};color:${statusCfg.color}">${statusCfg.label}</span>
+                <span style="font-size:.75rem;color:var(--cream2);margin-left:.5rem">${spName} — Day ${currentDay ?? '?'}/21</span>
+              </div>
+              ${phaseStatus === 'waiting_review' ? `
+                <button id="advance-btn-${userId}" onclick="adminAdvanceDojoPhase('${userId}',this)"
+                  style="font-size:.72rem;padding:.3rem .8rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
+                  ⚔️ 次のSpiritへ進む
+                </button>` : ''}
+            </div>
+            <div style="display:flex;gap:.25rem;flex-wrap:wrap;align-items:center">${planLine}</div>
+          </div>`;
+      }
+
       return `
         <div id="dcard-${userId}" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem;overflow:hidden">
           <div style="padding:.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;cursor:pointer;border-bottom:1px solid rgba(201,168,76,.08)"
@@ -2468,26 +2521,28 @@ async function renderAdminDojo() {
             </div>
             <span style="color:var(--muted);font-size:1rem">›</span>
           </div>
+          ${phaseHtml}
           <div id="ddetail-${userId}" style="display:none;padding:.8rem 1.1rem">
-            ${entries.map(e => {
-              const key        = `${userId}-${e.date}`;
-              const col        = SPIRIT_COLORS_D[e.spirit] || 'var(--gold)';
-              const spName     = SPIRIT_JP_D[e.spirit]     || e.spirit;
-              const alreadySent = nextDaySrc === e.date;
-              return `
-                <div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
-                  <div style="font-size:.65rem;color:${col};margin-bottom:.2rem">${e.date}　${spName}</div>
-                  ${e.challengeTitle ? `<div style="font-size:.7rem;color:var(--muted);margin-bottom:.2rem">課題：${escHtml(e.challengeTitle)}</div>` : ''}
-                  <div style="font-size:.82rem;color:var(--cream2);line-height:1.6;margin-bottom:.4rem">
-                    ${e.reflection ? escHtml(e.reflection).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">（記録なし）</span>'}
-                  </div>
-                  <div id="musashi-result-${key}" style="display:none;margin-bottom:.4rem;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
-                  <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
-                    style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:${alreadySent ? 'rgba(100,200,100,.1)' : 'rgba(201,168,76,.1)'};border:1px solid ${alreadySent ? 'rgba(100,200,100,.4)' : 'rgba(201,168,76,.35)'};color:${alreadySent ? '#6dc46d' : 'var(--gold)'};cursor:pointer">
-                    ${alreadySent ? '✅ 武蔵BOT送信済み' : '⚔️ 武蔵BOT発動'}
-                  </button>
-                </div>`;
-            }).join('')}
+            ${entries.length === 0
+              ? `<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:1rem 0">振り返りはまだありません</div>`
+              : entries.map(e => {
+                const key    = `${userId}-${e.date}`;
+                const col    = SPIRIT_COLORS_D[e.spirit] || 'var(--gold)';
+                const spName = SPIRIT_JP_D[e.spirit]     || e.spirit;
+                return `
+                  <div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+                    <div style="font-size:.65rem;color:${col};margin-bottom:.2rem">${e.date}　${spName}</div>
+                    ${e.challengeTitle ? `<div style="font-size:.7rem;color:var(--muted);margin-bottom:.2rem">課題：${escHtml(e.challengeTitle)}</div>` : ''}
+                    <div style="font-size:.82rem;color:var(--cream2);line-height:1.6;margin-bottom:.4rem">
+                      ${e.reflection ? escHtml(e.reflection).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">（記録なし）</span>'}
+                    </div>
+                    <div id="musashi-result-${key}" style="display:none;margin-bottom:.4rem;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
+                    <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
+                      style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);cursor:pointer">
+                      ⚔️ 武蔵BOT発動
+                    </button>
+                  </div>`;
+              }).join('')}
           </div>
         </div>`;
     }).join('');
@@ -2502,6 +2557,56 @@ function toggleDojoCard(userId, headerEl) {
   const isOpen = detail.style.display !== 'none';
   detail.style.display = isOpen ? 'none' : 'block';
   headerEl.querySelector('span:last-child').textContent = isOpen ? '›' : '∨';
+}
+
+async function adminStartDojo(userId, btn) {
+  if (!confirm(`道場を開始します。\n詳細診断スコアをもとに4Spiritの順番を決定し、LINEで開始メッセージを送信します。\n\nよろしいですか？`)) return;
+  btn.disabled = true;
+  btn.textContent = '処理中...';
+  try {
+    const res = await fetch(START_DOJO_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '失敗');
+    btn.textContent = '✅ 開始済み';
+    btn.style.color = '#6dc46d';
+    btn.style.borderColor = 'rgba(100,200,100,.4)';
+    alert(`道場を開始しました。\nSpirit順: ${(data.spiritPlan || []).join(' → ')}`);
+    renderAdminDojo();
+  } catch(e) {
+    console.error('adminStartDojo error:', e);
+    alert('エラー: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '⛩ 道場開始';
+  }
+}
+
+async function adminAdvanceDojoPhase(userId, btn) {
+  if (!confirm(`次のSpiritへ進みます。\n振り返りミーティング完了後に押してください。\n\nよろしいですか？`)) return;
+  btn.disabled = true;
+  btn.textContent = '処理中...';
+  try {
+    const res = await fetch(ADVANCE_DOJO_PHASE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    const data = await res.json();
+    if (!data.ok && data.status !== 'completed') throw new Error(data.error || '失敗');
+    const msg = data.status === 'completed'
+      ? '全Phase完了メッセージを送信しました。'
+      : `次のSpirit「${data.nextSpirit}」へ進みました。`;
+    alert(msg);
+    renderAdminDojo();
+  } catch(e) {
+    console.error('adminAdvanceDojoPhase error:', e);
+    alert('エラー: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '⚔️ 次のSpiritへ進む';
+  }
 }
 
 function togglePracticeCard(userId, headerEl) {
@@ -2827,7 +2932,7 @@ async function generateMusashiDojo(userId, entryKey, btn) {
             `【課題のSpirit】${spiritName}\n` +
             `【稽古者の振り返り】\n${entry.reflection}\n\n` +
             `以下のJSON形式のみで出力してください（前後に余分なテキスト・マークダウン不要）：\n` +
-            `{"message":"（武蔵の言葉。60〜120文字）","nextSpirit":"hei/jiko/flex/strat/seiのいずれか","nextTitle":"（10文字以内）","nextBody":"（60〜100文字。今日は〜してみてはどうか形式。強制表現不使用）"}`,
+            `{"message":"（武蔵の言葉。60〜120文字）"}`,
         }],
       }),
     });
@@ -2837,20 +2942,12 @@ async function generateMusashiDojo(userId, entryKey, btn) {
     const jsonText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
     const parsed = JSON.parse(jsonText);
 
-    const musashiMessage = parsed.message?.trim()     || rawText;
-    const nextSpirit     = parsed.nextSpirit?.toLowerCase()?.trim() || entry.spirit;
-    const nextTitle      = parsed.nextTitle?.trim()   || '次の課題';
-    const nextBody       = parsed.nextBody?.trim()    || '';
-    const nextSpiritJp = SPIRIT_JP_NAMES[nextSpirit] || nextSpirit;
-
-    _pendingDojoChallenge[entryKey] = { spirit: nextSpirit, title: nextTitle, body: nextBody };
+    const musashiMessage = parsed.message?.trim() || rawText;
 
     resultDiv.innerHTML = `
       <div style="font-size:.62rem;color:var(--gold);margin-bottom:.3rem">⚔️ 武蔵からの言葉（送信前に編集できます）</div>
       <textarea id="musashi-msg-${entryKey}" rows="4"
         style="width:100%;box-sizing:border-box;background:var(--bg2);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:var(--cream);font-size:.82rem;padding:.5rem .7rem;resize:vertical;font-family:inherit;line-height:1.6;margin-bottom:.5rem">${musashiMessage}</textarea>
-      <div style="font-size:.62rem;color:var(--muted);margin-bottom:.15rem">翌日の課題｜${nextSpiritJp}「${escHtml(nextTitle)}」</div>
-      <div style="font-size:.78rem;color:var(--cream2);margin-bottom:.6rem;padding:.4rem .6rem;background:rgba(255,255,255,.04);border-radius:4px;line-height:1.55">${escHtml(nextBody)}</div>
       <div style="display:flex;gap:.4rem;justify-content:flex-end">
         <button onclick="cancelMusashiDojo('${entryKey}')"
           style="font-size:.73rem;padding:.3rem .8rem;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer">
@@ -2888,8 +2985,6 @@ async function sendMusashiDojo(userId, entryKey, btn) {
   const textarea = document.getElementById(`musashi-msg-${entryKey}`);
   const message = textarea?.value?.trim();
   if (!message) { alert('メッセージが空です。'); return; }
-  const challenge = _pendingDojoChallenge[entryKey];
-  if (!challenge) { alert('課題データが見つかりません。再度生成してください。'); return; }
 
   btn.disabled = true;
   btn.textContent = '送信中...';
@@ -2897,10 +2992,7 @@ async function sendMusashiDojo(userId, entryKey, btn) {
     const res = await fetch(MUSASHI_DOJO_SEND_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId, message, nextChallenge: challenge,
-        sourceDate: _dojoEntryMap[entryKey]?.date,
-      }),
+      body: JSON.stringify({ userId, message }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '送信失敗');
