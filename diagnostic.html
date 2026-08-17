@@ -1144,30 +1144,20 @@ body {
         style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
         ダッシュボード
       </button>
-      <button id="tab-lite" onclick="switchAdminTab('lite')"
+      <button id="tab-learners" onclick="switchAdminTab('learners')"
         style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--gold);background:var(--gold-dim);color:var(--gold);cursor:pointer;font-weight:600">
-        入門編一覧
-      </button>
-      <button id="tab-practice" onclick="switchAdminTab('practice')"
-        style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
-        振り返り一覧
-      </button>
-      <button id="tab-dojo" onclick="switchAdminTab('dojo')"
-        style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
-        道場の振り返り
+        受講者管理
       </button>
       <button id="tab-diag" onclick="switchAdminTab('diag')"
         style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
-        道場編一覧
+        詳細診断一覧
       </button>
     </div>
     <div id="admin-dash-body" style="display:none"></div>
-    <div id="admin-lite-body"></div>
+    <div id="admin-learners-body"></div>
     <div id="admin-list-body" style="display:none">
       <div style="text-align:center;padding:3rem;color:var(--muted)">読み込み中...</div>
     </div>
-    <div id="admin-practice-body" style="display:none"></div>
-    <div id="admin-dojo-body" style="display:none"></div>
   </div>
 </section>
 
@@ -1672,7 +1662,7 @@ function checkAdminPin() {
     document.getElementById('admin-pin-input').value = '';
     document.getElementById('btn-select-mode').style.display = '';
       loadMusashiKeyFromFirestore();
-    renderAdminLite();
+    renderAdminLearners();
     showScreen('s-admin-list');
   } else {
     err.textContent = 'PINコードが正しくありません';
@@ -1819,38 +1809,29 @@ function switchAdminTab(tab) {
   updateSelectionUI();
   currentAdminTab = tab;
   document.getElementById('admin-dash-body').style.display     = tab === 'dash'     ? 'block' : 'none';
-  document.getElementById('admin-lite-body').style.display     = tab === 'lite'     ? 'block' : 'none';
-  document.getElementById('admin-practice-body').style.display = tab === 'practice' ? 'block' : 'none';
-  document.getElementById('admin-dojo-body').style.display     = tab === 'dojo'     ? 'block' : 'none';
+  document.getElementById('admin-learners-body').style.display = tab === 'learners' ? 'block' : 'none';
   document.getElementById('admin-list-body').style.display     = tab === 'diag'     ? 'block' : 'none';
 
   const ON  = ';border-color:var(--gold);background:var(--gold-dim);color:var(--gold);font-weight:600';
   const OFF = ';border-color:var(--border);background:transparent;color:var(--muted);font-weight:400';
   document.getElementById('tab-dash').style.cssText      += tab === 'dash'     ? ON : OFF;
-  document.getElementById('tab-lite').style.cssText      += tab === 'lite'     ? ON : OFF;
-  document.getElementById('tab-practice').style.cssText  += tab === 'practice' ? ON : OFF;
-  document.getElementById('tab-dojo').style.cssText      += tab === 'dojo'     ? ON : OFF;
+  document.getElementById('tab-learners').style.cssText  += tab === 'learners' ? ON : OFF;
   document.getElementById('tab-diag').style.cssText      += tab === 'diag'     ? ON : OFF;
 
   document.getElementById('admin-count').style.display = tab === 'diag' ? '' : 'none';
-  const canSelect = (tab === 'lite' || tab === 'practice' || tab === 'diag');
-  document.getElementById('btn-select-mode').style.display = canSelect ? '' : 'none';
+  document.getElementById('btn-select-mode').style.display = tab === 'diag' ? '' : 'none';
   const banner = document.getElementById('musashi-key-banner');
-  if (banner) banner.style.display = (tab === 'practice' || tab === 'dojo') ? '' : 'none';
+  if (banner) banner.style.display = tab === 'learners' ? '' : 'none';
 
   if (tab === 'dash')     renderAdminDashboard();
-  if (tab === 'lite')     renderAdminLite();
-  if (tab === 'practice') renderAdminPractices();
-  if (tab === 'dojo')     renderAdminDojo();
+  if (tab === 'learners') renderAdminLearners();
   if (tab === 'diag')     renderAdminList();
 }
 
 function refreshAdmin() {
-  if (currentAdminTab === 'dash')         renderAdminDashboard();
-  else if (currentAdminTab === 'lite')     renderAdminLite();
-  else if (currentAdminTab === 'practice') renderAdminPractices();
-  else if (currentAdminTab === 'dojo')     renderAdminDojo();
-  else renderAdminList();
+  if (currentAdminTab === 'dash')     renderAdminDashboard();
+  else if (currentAdminTab === 'diag') renderAdminList();
+  else renderAdminLearners();
 }
 
 async function sendDojoInviteLine(userId, nickname, btn) {
@@ -1925,7 +1906,7 @@ async function approveRankUp(userId, nextRank, btn) {
 
     btn.textContent = `✓ ${nextRank} に昇級しました`;
     btn.style.color = 'var(--gold2)';
-    setTimeout(() => renderAdminLite(), 1200);
+    setTimeout(() => renderAdminLearners(), 1200);
   } catch(e) {
     console.error(e);
     btn.disabled = false;
@@ -2601,7 +2582,7 @@ async function adminStartDojo(userId, btn) {
     btn.style.color = '#6dc46d';
     btn.style.borderColor = 'rgba(100,200,100,.4)';
     alert(`道場を開始しました。\nSpirit順: ${(data.spiritPlan || []).join(' → ')}`);
-    renderAdminDojo();
+    renderAdminLearners();
   } catch(e) {
     console.error('adminStartDojo error:', e);
     alert('エラー: ' + e.message);
@@ -2626,12 +2607,352 @@ async function adminAdvanceDojoPhase(userId, btn) {
       ? '全Phase完了メッセージを送信しました。'
       : `次のSpirit「${data.nextSpirit}」へ進みました。`;
     alert(msg);
-    renderAdminDojo();
+    renderAdminLearners();
   } catch(e) {
     console.error('adminAdvanceDojoPhase error:', e);
     alert('エラー: ' + e.message);
     btn.disabled = false;
     btn.textContent = '⚔️ 次のSpiritへ進む';
+  }
+}
+
+/* ════════════════════════════════════
+   受講者管理（統合ビュー）
+════════════════════════════════════ */
+const SPIRIT_JP_L = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
+const SPIRIT_COL_L = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
+
+async function renderAdminLearners() {
+  const container = document.getElementById('admin-learners-body');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
+  try {
+    const [profileSnap, liteSnap, practiceSnap, dojoSnap] = await Promise.all([
+      db.collection('profiles').get(),
+      db.collection('lite_results').get(),
+      db.collection('practices').get(),
+      db.collection('dojo_practices').get(),
+      loadReadState(),
+    ]);
+
+    const profiles = {};
+    profileSnap.forEach(d => { profiles[d.id] = d.data(); });
+
+    const liteMap = {};
+    liteSnap.forEach(d => {
+      const uid = d.data().lineUserId || d.id;
+      liteMap[uid] = { id: d.id, ...d.data() };
+    });
+
+    const practiceMap = {};
+    practiceSnap.forEach(d => { practiceMap[d.id] = d.data(); });
+
+    const dojoMap = {};
+    dojoSnap.forEach(d => { dojoMap[d.id] = d.data(); });
+
+    const allIds = new Set([
+      ...Array.from(liteSnap.docs).map(d => d.data().lineUserId || d.id),
+      ...Array.from(dojoSnap.docs).map(d => d.id),
+    ]);
+
+    const learners = [...allIds]
+      .filter(id => id && id.startsWith('U') && id.length >= 20)
+      .map(userId => ({
+        userId,
+        profile: profiles[userId] || {},
+        liteData: liteMap[userId] || null,
+        practiceData: practiceMap[userId] || null,
+        dojoData: dojoMap[userId] || null,
+      }));
+
+    const getLatestTs = (l) => {
+      const times = [];
+      (l.dojoData?.entries || []).forEach(e => { if (e.timestamp) times.push(new Date(e.timestamp).getTime()); });
+      (l.practiceData?.entries || []).forEach(e => { if (e.timestamp) times.push(new Date(e.timestamp).getTime()); });
+      const lts = l.liteData?.timestamp?.toMillis?.();
+      if (lts) times.push(lts);
+      return Math.max(0, ...times);
+    };
+
+    learners.sort((a, b) => getLatestTs(b) - getLatestTs(a));
+
+    if (learners.length === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r)">受講者データはまだありません</div>`;
+      return;
+    }
+
+    container.innerHTML = learners.map(l => buildLearnerCard(l)).join('');
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted)">読み込みに失敗しました<br><small>${e.message}</small></div>`;
+  }
+}
+
+function buildLearnerCard(learner) {
+  const { userId, profile, liteData, practiceData, dojoData } = learner;
+
+  const name = liteData?.nickname || profile.displayName || '';
+  const pic  = profile.pictureUrl || '';
+  const liteEntries = practiceData?.entries || [];
+  const liteCount = liteEntries.length;
+
+  const hasDojo    = !!dojoData;
+  const spiritPlan = dojoData?.spiritPlan;
+  const phaseStatus  = dojoData?.phaseStatus;
+  const currentPhase = dojoData?.currentPhase ?? 0;
+  const currentDay   = dojoData?.currentDay   ?? 0;
+
+  let stage, stageCfg, stageInfo;
+
+  if (hasDojo) {
+    if (!spiritPlan) {
+      stage = 'dojo_ready';
+      stageCfg = { label: '道場準備中', color: '#7eb8d4', bg: 'rgba(126,184,212,.1)', border: 'rgba(126,184,212,.4)' };
+      stageInfo = '詳細診断へ進む前の準備中';
+    } else if (phaseStatus === 'completed') {
+      stage = 'dojo_completed';
+      stageCfg = { label: '道場完了', color: '#7eb8d4', bg: 'rgba(126,184,212,.1)', border: 'rgba(126,184,212,.4)' };
+      stageInfo = '4 Spiritsすべて完了';
+    } else if (phaseStatus === 'waiting_review') {
+      stage = 'waiting_review';
+      stageCfg = { label: '振り返り待ち', color: '#e0a84c', bg: 'rgba(224,168,76,.1)', border: 'rgba(224,168,76,.4)' };
+      const sp = spiritPlan[currentPhase] || '';
+      stageInfo = `Phase ${currentPhase + 1}/${spiritPlan.length} · ${SPIRIT_JP_L[sp] || sp} — 21日完了`;
+    } else {
+      stage = 'dojo_active';
+      stageCfg = { label: '道場中', color: '#c9a84c', bg: 'rgba(201,168,76,.1)', border: 'rgba(201,168,76,.4)' };
+      const sp = spiritPlan[currentPhase] || '';
+      stageInfo = `Phase ${currentPhase + 1}/${spiritPlan.length} · ${SPIRIT_JP_L[sp] || sp} · Day ${Math.max(0, currentDay - 1)}/21`;
+    }
+  } else if (liteCount >= 21) {
+    stage = 'lite_completed';
+    stageCfg = { label: '入門完了', color: '#6dc46d', bg: 'rgba(100,200,100,.1)', border: 'rgba(100,200,100,.4)' };
+    const sp = liteData?.spirit || '';
+    stageInfo = `${SPIRIT_JP_L[sp] || sp} · 21日完了`;
+  } else if (liteData) {
+    stage = 'lite_active';
+    stageCfg = { label: '入門中', color: '#c9a84c', bg: 'rgba(201,168,76,.1)', border: 'rgba(201,168,76,.4)' };
+    const sp = liteData?.spirit || '';
+    const regTs = liteData?.timestamp?.toDate?.();
+    const dayNum = regTs ? Math.min(21, Math.floor((Date.now() - regTs.getTime()) / 86400000) + 1) : '?';
+    stageInfo = `${SPIRIT_JP_L[sp] || sp} · Day ${dayNum}/21 · 振り返り ${liteCount}件`;
+  } else {
+    stage = 'registered';
+    stageCfg = { label: '登録済み', color: '#7a7060', bg: 'transparent', border: 'var(--border)' };
+    stageInfo = '';
+  }
+
+  const spirit = liteData?.spirit || (spiritPlan?.[0]) || '';
+  const spiritCol = SPIRIT_COL_L[spirit] || 'var(--gold)';
+  const rank = practiceData?.rank || null;
+  const unread = getUnreadCount(userId, liteEntries);
+
+  const allTs = [
+    ...(dojoData?.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0),
+    ...liteEntries.map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0),
+  ].filter(Boolean);
+  const latestMs = allTs.length ? Math.max(...allTs) : 0;
+  const latestDt = latestMs ? new Date(latestMs) : null;
+  const latestLabel = latestDt ? `${latestDt.getMonth() + 1}/${latestDt.getDate()}` : '';
+
+  // Phase progress bar
+  let phaseBar = '';
+  if (spiritPlan && spiritPlan.length > 0) {
+    const dots = spiritPlan.map((s, i) => {
+      const done = i < currentPhase || phaseStatus === 'completed';
+      const cur  = i === currentPhase && phaseStatus !== 'completed';
+      const col  = done ? '#6dc46d' : cur ? 'var(--gold)' : 'rgba(255,255,255,.15)';
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:.1rem">
+        <div style="width:24px;height:4px;border-radius:100px;background:${col}"></div>
+        <div style="font-size:.5rem;color:${done || cur ? col : 'var(--muted)'};">${(SPIRIT_JP_L[s] || s).slice(0, 2)}</div>
+      </div>`;
+    }).join('');
+    phaseBar = `<div style="display:flex;gap:.15rem;align-items:flex-end;margin-top:.25rem">${dots}</div>`;
+  }
+
+  // Action buttons
+  let actionBtns = '';
+  if (stage === 'lite_completed' || stage === 'dojo_ready') {
+    actionBtns = `
+      <div style="padding:.55rem 1rem;border-bottom:1px solid rgba(201,168,76,.06);display:flex;gap:.4rem;flex-wrap:wrap">
+        <button id="diag-btn-${userId}" onclick="adminSendDojoDiagnosticUrl('${userId}',this)"
+          style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(126,184,212,.1);border:1px solid rgba(126,184,212,.4);color:#7eb8d4;cursor:pointer;font-weight:600">
+          📋 詳細診断URLを送る
+        </button>
+        <button id="start-dojo-btn-${userId}" onclick="adminStartDojo('${userId}',this)"
+          style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
+          ⛩ 道場開始
+        </button>
+      </div>`;
+  } else if (stage === 'waiting_review') {
+    actionBtns = `
+      <div style="padding:.55rem 1rem;border-bottom:1px solid rgba(201,168,76,.06);display:flex;gap:.4rem">
+        <button id="advance-btn-${userId}" onclick="adminAdvanceDojoPhase('${userId}',this)"
+          style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
+          ⚔️ 次のSpiritへ進む
+        </button>
+      </div>`;
+  }
+
+  const avatarHtml = pic
+    ? `<img src="${pic}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(201,168,76,.2)">`
+    : `<div style="width:40px;height:40px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">侍</div>`;
+
+  return `
+    <div id="ucard-${userId}" style="background:var(--bg2);border:1px solid ${unread > 0 ? 'rgba(201,168,76,.5)' : 'var(--border)'};border-radius:var(--r);margin-bottom:.9rem;overflow:hidden">
+      <div onclick="toggleLearnerCard('${userId}')"
+           style="padding:.85rem 1.1rem;display:flex;align-items:center;gap:.75rem;cursor:pointer">
+        ${avatarHtml}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.18rem">
+            <div style="font-size:.93rem;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${name || `<span style="color:var(--muted);font-size:.78rem">${userId.slice(0, 16)}...</span>`}
+            </div>
+            ${unread > 0 ? `<span id="badge-${userId}" style="flex-shrink:0;min-width:18px;height:18px;background:#e05050;color:#fff;border-radius:100px;font-size:.68rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px">${unread}</span>` : `<span id="badge-${userId}"></span>`}
+          </div>
+          <div style="display:flex;gap:.3rem;align-items:center;flex-wrap:wrap">
+            ${spirit ? `<span style="font-size:.68rem;padding:.1rem .45rem;border-radius:100px;background:${spiritCol}22;color:${spiritCol};border:1px solid ${spiritCol}55">${SPIRIT_JP_L[spirit] || spirit}</span>` : ''}
+            ${rank ? `<span style="font-size:.68rem;padding:.1rem .45rem;border-radius:100px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,.4)">${rank}</span>` : ''}
+            <span style="font-size:.7rem;color:var(--muted)">${stageInfo}</span>
+          </div>
+          ${phaseBar}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.25rem;flex-shrink:0">
+          <span style="font-size:.68rem;padding:.15rem .5rem;border-radius:100px;background:${stageCfg.bg};color:${stageCfg.color};border:1px solid ${stageCfg.border};white-space:nowrap">${stageCfg.label}</span>
+          ${latestLabel ? `<span style="font-size:.62rem;color:var(--muted)">${latestLabel}</span>` : ''}
+          <span style="color:var(--muted);font-size:.9rem" id="learner-arrow-${userId}">›</span>
+        </div>
+      </div>
+      ${actionBtns}
+      <div id="ldetail-${userId}" style="display:none"></div>
+    </div>`;
+}
+
+async function toggleLearnerCard(userId) {
+  const detail = document.getElementById(`ldetail-${userId}`);
+  const arrow  = document.getElementById(`learner-arrow-${userId}`);
+  if (!detail) return;
+
+  if (detail.style.display !== 'none') {
+    detail.style.display = 'none';
+    if (arrow) arrow.textContent = '›';
+    return;
+  }
+
+  detail.style.display = 'block';
+  if (arrow) arrow.textContent = '∨';
+  if (detail.dataset.loaded) return;
+
+  detail.innerHTML = '<div style="padding:.8rem 1.1rem;font-size:.82rem;color:var(--muted)">読み込み中...</div>';
+
+  try {
+    await loadReadState();
+    const [practiceDoc, dojoDoc] = await Promise.all([
+      db.collection('practices').doc(userId).get(),
+      db.collection('dojo_practices').doc(userId).get(),
+    ]);
+    const practiceData = practiceDoc.exists ? practiceDoc.data() : null;
+    const dojoData     = dojoDoc.exists ? dojoDoc.data() : null;
+    const seenUntil    = _readStateCache?.[userId] || 0;
+    const rank         = practiceData?.rank || '見習い';
+
+    let html = '';
+
+    // ── 入門編の振り返り ──
+    const liteEntries = [...(practiceData?.entries || [])].sort((a, b) => {
+      const ta = a.timestamp ? new Date(a.timestamp).getTime() : a.day;
+      const tb = b.timestamp ? new Date(b.timestamp).getTime() : b.day;
+      return tb - ta;
+    });
+
+    if (liteEntries.length > 0) {
+      html += `<div style="padding:.65rem 1.1rem .25rem;font-size:.67rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase">⚔️ 入門編の振り返り</div>`;
+      html += liteEntries.map(e => {
+        const ts      = e.timestamp ? new Date(e.timestamp) : null;
+        const dateStr = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
+        const isUnread = ts && ts.getTime() > seenUntil;
+        const dayComments = (practiceData?.adminComments || []).filter(c => c.day === e.day);
+        const commentsHtml = dayComments.map(c => {
+          const ct = c.sentAt?.toDate ? c.sentAt.toDate() : (c.sentAt ? new Date(c.sentAt) : null);
+          const ctStr = ct && !isNaN(ct) ? `${ct.getMonth()+1}/${ct.getDate()} ${String(ct.getHours()).padStart(2,'0')}:${String(ct.getMinutes()).padStart(2,'0')}` : '';
+          return `<div style="margin-top:.5rem;padding:.4rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0">
+            <div style="font-size:.62rem;color:var(--gold);margin-bottom:.2rem">⚔️ あなたのコメント${ctStr ? ` · ${ctStr}` : ''}</div>
+            <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${escHtml(c.text).replace(/\n/g,'<br>')}</div>
+          </div>`;
+        }).join('');
+
+        return `<div data-ts="${ts ? ts.getTime() : 0}" ${isUnread ? 'data-unread="1"' : ''} style="padding:.6rem 1.1rem;border-top:1px solid rgba(255,255,255,.04)">
+          <div style="display:flex;gap:.7rem;align-items:flex-start">
+            <div style="flex-shrink:0;width:32px;height:32px;background:${isUnread ? 'rgba(201,168,76,.25)' : 'var(--gold-dim)'};border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;position:relative">
+              ${isUnread ? `<div style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#e05050;border-radius:50%;border:1.5px solid var(--bg2)"></div>` : ''}
+              <span style="font-size:.52rem;color:var(--muted)">DAY</span>
+              <span style="font-size:.78rem;font-weight:600;color:var(--gold)">${e.day}</span>
+            </div>
+            <div style="flex:1">
+              ${dateStr ? `<div style="font-size:.65rem;color:var(--muted);margin-bottom:.2rem">${dateStr}${isUnread ? '<span style="margin-left:.4rem;font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">未読</span>' : ''}</div>` : ''}
+              <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
+              ${commentsHtml}
+              <div style="margin-top:.55rem;display:flex;flex-direction:column;gap:.35rem">
+                <textarea placeholder="コメントを送る..." rows="2" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>
+                <div style="display:flex;gap:.4rem;justify-content:flex-end">
+                  <button data-reflection="${(e.text || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-day="${e.day}" data-rank="${rank}" onclick="generateMusashiComment(this.dataset.reflection, +this.dataset.day, this.dataset.rank, this)"
+                    style="padding:.35rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);font-size:.75rem;cursor:pointer;white-space:nowrap">
+                    ⚔️ 武蔵BOT
+                  </button>
+                  <button onclick="sendAdminComment('${userId}', ${e.day}, this)"
+                    style="padding:.35rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer;white-space:nowrap">送信</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── 道場の振り返り ──
+    if (dojoData && (dojoData.entries || []).length > 0) {
+      const dojoEntries = [...dojoData.entries].sort((a, b) => {
+        if ((b.phase ?? 0) !== (a.phase ?? 0)) return (b.phase ?? 0) - (a.phase ?? 0);
+        return b.day - a.day;
+      });
+      dojoEntries.forEach(e => {
+        const key = `${userId}-${e.phase ?? 0}-${e.day}`;
+        _dojoEntryMap[key] = { day: e.day, phase: e.phase ?? 0, spirit: e.spirit, text: e.text || '' };
+      });
+
+      html += `<div style="padding:.65rem 1.1rem .25rem;font-size:.67rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;border-top:1px solid rgba(201,168,76,.1)">⛩ 道場の振り返り</div>`;
+      html += dojoEntries.map(e => {
+        const key    = `${userId}-${e.phase ?? 0}-${e.day}`;
+        const col    = SPIRIT_COL_L[e.spirit] || 'var(--gold)';
+        const spName = SPIRIT_JP_L[e.spirit] || e.spirit || '—';
+        const ts     = e.timestamp ? new Date(e.timestamp) : null;
+        const tsLbl  = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()}` : '';
+        return `<div style="padding:.6rem 1.1rem;border-top:1px solid rgba(255,255,255,.04)">
+          <div style="font-size:.65rem;color:${col};margin-bottom:.25rem">Phase ${(e.phase ?? 0) + 1} Day ${e.day} — ${spName}${tsLbl ? ` · ${tsLbl}` : ''}</div>
+          <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
+          <div id="musashi-result-${key}" style="display:none;margin:.4rem 0;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
+          <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
+            style="margin-top:.4rem;font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);cursor:pointer">
+            ⚔️ 武蔵BOT発動
+          </button>
+        </div>`;
+      }).join('');
+    }
+
+    if (!html) {
+      html = '<div style="padding:.8rem 1.1rem;font-size:.82rem;color:var(--muted)">振り返り記録はまだありません</div>';
+    }
+
+    markUserRead(userId, Date.now());
+    const badge = document.getElementById(`badge-${userId}`);
+    if (badge) badge.innerHTML = '';
+    const card = document.getElementById(`ucard-${userId}`);
+    if (card) card.style.borderColor = 'var(--border)';
+
+    detail.innerHTML = html;
+    detail.dataset.loaded = '1';
+  } catch(e) {
+    console.error(e);
+    detail.innerHTML = `<div style="padding:.8rem 1.1rem;font-size:.82rem;color:var(--muted)">読み込みに失敗しました: ${e.message}</div>`;
   }
 }
 
@@ -3138,7 +3459,11 @@ async function sendAdminComment(userId, day, btn) {
     textarea.value = '';
     btn.textContent = '✓ 送信済み';
     btn.style.color = 'var(--gold)';
-    setTimeout(() => { renderAdminPractices(); }, 800);
+    setTimeout(() => {
+      const detailDiv = document.getElementById(`ldetail-${userId}`);
+      if (detailDiv) { detailDiv.dataset.loaded = ''; detailDiv.innerHTML = ''; }
+      toggleLearnerCard(userId);
+    }, 800);
   } catch(e) {
     console.error(e);
     btn.textContent = '失敗';
@@ -3149,25 +3474,12 @@ async function sendAdminComment(userId, day, btn) {
 
 async function clearAdminData() {
   const tab = currentAdminTab;
-  const label = tab === 'lite' ? 'すべての入門編参加者データ（診断結果・振り返り記録）' :
-                tab === 'practice' ? 'すべての振り返り記録' : 'すべての回答データ';
+  const label = tab === 'diag' ? 'すべての詳細診断データ' : 'すべての回答データ';
   if (!confirm(`${label}を削除しますか？\nこの操作は元に戻せません。`)) return;
   try {
     const batch = db.batch();
-    if (tab === 'lite') {
-      const [liteSnap, practSnap] = await Promise.all([
-        db.collection('lite_results').get(),
-        db.collection('practices').get()
-      ]);
-      liteSnap.docs.forEach(doc => batch.delete(doc.ref));
-      practSnap.docs.forEach(doc => batch.delete(doc.ref));
-    } else if (tab === 'practice') {
-      const practSnap = await db.collection('practices').get();
-      practSnap.docs.forEach(doc => batch.delete(doc.ref));
-    } else {
-      const snapshot = await db.collection('submissions').get();
-      snapshot.docs.forEach(doc => batch.delete(doc.ref));
-    }
+    const snapshot = await db.collection('submissions').get();
+    snapshot.docs.forEach(doc => batch.delete(doc.ref));
     await batch.commit();
     adminSelectedIds.clear();
     adminSelectMode = false;
