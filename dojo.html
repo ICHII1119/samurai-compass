@@ -2,1850 +2,939 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1a1a1f">
-<title>SAMURAI 道場 — 稽古の記録</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>道場の記録 — SAMURAI in You</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Zen+Old+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:       #1a1a1f;
-  --bg2:      #222228;
-  --bg3:      #2a2a32;
-  --gold:     #c9a84c;
-  --gold2:    #e8c060;
-  --gold-dim: rgba(201,168,76,.15);
-  --red:      #c04848;
-  --cream:    #f0ece0;
-  --cream2:   #c8b090;
-  --muted:    #7a7060;
-  --border:   rgba(201,168,76,.2);
-  --r:        14px;
-  --font:     'Open Sans', -apple-system, sans-serif;
-  --font-b:   'Zen Old Mincho', serif;
-
-  --c-hei:   #60a0b8;
-  --c-jiko:  #4aaa5a;
-  --c-flex:  #4a88d8;
-  --c-strat: #e86040;
-  --c-sei:   #a060e0;
+  --bg:        #1a1a1f;
+  --bg2:       #222228;
+  --bg3:       #2a2a32;
+  --cream:     #f0ead8;
+  --cream2:    #c8bfa8;
+  --muted:     #7a7060;
+  --gold:      #c9a84c;
+  --gold2:     #a07828;
+  --gold-dim:  rgba(201,168,76,.12);
+  --red:       #8b1a1a;
+  --border:    rgba(201,168,76,.18);
+  --green:     #3a7a4a;
+  --green-dim: rgba(58,122,74,.18);
+  --r:         12px;
+  --font:      'Open Sans', -apple-system, sans-serif;
+  --font-b:    'Zen Old Mincho', serif;
 }
-
-*, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
-html { -webkit-text-size-adjust:100%; font-size:16px }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+html { -webkit-text-size-adjust: 100% }
 body {
   background: var(--bg);
   color: var(--cream);
   font-family: var(--font);
   min-height: 100vh;
-  padding-bottom: 100px;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 3rem;
 }
 
 /* ── Header ── */
 .page-header {
   text-align: center;
-  padding: 2rem 1.5rem 1.2rem;
+  padding: 1.4rem 1.2rem .9rem;
   border-bottom: 1px solid var(--border);
-  position: relative;
 }
-.logo-img { width: 48px; height: 48px; border-radius: 12px; margin-bottom: .5rem }
+.logo-img { width: 38px; height: 38px; object-fit: contain; margin-bottom: .35rem }
 .page-title {
   font-family: var(--font-b);
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--gold);
-  letter-spacing: .12em;
-}
-.page-sub { font-size: .72rem; color: var(--muted); margin-top: .2rem; letter-spacing: .08em }
-
-/* ── Loading / Error ── */
-.loading-screen, .error-screen {
-  text-align: center;
-  padding: 4rem 1.5rem;
-  color: var(--muted);
   font-size: .9rem;
+  letter-spacing: .22em;
+  color: var(--gold);
 }
 
-/* ── Rank section ── */
-.rank-section {
+/* ── Phase Strip ── */
+.phase-strip {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.2rem 1.5rem;
-  margin: 1.2rem 1.5rem 0;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-}
-.rank-mon-sm {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-}
-.rank-info { flex: 1 }
-.rank-name-lg {
-  font-family: var(--font-b);
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--gold);
-  line-height: 1;
-}
-.rank-sub-sm {
-  font-size: .68rem;
-  color: var(--muted);
-  letter-spacing: .1em;
-  margin-top: .2rem;
-}
-.rank-desc-sm {
-  font-size: .78rem;
-  color: var(--cream2);
-  margin-top: .35rem;
-  line-height: 1.5;
-}
-
-/* ── Stats row ── */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: .6rem;
-  padding: .8rem 1.5rem 0;
-}
-.stat-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: .75rem .5rem;
-  text-align: center;
-}
-.stat-num {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--gold);
-  line-height: 1;
-}
-.stat-label {
-  font-size: .62rem;
-  color: var(--muted);
-  margin-top: .25rem;
-  letter-spacing: .04em;
-}
-
-/* ── Pentagon Compass ── */
-.compass-section {
-  padding: 1.5rem 1.5rem 0;
-}
-.compass-title {
-  font-size: .68rem;
-  letter-spacing: .14em;
-  color: var(--muted);
-  text-align: center;
-  margin-bottom: .8rem;
-}
-.compass-wrap {
-  max-width: 340px;
+  gap: .9rem;
+  padding: .9rem 1.3rem;
+  border-bottom: 1px solid rgba(201,168,76,.1);
+  max-width: 480px;
   margin: 0 auto;
 }
-
-/* ── Record button (floating) ── */
-.fab {
-  position: fixed;
-  bottom: calc(24px + env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(135deg, #b8902a, #e8c060);
-  color: #1a1a1f;
-  font-size: .95rem;
-  font-weight: 700;
-  font-family: var(--font-b);
-  letter-spacing: .06em;
-  padding: .9rem 2.5rem;
-  border-radius: 100px;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 6px 28px rgba(201,168,76,.4);
-  white-space: nowrap;
-  z-index: 100;
-  transition: transform .15s, box-shadow .15s;
+.phase-icon {
+  width: 44px; height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  border: 1px solid rgba(201,168,76,.3);
+  font-size: 1.3rem;
 }
-.fab:active { transform: translateX(-50%) scale(.97); box-shadow: 0 3px 14px rgba(201,168,76,.3) }
+.phase-info { flex-shrink: 0 }
+.phase-spirit-name {
+  font-family: var(--font-b);
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--cream);
+  letter-spacing: .04em;
+  line-height: 1;
+}
+.phase-spirit-en {
+  font-size: .6rem;
+  color: var(--muted);
+  letter-spacing: .15em;
+  margin-top: .15rem;
+}
+.phase-progress { flex: 1; min-width: 0 }
+.phase-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: .68rem;
+  color: var(--muted);
+  margin-bottom: .28rem;
+}
+.pcount { color: var(--gold); font-weight: 600 }
+.progress-bar-bg {
+  height: 5px;
+  background: var(--bg3);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold2), var(--gold));
+  border-radius: 100px;
+  transition: width .6s ease;
+}
 
-/* ── Record panel (slide up) ── */
-.record-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.6);
-  z-index: 200;
-  align-items: flex-end;
+/* ── Phase banner ── */
+.phase-banner {
+  max-width: 480px;
+  margin: .7rem auto 0;
+  padding: 0 1.2rem;
+}
+.phase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: rgba(201,168,76,.08);
+  border: 1px solid rgba(201,168,76,.25);
+  border-radius: 100px;
+  padding: .25rem .75rem;
+  font-size: .7rem;
+  color: var(--gold);
+  letter-spacing: .1em;
+}
+
+/* ── Section wrap ── */
+.sw { padding: .75rem 1.2rem; max-width: 480px; margin: 0 auto }
+
+/* ── Calendar Card ── */
+.cal-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: .85rem .75rem .5rem;
+}
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .55rem;
+}
+.cal-month-label {
+  font-family: var(--font-b);
+  font-size: .95rem;
+  color: var(--cream);
+  letter-spacing: .04em;
+}
+.cal-nav-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: .1rem .5rem;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color .15s, background .15s;
+}
+.cal-nav-btn:hover { color: var(--gold); background: var(--gold-dim) }
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: .2rem;
+}
+.cal-wd {
+  text-align: center;
+  font-size: .6rem;
+  color: var(--muted);
+  padding: .12rem 0;
+}
+.cal-wd:first-child { color: #b06060 }
+.cal-wd:last-child  { color: #6090b0 }
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: .12rem;
+}
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: .3rem;
+  height: 44px;
+  border-radius: 50%;
+  cursor: default;
+  position: relative;
+  transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.cal-cell.in-period { cursor: pointer }
+.cal-cell.in-period:active { background: rgba(201,168,76,.12) }
+.cal-cell.selected {
+  box-shadow: 0 0 0 2px var(--gold);
+  background: rgba(201,168,76,.07);
+}
+.cal-cell.today-unrecorded { background: rgba(201,168,76,.1) }
+.cal-num {
+  font-size: .8rem;
+  line-height: 1;
+  color: var(--cream2);
+  display: block;
+}
+.cal-cell.out-period .cal-num { color: rgba(255,255,255,.08) }
+.cal-cell.sun-col .cal-num   { color: #c08080 }
+.cal-cell.sat-col .cal-num   { color: #7090b8 }
+.cal-cell.completed .cal-num { color: var(--cream) }
+.cal-cell.today-unrecorded .cal-num { color: var(--gold) }
+
+.cal-icon { margin-top: 2px; display: flex; align-items: center; justify-content: center }
+.cal-check {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  font-size: .56rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  line-height: 1;
+}
+.cal-dot { width: 5px; height: 5px; border-radius: 50% }
+.gold-dot { background: var(--gold) }
+.gray-dot { background: var(--muted); opacity: .45 }
+.cal-star  { font-size: .68rem; line-height: 1 }
+
+.cal-legend {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+  padding: .55rem .2rem .1rem;
   justify-content: center;
 }
-.record-overlay.open { display: flex }
-.record-panel {
-  background: var(--bg2);
-  border-radius: 24px 24px 0 0;
-  border-top: 1px solid var(--border);
-  padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
-  width: 100%;
-  max-width: 520px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-.panel-handle {
-  width: 36px; height: 4px;
-  background: var(--muted);
-  border-radius: 2px;
-  margin: 0 auto 1.2rem;
-  opacity: .4;
-}
-.panel-title {
-  font-family: var(--font-b);
-  font-size: 1.2rem;
-  color: var(--gold);
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-/* ── Spirit selector ── */
-.spirit-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: .6rem;
-  margin-bottom: 1rem;
-}
-.spirit-btn {
-  background: var(--bg3);
-  border: 2px solid var(--border);
-  border-radius: var(--r);
-  padding: .7rem .5rem;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color .15s, background .15s;
-}
-.spirit-btn.selected { background: var(--gold-dim) }
-.spirit-btn-icon { font-size: 1.3rem; margin-bottom: .25rem }
-.spirit-btn-name { font-size: .75rem; font-weight: 600; color: var(--cream) }
-.spirit-btn-en { font-size: .6rem; color: var(--muted); margin-top: .1rem; letter-spacing: .06em }
-
-/* ── Form label ── */
-.form-label {
-  font-size: .75rem;
-  color: var(--muted);
-  margin-bottom: .45rem;
-}
-
-/* ── Challenge card ── */
-.challenge-card {
-  display: none;
-  border: 1.5px solid var(--border);
-  border-radius: var(--r);
-  padding: 1rem 1.1rem;
-  margin-bottom: 1rem;
-  animation: fadeSlideIn .2s ease;
-}
-.challenge-card.visible { display: block }
-.challenge-label {
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: .28rem;
   font-size: .62rem;
-  letter-spacing: .14em;
   color: var(--muted);
-  margin-bottom: .45rem;
 }
-.challenge-title {
+
+/* ── Streak bar ── */
+.streak-bar {
+  margin-top: .55rem;
+  padding: .5rem .85rem;
+  background: rgba(201,168,76,.05);
+  border: 1px solid rgba(201,168,76,.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+.streak-inner { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap }
+.streak-flames { font-size: .95rem; line-height: 1 }
+.streak-text {
   font-family: var(--font-b);
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: .4rem;
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: .04em;
 }
-.challenge-body {
-  font-size: .83rem;
+.streak-max { font-size: .65rem; color: var(--muted) }
+
+/* ── Day detail ── */
+.day-detail-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem 1.15rem;
+  position: relative;
+  overflow: hidden;
+}
+.day-detail-card::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: 15%; right: 15%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.day-detail-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .6rem;
+}
+.day-detail-date {
+  font-family: var(--font-b);
+  font-size: .92rem;
+  color: var(--cream);
+  letter-spacing: .03em;
+}
+.done-badge {
+  font-size: .68rem;
+  padding: .18rem .55rem;
+  border-radius: 100px;
+  background: var(--green-dim);
+  color: #6dc46d;
+  border: 1px solid rgba(58,122,74,.4);
+}
+.day-reflection-text {
+  font-size: .84rem;
   color: var(--cream2);
   line-height: 1.75;
 }
 
-/* ── Journal section ── */
-.journal-section {
-  display: none;
-  animation: fadeSlideIn .2s ease;
-}
-.journal-section.visible { display: block }
-
-/* ── Reflection textarea ── */
-.reflection-input {
-  width: 100%;
-  min-height: 100px;
-  background: var(--bg3);
+/* ── Reflection form ── */
+.reflection-section { max-width: 480px; margin: 0 auto; padding: 0 1.2rem .8rem }
+.reflection-card {
+  background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  color: var(--cream);
-  font-size: .88rem;
-  font-family: var(--font);
-  padding: .75rem 1rem;
-  resize: vertical;
-  margin-bottom: 1rem;
-  line-height: 1.7;
-}
-.reflection-input::placeholder { color: var(--muted) }
-.reflection-input:focus { outline: none; border-color: rgba(201,168,76,.5) }
-
-/* ── Submit button ── */
-.btn-submit {
-  width: 100%;
-  padding: .85rem;
-  background: linear-gradient(135deg, #b8902a, #e8c060);
-  color: #1a1a1f;
-  font-size: .95rem;
-  font-weight: 700;
-  font-family: var(--font-b);
-  letter-spacing: .06em;
-  border: none;
-  border-radius: var(--r);
-  cursor: pointer;
-}
-.btn-submit:disabled { opacity: .5; cursor: not-allowed }
-
-/* ── Calendar ── */
-.calendar-section {
-  margin: 1.8rem 0 0;
-  padding: 0 1.2rem;
-}
-.calendar-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: .9rem;
-}
-.calendar-title {
-  font-family: var(--font-b);
-  font-size: .75rem;
-  letter-spacing: .12em;
-  color: var(--gold);
-  text-transform: uppercase;
-  padding-bottom: .5rem;
-  border-bottom: 1px solid var(--border);
-  flex: 1;
-}
-.cal-nav-btn {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--cream2);
-  border-radius: 6px;
-  width: 28px; height: 28px;
-  cursor: pointer;
-  font-size: .85rem;
-  display: flex; align-items: center; justify-content: center;
-}
-.cal-month-label {
-  font-size: .8rem;
-  color: var(--cream2);
-  min-width: 80px;
-  text-align: center;
-}
-.cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-}
-.cal-dow {
-  text-align: center;
-  font-size: .6rem;
-  color: var(--muted);
-  padding-bottom: .3rem;
-}
-.cal-day {
-  aspect-ratio: 1;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: .72rem;
-  cursor: default;
+  padding: 1.25rem;
   position: relative;
-  background: transparent;
-}
-.cal-day.has-challenge {
-  background: var(--bg3);
-  cursor: pointer;
-}
-.cal-day.has-challenge:active { opacity: .7; }
-.cal-day.reflected {
-  background: var(--bg3);
-  cursor: pointer;
-}
-.cal-day-num {
-  font-size: .72rem;
-  color: var(--muted);
-  line-height: 1;
-}
-.cal-day.has-challenge .cal-day-num { color: var(--cream2); }
-.cal-day.reflected .cal-day-num { color: var(--cream); font-weight: 600; }
-.cal-day.is-today .cal-day-num {
-  color: var(--gold);
-  font-weight: 700;
-}
-.cal-dot {
-  width: 7px; height: 7px;
-  border-radius: 1px;
-  border: 1.5px solid var(--gold);
-  background: transparent;
-  margin-top: 3px;
-}
-.cal-check {
-  font-size: .65rem;
-  margin-top: 2px;
-  line-height: 1;
-}
-
-/* ── Day detail modal ── */
-.day-detail-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.6);
-  z-index: 200;
-  align-items: flex-end;
-  justify-content: center;
-}
-.day-detail-overlay.open { display: flex; }
-.day-detail-panel {
-  background: var(--bg2);
-  border-radius: 20px 20px 0 0;
-  width: 100%; max-width: 480px;
-  padding: 1.2rem 1.4rem 2.4rem;
-  max-height: 82vh;
-  overflow-y: auto;
-  animation: slideUp .22s ease;
-}
-.day-detail-handle {
-  width: 36px; height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  margin: 0 auto .9rem;
-}
-.day-detail-date {
-  font-size: .72rem;
-  color: var(--muted);
-  margin-bottom: .3rem;
-}
-.day-detail-spirit {
-  font-size: .8rem;
-  font-weight: 600;
-  letter-spacing: .06em;
-  margin-bottom: .6rem;
-}
-.day-detail-challenge-box {
-  background: var(--bg3);
-  border-radius: 10px;
-  padding: .8rem 1rem;
-  margin-bottom: .8rem;
-}
-.day-detail-challenge-label {
-  font-size: .62rem;
-  color: var(--muted);
-  letter-spacing: .08em;
-  margin-bottom: .3rem;
-}
-.day-detail-challenge-title {
-  font-family: var(--font-b);
-  font-size: .95rem;
-  color: var(--gold);
-  margin-bottom: .4rem;
-}
-.day-detail-challenge-body {
-  font-size: .8rem;
-  color: var(--cream2);
-  line-height: 1.6;
-}
-.day-detail-reflection-box {
-  background: rgba(201,168,76,.06);
-  border-left: 2px solid var(--gold);
-  border-radius: 0 8px 8px 0;
-  padding: .75rem 1rem;
-  margin-bottom: .8rem;
-}
-.day-detail-reflection-label {
-  font-size: .62rem;
-  color: var(--gold);
-  letter-spacing: .08em;
-  margin-bottom: .3rem;
-}
-.day-detail-reflection-text {
-  font-size: .82rem;
-  color: var(--cream2);
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-.day-detail-ai-box {
-  font-size: .78rem;
-  color: var(--cream2);
-  line-height: 1.65;
-  padding: .6rem 0;
-  border-top: 1px solid var(--border);
-}
-.day-detail-ai-label {
-  font-size: .62rem;
-  color: var(--muted);
-  letter-spacing: .08em;
-  margin-bottom: .3rem;
-}
-.day-detail-record-btn {
-  width: 100%;
-  padding: .85rem;
-  border-radius: 12px;
-  background: var(--gold-dim);
-  border: 1.5px solid var(--gold);
-  color: var(--gold);
-  font-size: .85rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: .8rem;
-  letter-spacing: .04em;
-}
-.day-detail-close {
-  width: 100%;
-  padding: .6rem;
-  border-radius: 10px;
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: .78rem;
-  cursor: pointer;
-  margin-top: .5rem;
-}
-
-/* ── Community section ── */
-.community-section {
-  margin: 1.8rem 0 0;
-  padding: 0 1.2rem;
-}
-.community-title {
-  font-family: var(--font-b);
-  font-size: .75rem;
-  letter-spacing: .12em;
-  color: var(--gold);
-  text-transform: uppercase;
-  margin-bottom: 1rem;
-  padding-bottom: .5rem;
-  border-bottom: 1px solid var(--border);
-}
-.community-empty {
-  font-size: .8rem;
-  color: var(--muted);
-  text-align: center;
-  padding: 1.2rem 0;
-}
-.community-card {
-  display: flex;
-  gap: .75rem;
-  align-items: flex-start;
-  padding: .75rem 0;
-  border-bottom: 1px solid rgba(201,168,76,.08);
-}
-.community-card:last-child { border-bottom: none }
-.community-spirit-badge {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-.community-body { flex: 1; min-width: 0 }
-.community-spirit-name {
-  font-size: .7rem;
-  font-weight: 600;
-  letter-spacing: .06em;
-  margin-bottom: .2rem;
-}
-.community-reflection {
-  font-size: .8rem;
-  color: var(--cream2);
-  line-height: 1.55;
-  word-break: break-all;
-}
-.community-time {
-  font-size: .65rem;
-  color: var(--muted);
-  margin-top: .25rem;
-}
-
-/* ── Success screen ── */
-.success-screen {
-  display: none;
-  text-align: center;
-  padding: .5rem 0;
-  animation: fadeSlideIn .25s ease;
-}
-.success-screen.visible { display: block }
-.success-title {
-  font-family: var(--font-b);
-  font-size: 1.1rem;
-  color: var(--gold);
-  margin-bottom: 1rem;
-}
-.success-entry-box {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: .85rem 1rem;
-  text-align: left;
-  margin-bottom: 1rem;
-}
-.success-spirit-label {
-  font-size: .7rem;
-  color: var(--muted);
-  margin-bottom: .2rem;
-}
-.success-challenge-label {
-  font-size: .8rem;
-  font-weight: 600;
-  color: var(--cream);
-  margin-bottom: .35rem;
-}
-.success-reflection-text {
-  font-size: .82rem;
-  color: var(--cream2);
-  line-height: 1.6;
-}
-.ai-loading {
-  font-size: .78rem;
-  color: var(--muted);
-  padding: .5rem 0 1rem;
-}
-.ai-message-area {
-  display: none;
-  text-align: left;
-  margin-bottom: 1rem;
-}
-.ai-message-label {
-  font-size: .65rem;
-  letter-spacing: .12em;
-  color: var(--muted);
-  margin-bottom: .5rem;
-}
-.ai-message-box {
-  background: rgba(201,168,76,.06);
-  border: 1px solid rgba(201,168,76,.22);
-  border-radius: var(--r);
-  padding: .9rem 1rem;
-  font-size: .85rem;
-  color: var(--cream);
-  line-height: 1.8;
-  white-space: pre-wrap;
-}
-.btn-close {
-  width: 100%;
-  padding: .75rem;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  color: var(--cream2);
-  font-size: .9rem;
-  cursor: pointer;
-}
-
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(6px) }
-  to   { opacity: 1; transform: translateY(0) }
-}
-
-/* ── Recent entries ── */
-.entries-section {
-  padding: 1.2rem 1.5rem 0;
-}
-.entries-title {
-  font-size: .68rem;
-  letter-spacing: .14em;
-  color: var(--muted);
-  margin-bottom: .7rem;
-}
-.entry-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: .85rem 1rem;
-  margin-bottom: .55rem;
-  display: flex;
-  gap: .8rem;
-  align-items: flex-start;
-}
-.entry-spirit-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: .45rem;
-}
-.entry-body { flex: 1; min-width: 0 }
-.entry-meta {
-  font-size: .68rem;
-  color: var(--muted);
-  margin-bottom: .2rem;
-}
-.entry-text {
-  font-size: .82rem;
-  color: var(--cream2);
-  line-height: 1.6;
-}
-
-/* ── Rank history ── */
-.rank-history-section {
-  padding: 1.2rem 1.5rem 0;
-}
-
-/* ── Compass history ── */
-.compass-history-section {
-  padding: 1.2rem 1.5rem 0;
-}
-.compass-history-title {
-  font-size: .68rem;
-  letter-spacing: .14em;
-  color: var(--muted);
-  margin-bottom: .7rem;
-}
-.compass-week-row {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  padding: .6rem 0;
-  border-bottom: 1px solid rgba(201,168,76,.08);
-}
-.compass-week-row:last-child { border-bottom: none }
-.compass-week-num {
-  font-size: .65rem;
-  color: var(--muted);
-  width: 40px;
-  flex-shrink: 0;
-  text-align: center;
-}
-.compass-week-bars {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.compass-bar-row {
-  display: flex;
-  align-items: center;
-  gap: .4rem;
-}
-.compass-bar-label {
-  font-size: .58rem;
-  color: var(--muted);
-  width: 54px;
-  flex-shrink: 0;
-  text-align: right;
-}
-.compass-bar-track {
-  flex: 1;
-  height: 5px;
-  background: rgba(255,255,255,.06);
-  border-radius: 3px;
   overflow: hidden;
 }
-.compass-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width .4s ease;
+.reflection-card::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: 15%; right: 15%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
-.compass-week-summary {
-  font-size: .65rem;
-  color: var(--cream2);
-  width: 72px;
-  flex-shrink: 0;
-  text-align: right;
-  line-height: 1.4;
-}
-.compass-update-note {
-  font-size: .65rem;
+.reflection-day-label {
+  font-size: .68rem;
+  letter-spacing: .2em;
   color: var(--muted);
-  text-align: center;
-  padding: .6rem 0 0;
-  line-height: 1.6;
+  margin-bottom: .28rem;
 }
+.reflection-title {
+  font-family: var(--font-b);
+  font-size: 1.05rem;
+  color: var(--cream);
+  font-weight: 700;
+  margin-bottom: .85rem;
+}
+.reflection-textarea {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid rgba(201,168,76,.2);
+  border-radius: 8px;
+  color: var(--cream);
+  font-family: var(--font);
+  font-size: .9rem;
+  line-height: 1.7;
+  padding: .72rem .9rem;
+  resize: none;
+  min-height: 88px;
+  outline: none;
+  transition: border-color .2s;
+}
+.reflection-textarea:focus { border-color: var(--gold) }
+.reflection-textarea::placeholder { color: var(--muted) }
+.btn-submit {
+  display: block;
+  width: 100%;
+  margin-top: .82rem;
+  padding: .78rem;
+  background: linear-gradient(135deg, #8b1a1a, #a02020);
+  border: none;
+  border-radius: 8px;
+  color: var(--cream);
+  font-family: var(--font-b);
+  font-size: .93rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.btn-submit:hover { opacity: .88 }
+.btn-submit:disabled { opacity: .4; cursor: not-allowed }
 
-/* ── Spirit picker (past-date recording without challenge) ── */
-.spirit-picker-section {
-  display: none;
+/* ── Phase complete / Waiting screen ── */
+.waiting-card {
+  background: var(--bg2);
+  border: 1px solid rgba(201,168,76,.3);
+  border-radius: var(--r);
+  padding: 1.4rem 1.2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.waiting-card::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: 15%; right: 15%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.waiting-title {
+  font-family: var(--font-b);
+  font-size: 1.2rem;
+  color: var(--gold);
+  font-weight: 900;
+  letter-spacing: .05em;
+  margin-bottom: .45rem;
+}
+.waiting-desc {
+  font-size: .84rem;
+  color: var(--cream2);
+  line-height: 1.8;
   margin-bottom: 1rem;
 }
-.spirit-picker-label {
-  font-size: .7rem;
-  letter-spacing: .12em;
-  color: var(--muted);
-  margin-bottom: .6rem;
-  text-transform: uppercase;
+.cal-link {
+  display: inline-block;
+  font-size: .82rem;
+  color: var(--gold);
+  text-decoration: none;
+  border: 1px solid rgba(201,168,76,.4);
+  padding: .5rem 1.3rem;
+  border-radius: 100px;
+  background: rgba(201,168,76,.08);
 }
-.spirit-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: .4rem;
+
+/* ── Loading / Error ── */
+.loading-screen { text-align: center; padding: 4rem 1.5rem; color: var(--muted); font-size: .9rem }
+.error-screen   { text-align: center; padding: 3rem 1.5rem; color: var(--muted) }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px) }
+  to   { opacity: 1; transform: translateY(0) }
 }
-.spirit-picker-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .2rem;
-  padding: .6rem .3rem;
-  background: var(--bg3);
-  border: 1.5px solid rgba(201,168,76,.2);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: border-color .15s, background .15s;
-}
-.spirit-picker-btn:hover { background: rgba(201,168,76,.08) }
-.spirit-picker-btn.selected {
-  border-color: var(--gold);
-  background: rgba(201,168,76,.12);
-}
-.spirit-picker-icon { font-size: 1.2rem }
-.spirit-picker-name { font-size: .55rem; color: var(--cream2); line-height: 1.3; text-align: center }
+.fade-up { animation: fadeSlideUp .35s ease forwards }
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="page-header">
   <img src="logo.png" alt="SAMURAI in You" class="logo-img">
-  <div class="page-title">道 場</div>
-  <div class="page-sub">SAMURAI in You — DOJO</div>
+  <div class="page-title">道場の記録</div>
 </div>
 
-<!-- Loading -->
 <div class="loading-screen" id="loading">読み込み中...</div>
 
-<!-- 診断前画面 -->
-<!-- 21日間入門中の参加者向け -->
-<div id="in-practice-screen" style="display:none;padding:2rem 1.5rem;max-width:480px;margin:0 auto;text-align:center">
-  <div style="font-size:3rem;margin-bottom:1rem">🌱</div>
-  <div style="font-family:var(--font-b);font-size:1.5rem;color:var(--gold);margin-bottom:.8rem">21日間の稽古の途中です</div>
-  <div style="font-size:.88rem;color:var(--cream2);line-height:1.9;margin-bottom:2rem">
-    あなたは今、21日間の入門稽古に取り組んでいます。<br><br>
-    SAMURAI道場は、21日間の稽古を終えた後に開かれます。<br>
-    今は目の前の稽古に集中してください。
-  </div>
-  <a id="practice-link" href="#"
-    style="display:inline-block;padding:.9rem 2.2rem;background:linear-gradient(135deg,#b8902a,#e8c060);color:#1a1a1f;font-family:var(--font-b);font-size:1rem;font-weight:700;letter-spacing:.06em;border-radius:100px;text-decoration:none;box-shadow:0 4px 20px rgba(201,168,76,.35)">
-    稽古記録へ →
-  </a>
-  <div style="margin-top:1.5rem;font-size:.72rem;color:var(--muted)">千日の稽古を鍛とし、万日の稽古を錬とす。</div>
-</div>
-
-<!-- フル診断前の画面 -->
-<div id="pre-diagnostic-screen" style="display:none;padding:2rem 1.5rem;max-width:480px;margin:0 auto;text-align:center">
-  <div style="font-size:3rem;margin-bottom:1rem">⛩</div>
-  <div style="font-family:var(--font-b);font-size:1.6rem;color:var(--gold);margin-bottom:.6rem">道場入門診断</div>
-  <div style="font-size:.88rem;color:var(--cream2);line-height:1.8;margin-bottom:2rem">
-    道場での稽古を始める前に、<br>Pentagon Compassの本番診断を受けてください。<br><br>
-    54の問いを通じて、あなたの5つのSpiritの現在地を確かめます。
-  </div>
-  <a id="diagnostic-link" href="#"
-    style="display:inline-block;padding:.9rem 2.2rem;background:linear-gradient(135deg,#b8902a,#e8c060);color:#1a1a1f;font-family:var(--font-b);font-size:1rem;font-weight:700;letter-spacing:.06em;border-radius:100px;text-decoration:none;box-shadow:0 4px 20px rgba(201,168,76,.35)">
-    診断を受ける →
-  </a>
-  <div style="margin-top:1.5rem;font-size:.72rem;color:var(--muted)">診断完了後、このページに戻ってきてください。</div>
-</div>
-
-<!-- Main -->
 <div id="main-content" style="display:none">
 
-  <!-- Rank -->
-  <div class="rank-section">
-    <div class="rank-mon-sm" id="rank-mon"></div>
-    <div class="rank-info">
-      <div class="rank-name-lg" id="rank-name">十級</div>
-      <div class="rank-sub-sm" id="rank-sub">JUU-KYUU</div>
-      <div class="rank-desc-sm" id="rank-desc"></div>
-    </div>
+  <!-- Phase banner -->
+  <div class="phase-banner sw" style="padding-top:.6rem;padding-bottom:0">
+    <span class="phase-badge" id="phase-badge">Phase 1/4</span>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-num" id="stat-total">0</div>
-      <div class="stat-label">累計 稽古数</div>
+  <!-- Phase strip -->
+  <div class="phase-strip">
+    <div class="phase-icon">⛩</div>
+    <div class="phase-info">
+      <div class="phase-spirit-name" id="spirit-name">—</div>
+      <div class="phase-spirit-en"  id="spirit-en">—</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-num" id="stat-days">0</div>
-      <div class="stat-label">稽古 日数</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="stat-streak">0</div>
-      <div class="stat-label">連続 稽古日</div>
+    <div class="phase-progress">
+      <div class="phase-progress-label">
+        <span>稽古の進捗</span>
+        <span class="pcount"><span id="stamped-count">0</span> / 21 日</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+      </div>
     </div>
   </div>
 
   <!-- Calendar -->
-  <div class="calendar-section">
-    <div class="calendar-header-row">
-      <div class="calendar-title">📅 稽古カレンダー</div>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem">
-      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
-      <div class="cal-month-label" id="cal-month-label"></div>
-      <button class="cal-nav-btn" onclick="calNext()">›</button>
-    </div>
-    <div class="cal-grid" id="cal-grid"></div>
-    <div style="display:flex;gap:1rem;margin-top:.7rem;font-size:.65rem;color:var(--muted)">
-      <span>✅ 振り返り済み</span>
-      <span><span style="display:inline-block;width:8px;height:8px;border:1.5px solid rgba(255,255,255,.55);border-radius:1px;vertical-align:middle;margin-right:2px"></span>課題あり・未記録</span>
-      <span style="opacity:.5">過去の日付はタップで記録できます</span>
-    </div>
-  </div>
-
-  <!-- Pentagon Compass -->
-  <div class="compass-section">
-    <div class="compass-title">PENTAGON COMPASS — 成長の軌跡</div>
-    <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:.6rem">
-      <div style="display:flex;align-items:center;gap:.35rem;font-size:.65rem;color:var(--muted)">
-        <svg width="18" height="8"><line x1="0" y1="4" x2="18" y2="4" stroke="rgba(201,168,76,.5)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
-        道場入門診断
+  <div class="sw">
+    <div class="cal-card">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+        <span class="cal-month-label" id="cal-month-label"></span>
+        <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
       </div>
-      <div style="display:flex;align-items:center;gap:.35rem;font-size:.65rem;color:var(--muted)">
-        <svg width="18" height="8"><line x1="0" y1="4" x2="18" y2="4" stroke="#c9a84c" stroke-width="2"/></svg>
-        AI評価（週次更新）
+      <div class="cal-weekdays">
+        <div class="cal-wd">日</div><div class="cal-wd">月</div>
+        <div class="cal-wd">火</div><div class="cal-wd">水</div>
+        <div class="cal-wd">木</div><div class="cal-wd">金</div>
+        <div class="cal-wd">土</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="cal-check" style="width:12px;height:12px;font-size:.5rem">✓</div><span>稽古完了</span></div>
+        <div class="legend-item"><div class="cal-dot gold-dot"></div><span>今日の稽古</span></div>
+        <div class="legend-item"><div class="cal-dot gray-dot"></div><span>未記録</span></div>
+        <div class="legend-item"><span class="cal-star">⭐</span><span>節目</span></div>
       </div>
     </div>
-    <div style="text-align:center;font-size:.72rem;color:var(--muted);line-height:1.7;margin-bottom:.4rem;padding:0 1rem">
-      破線は道場入門診断のベースライン。<br>実線は稽古記録の件数が即座に反映されます。AIによる詳細評価は毎週月曜に更新されます。
-    </div>
-    <div class="compass-wrap">
-      <svg id="compass-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg"></svg>
-    </div>
+    <div class="streak-bar" id="streak-bar" style="display:none"></div>
   </div>
 
-  <!-- Compass history -->
-  <div class="compass-history-section" id="compass-history-area"></div>
-
-  <!-- 21日間達成 → ミーティング予約CTA -->
-  <div id="review-cta-section" style="display:none;margin:1.2rem 0;padding:1.2rem 1.4rem;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.3);border-radius:14px;text-align:center">
-    <div style="font-size:.75rem;color:var(--gold);letter-spacing:.12em;margin-bottom:.4rem">🏆 21日間の稽古 達成</div>
-    <div style="font-size:1rem;font-weight:700;color:var(--cream);margin-bottom:.5rem">振り返りミーティングのご案内</div>
-    <div style="font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">21日間の稽古を終えられました。<br>あなたの記録をもとに、次のステージへ向けた<br>振り返りミーティングをご用意しています。</div>
-    <a href="https://cal.com/samurai-in-you/21dayafterfeedback" target="_blank" rel="noopener"
-       style="display:inline-block;padding:.65rem 1.6rem;background:var(--gold);color:#1a1a1f;border-radius:8px;font-size:.85rem;font-weight:700;text-decoration:none;letter-spacing:.05em">
-      ミーティングを予約する →
-    </a>
+  <!-- Past day detail -->
+  <div class="sw" id="day-detail-wrap" style="display:none">
+    <div id="day-detail-area"></div>
   </div>
 
-  <!-- Rank history -->
-  <div class="rank-history-section" id="rank-history-area"></div>
+  <!-- Today's reflection -->
+  <div class="reflection-section" id="reflection-area"></div>
 
-  <!-- Recent entries -->
-  <div class="entries-section">
-    <div class="entries-title">最近の稽古</div>
-    <div id="entries-list"></div>
-  </div>
-
-  <!-- Community board -->
-  <div class="community-section">
-    <div class="community-title">🏯 今日の道場 — みんなの稽古</div>
-    <div id="community-list"><div class="community-empty">読み込み中...</div></div>
-  </div>
+  <!-- Phase complete / Waiting screen -->
+  <div class="sw" id="phase-complete-area" style="display:none"></div>
 
 </div>
 
-<!-- Error -->
 <div class="error-screen" id="error-screen" style="display:none">
   <div style="font-size:1.5rem;margin-bottom:.8rem">⚠️</div>
-  <div id="error-msg" style="color:var(--cream2)">URLが正しくありません。</div>
+  <div id="error-msg" style="color:var(--cream2)">URLが正しくありません。<br>LINEのメッセージから開いてください。</div>
 </div>
 
-<!-- FAB -->
-<button class="fab" id="fab-btn" onclick="openRecord()" style="display:none">⚔️ 稽古を記録する</button>
-
-<!-- Day detail modal -->
-<div class="day-detail-overlay" id="day-detail-overlay" onclick="handleDayDetailClick(event)">
-  <div class="day-detail-panel" id="day-detail-panel">
-    <div class="day-detail-handle"></div>
-    <div class="day-detail-date" id="dd-date"></div>
-    <div class="day-detail-spirit" id="dd-spirit"></div>
-    <div class="day-detail-challenge-box" id="dd-challenge-box">
-      <div class="day-detail-challenge-label">今日の課題</div>
-      <div class="day-detail-challenge-title" id="dd-challenge-title"></div>
-      <div class="day-detail-challenge-body" id="dd-challenge-body"></div>
-    </div>
-    <div class="day-detail-reflection-box" id="dd-reflection-box">
-      <div class="day-detail-reflection-label">⚔️ 振り返り</div>
-      <div class="day-detail-reflection-text" id="dd-reflection-text"></div>
-    </div>
-    <div class="day-detail-ai-box" id="dd-ai-box">
-      <div class="day-detail-ai-label">武蔵BOTより</div>
-      <div id="dd-ai-text"></div>
-    </div>
-    <button class="day-detail-record-btn" id="dd-record-btn" onclick="openRecordForDate()">この日の振り返りを記録する</button>
-    <button class="day-detail-close" onclick="closeDayDetail()">閉じる</button>
-  </div>
-</div>
-
-<!-- Record panel -->
-<div class="record-overlay" id="record-overlay" onclick="handleOverlayClick(event)">
-  <div class="record-panel">
-    <div class="panel-handle"></div>
-
-    <!-- フォームビュー -->
-    <div id="record-form">
-      <div class="panel-title" id="record-panel-title">今日の稽古を記録する</div>
-
-      <!-- 今日の課題 -->
-      <div class="challenge-card" id="challenge-card">
-        <div class="challenge-label">今日の課題</div>
-        <div class="challenge-title" id="challenge-title"></div>
-        <div class="challenge-body" id="challenge-body"></div>
-      </div>
-
-      <!-- Spirit picker（課題がない過去日用） -->
-      <div class="spirit-picker-section" id="spirit-picker-section">
-        <div class="spirit-picker-label">Spirit を選んでください</div>
-        <div class="spirit-picker-grid">
-          <button class="spirit-picker-btn" onclick="selectSpiritForRecord('hei')"   id="sp-btn-hei">
-            <span class="spirit-picker-icon">☁️</span>
-            <span class="spirit-picker-name">平常心</span>
-          </button>
-          <button class="spirit-picker-btn" onclick="selectSpiritForRecord('jiko')"  id="sp-btn-jiko">
-            <span class="spirit-picker-icon">🌿</span>
-            <span class="spirit-picker-name">自己鍛錬</span>
-          </button>
-          <button class="spirit-picker-btn" onclick="selectSpiritForRecord('flex')"  id="sp-btn-flex">
-            <span class="spirit-picker-icon">🐦</span>
-            <span class="spirit-picker-name">柔軟な<br>適応力</span>
-          </button>
-          <button class="spirit-picker-btn" onclick="selectSpiritForRecord('strat')" id="sp-btn-strat">
-            <span class="spirit-picker-icon">🔥</span>
-            <span class="spirit-picker-name">戦略的<br>思考</span>
-          </button>
-          <button class="spirit-picker-btn" onclick="selectSpiritForRecord('sei')"   id="sp-btn-sei">
-            <span class="spirit-picker-icon">🌀</span>
-            <span class="spirit-picker-name">誠実さ</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- ジャーナル -->
-      <div class="journal-section" id="journal-section">
-        <div class="form-label">この課題に、どのように向き合いましたか？</div>
-        <textarea class="reflection-input" id="reflection-input"
-          placeholder="今日の体験、気づき、感じたことを自由に書いてください。"></textarea>
-      </div>
-
-      <div id="record-error" style="font-size:.75rem;color:var(--red);margin-bottom:.6rem;min-height:1.2em"></div>
-      <button class="btn-submit" id="submit-btn" onclick="submitRecord()">記録する</button>
-    </div>
-
-    <!-- 完了ビュー（送信後に表示） -->
-    <div class="success-screen" id="success-screen">
-      <div style="font-size:2.2rem;margin-bottom:.5rem">⚔️</div>
-      <div class="success-title">今日の稽古を記録しました</div>
-
-      <div class="success-entry-box">
-        <div id="success-spirit-label" class="success-spirit-label"></div>
-        <div id="success-challenge-label" class="success-challenge-label"></div>
-        <div id="success-reflection-preview" class="success-reflection-text"></div>
-      </div>
-
-      <div id="ai-loading" class="ai-loading">明日の稽古メッセージを生成中...</div>
-      <div id="ai-message-area" class="ai-message-area">
-        <div class="ai-message-label">明日の稽古に向けて</div>
-        <div class="ai-message-box" id="ai-message-text"></div>
-      </div>
-
-      <button onclick="closeRecord()" class="btn-close">閉じる</button>
-    </div>
-  </div>
-</div>
-
-<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-const firebaseConfig = {
+firebase.initializeApp({
   apiKey: "AIzaSyC1qm7kUjSRk7QRwxK-W7bH1q-pqH3lklU",
   authDomain: "samurai-compass.firebaseapp.com",
   projectId: "samurai-compass",
   storageBucket: "samurai-compass.firebasestorage.app",
   messagingSenderId: "502771859953",
   appId: "1:502771859953:web:89e801832fdd42c6cb0450"
-};
-firebase.initializeApp(firebaseConfig);
+});
 const db = firebase.firestore();
 
-/* ── Spirits ── */
-const SPIRITS = {
-  hei:   { name:'平常心', en:'EQUANIMITY',       icon:'☁️', color:'#60a0b8' },
-  jiko:  { name:'自己鍛錬', en:'SELF-CULTIVATION', icon:'🌿', color:'#4aaa5a' },
-  flex:  { name:'柔軟な適応力', en:'FLEXIBILITY',  icon:'🐦', color:'#4a88d8' },
-  strat: { name:'戦略的思考', en:'STRATEGIC',      icon:'🔥', color:'#e86040' },
-  sei:   { name:'誠実さ', en:'INTEGRITY',          icon:'🌀', color:'#a060e0' },
-};
-const SPIRITS_ORDER = ['hei', 'jiko', 'flex', 'strat', 'sei'];
-
-/* ── Ranks ── */
-const RANKS_BY_NAME = {
-  '十級': { name:'十級', sub:'JUU-KYUU',   desc:'21日の稽古を積み、道場への第一歩を踏み出しました。', color:'#c9a84c',
-    mon:`<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" stroke="#c9a84c" stroke-width="2.5"/><circle cx="40" cy="40" r="30" stroke="#c9a84c" stroke-width="1" opacity=".4"/><text x="40" y="52" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" font-weight="bold">十</text></svg>` },
-  '九級': { name:'九級', sub:'KU-KYUU',    desc:'道場での稽古を積み重ね、さらなる深みへと踏み込んでいます。', color:'#c9a84c',
-    mon:`<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" stroke="#c9a84c" stroke-width="2.5"/><circle cx="40" cy="40" r="30" stroke="#c9a84c" stroke-width="1" opacity=".4"/><text x="40" y="52" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" font-weight="bold">九</text></svg>` },
-  '八級': { name:'八級', sub:'HACHI-KYUU', desc:'継続の力が身につき、軸が定まりはじめています。', color:'#c9a84c',
-    mon:`<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" stroke="#c9a84c" stroke-width="2.5"/><circle cx="40" cy="40" r="30" stroke="#c9a84c" stroke-width="1" opacity=".4"/><text x="40" y="52" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" font-weight="bold">八</text></svg>` },
-  '七級': { name:'七級', sub:'NANA-KYUU',  desc:'稽古が生き方に溶け込み、平常心が育ちつつあります。', color:'#c9a84c',
-    mon:`<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" stroke="#c9a84c" stroke-width="2.5"/><circle cx="40" cy="40" r="30" stroke="#c9a84c" stroke-width="1" opacity=".4"/><text x="40" y="52" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" font-weight="bold">七</text></svg>` },
+const SPIRIT_INFO = {
+  hei:  { name: '平常心',     en: 'Heijoshin' },
+  jiko: { name: '自己鍛錬',   en: 'Jiko Tanren' },
+  flex: { name: '柔軟な適応力', en: 'Adaptability' },
+  strat:{ name: '戦略的思考', en: 'Strategic Thinking' },
+  sei:  { name: '誠実さ',     en: 'Seijitsu-sa' },
 };
 
-/* ── Challenges（各Spirit 5問） ── */
-
-const GENERATE_DOJO_MESSAGE_URL    = 'https://us-central1-samurai-compass.cloudfunctions.net/generateDojoMessage';
-const GENERATE_DOJO_CHALLENGE_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/generateDojoChallenge';
+/* ── URL params ── */
+const params   = new URLSearchParams(location.search);
+const userId   = params.get('lid');
+const todayDay = parseInt(params.get('day')) || null;
 
 /* ── State ── */
-const params = new URLSearchParams(location.search);
-const userId = params.get('lid');
-let dojoData = null;
-let selectedSpirit = null;
-let currentChallenge = null;
-let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth();
-let calSelectedDate = null;
-let calDetailChallenge = null; // 日付詳細で表示中の課題オブジェクト
-let pendingGeneratedChallenge = false; // AI生成課題路線で記録中のフラグ
+let dojoData      = null;
+let currentPhase  = 0;
+let currentSpirit = null;
+let spiritPlan    = [];
+let phaseEntries  = [];
+let stampedDays   = new Set();
+let startDate     = null;
+let dateEntryMap  = {};
+let calYear, calMonth;
+let selectedDateStr = null;
+
+/* ── Utils ── */
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function dateToStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function addDays(d, n) {
+  const r = new Date(d);
+  r.setDate(r.getDate() + n);
+  return r;
+}
+function localDate(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
 
 /* ── Init ── */
 async function init() {
-  if (!userId) { showError('URLが正しくありません。'); return; }
+  if (!userId) { showError('LINEのメッセージからアクセスしてください。'); return; }
   try {
-    const [dojoDoc, practiceDoc, submissionDoc] = await Promise.all([
-      db.collection('dojo_practices').doc(userId).get(),
-      db.collection('practices').doc(userId).get(),
-      db.collection('submissions').doc(userId).get(),
-    ]);
+    const doc = await db.collection('dojo_practices').doc(userId).get();
+    if (!doc.exists) { showError('道場のデータが見つかりません。<br>管理者にお問い合わせください。'); return; }
+    dojoData = doc.data();
 
-    // フル診断がまだの場合 → 入門稽古の有無に関わらず診断へ誘導
-    if (!submissionDoc.exists) {
-      document.getElementById('loading').style.display = 'none';
-      const diagUrl = `diagnostic.html?lid=${userId}`;
-      document.getElementById('diagnostic-link').href = diagUrl;
-      document.getElementById('pre-diagnostic-screen').style.display = 'block';
-      return;
-    }
+    spiritPlan   = dojoData.spiritPlan || [];
+    currentPhase = dojoData.currentPhase ?? 0;
+    currentSpirit = spiritPlan[currentPhase] || null;
 
-    dojoData = dojoDoc.exists
-      ? dojoDoc.data()
-      : { entries: [], rank: '十級', rankHistory: [] };
+    const allEntries = dojoData.entries || [];
+    phaseEntries = allEntries.filter(e => e.phase === currentPhase);
+    phaseEntries.forEach(e => stampedDays.add(e.day));
 
-    // Merge rank from practices (admin updates it there)
-    if (practiceDoc.exists) {
-      const pd = practiceDoc.data();
-      if (pd.rank) dojoData.rank = pd.rank;
-      if (pd.rankHistory) dojoData.rankHistory = pd.rankHistory;
-    }
-
-    // 診断スコアをベースラインとして保持
-    if (submissionDoc.exists) {
-      dojoData.diagnosticCounts = submissionDoc.data().counts || null;
-      dojoData.diagnosticTotal  = submissionDoc.data().total  || 0;
-    }
-
+    computeStartDate();
+    buildDateEntryMap();
     render();
-    renderCalendar();
-    loadCommunity();
   } catch(e) {
     console.error(e);
     showError('データの読み込みに失敗しました。');
   }
 }
 
-/* ── Calendar ── */
-function renderCalendar() {
-  const grid = document.getElementById('cal-grid');
-  const label = document.getElementById('cal-month-label');
-  if (!grid || !label) return;
-
-  const today = toDateStr(new Date());
-  const challenges = dojoData?.challengeHistory || [];
-  const entries    = dojoData?.entries || [];
-
-  // date → challenge / entry マップを構築
-  const challengeMap = {};
-  challenges.forEach(c => { challengeMap[c.date] = c; });
-  const entryMap = {};
-  entries.forEach(e => { entryMap[e.date] = e; });
-
-  label.textContent = `${calYear}年 ${calMonth + 1}月`;
-
-  const DOWS = ['日','月','火','水','木','金','土'];
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-
-  let html = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
-
-  // 空白セル
-  for (let i = 0; i < firstDay; i++) html += '<div class="cal-day"></div>';
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const hasChallenge = !!challengeMap[dateStr];
-    const hasEntry     = !!entryMap[dateStr];
-    const isToday      = dateStr === today;
-
-    let cls = 'cal-day';
-    if (hasEntry)     cls += ' reflected';
-    else if (hasChallenge) cls += ' has-challenge';
-    if (isToday)      cls += ' is-today';
-
-    const isPast = dateStr <= today;
-    const indicator = hasEntry
-      ? `<div class="cal-check">✅</div>`
-      : isPast
-        ? `<div class="cal-dot"></div>`
-        : '';
-
-    // 過去日（今日含む）はすべてタップ可能
-    const onclick = dateStr <= today ? `onclick="openDayDetail('${dateStr}')"` : '';
-    html += `<div class="${cls}" ${onclick}><div class="cal-day-num">${d}</div>${indicator}</div>`;
+function computeStartDate() {
+  const d1 = phaseEntries.find(e => e.day === 1);
+  if (d1?.timestamp) {
+    const d = new Date(d1.timestamp);
+    startDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    return;
   }
-
-  grid.innerHTML = html;
-}
-
-function calPrev() {
-  calMonth--;
-  if (calMonth < 0) { calMonth = 11; calYear--; }
-  renderCalendar();
-}
-function calNext() {
-  calMonth++;
-  if (calMonth > 11) { calMonth = 0; calYear++; }
-  renderCalendar();
-}
-
-function openDayDetail(dateStr) {
-  const today      = toDateStr(new Date());
-  if (dateStr > today) return;
-
-  const challenges = dojoData?.challengeHistory || [];
-  const entries    = dojoData?.entries || [];
-  const challenge  = challenges.find(c => c.date === dateStr);
-  const entry      = entries.find(e => e.date === dateStr);
-
-  calSelectedDate    = dateStr;
-  calDetailChallenge = challenge || null; // 再検索不要にするため保存
-
-  // 日付表示
-  const [y, m, d] = dateStr.split('-');
-  document.getElementById('dd-date').textContent = `${y}年${parseInt(m)}月${parseInt(d)}日`;
-
-  // 課題がある場合はSpirit・課題を表示
-  const challengeBox = document.getElementById('dd-challenge-box');
-  if (challenge) {
-    const sp = SPIRITS[challenge.spirit] || { icon:'⚔️', name: challenge.spirit, color: 'var(--gold)' };
-    document.getElementById('dd-spirit').innerHTML = `<span style="color:${sp.color}">${sp.icon} ${sp.name}</span>`;
-    document.getElementById('dd-challenge-title').textContent = challenge.title || '';
-    document.getElementById('dd-challenge-body').textContent  = challenge.body  || '';
-    challengeBox.style.display = 'block';
-  } else {
-    document.getElementById('dd-spirit').innerHTML = '';
-    challengeBox.style.display = 'none';
+  if (dojoData.phaseStartedAt) {
+    const d = dojoData.phaseStartedAt.toDate();
+    startDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    return;
   }
-
-  // 振り返り
-  const reflBox = document.getElementById('dd-reflection-box');
-  if (entry?.reflection) {
-    document.getElementById('dd-reflection-text').textContent = entry.reflection;
-    reflBox.style.display = 'block';
-  } else {
-    reflBox.style.display = 'none';
-  }
-
-  // 武蔵BOT
-  const aiBox = document.getElementById('dd-ai-box');
-  if (entry?.aiMessage) {
-    document.getElementById('dd-ai-text').textContent = entry.aiMessage;
-    aiBox.style.display = 'block';
-  } else {
-    aiBox.style.display = 'none';
-  }
-
-  // 記録ボタン（未記録の場合のみ表示）
-  const recordBtn = document.getElementById('dd-record-btn');
-  recordBtn.style.display = !entry ? 'block' : 'none';
-
-  document.getElementById('day-detail-overlay').classList.add('open');
-}
-
-function closeDayDetail() {
-  document.getElementById('day-detail-overlay').classList.remove('open');
-  calSelectedDate    = null;
-  calDetailChallenge = null;
-}
-
-function handleDayDetailClick(e) {
-  if (e.target === document.getElementById('day-detail-overlay')) closeDayDetail();
-}
-
-function openRecordForDate() {
-  if (!calSelectedDate) return;
-  const savedDate = calSelectedDate;
-  // openDayDetail()で保存済みのオブジェクトを使う（再検索しない）
-  const challenge = calDetailChallenge;
-
-  closeDayDetail();
-  calSelectedDate = savedDate; // closeDayDetail()でnullになるので復元
-
-  const [y, m, d] = savedDate.split('-');
-  document.getElementById('record-panel-title').textContent = `${y}年${parseInt(m)}月${parseInt(d)}日の稽古を記録する`;
-
-  const card         = document.getElementById('challenge-card');
-  const pickerSec    = document.getElementById('spirit-picker-section');
-
-  pickerSec.style.display = 'none';
-
-  if (challenge) {
-    // 課題履歴あり → そのまま課題カードを表示
-    pendingGeneratedChallenge = false;
-    selectedSpirit   = challenge.spirit;
-    currentChallenge = { title: challenge.title, body: challenge.body };
-    const sp = SPIRITS[challenge.spirit];
-    card.style.borderColor = sp?.color || 'var(--gold)';
-    card.classList.add('visible');
-    document.getElementById('challenge-title').style.color = sp?.color || 'var(--gold)';
-    document.getElementById('challenge-title').textContent = challenge.title;
-    document.getElementById('challenge-body').textContent  = challenge.body;
-    document.getElementById('submit-btn').disabled = false;
-  } else {
-    // 課題履歴なし → AIで課題を生成してカードに表示
-    pendingGeneratedChallenge = true;
-    selectedSpirit   = null;
-    currentChallenge = null;
-    card.style.borderColor = 'var(--gold)';
-    card.classList.add('visible');
-    document.getElementById('challenge-title').style.color = 'var(--muted)';
-    document.getElementById('challenge-title').textContent = '課題を生成中...';
-    document.getElementById('challenge-body').textContent  = '直近の稽古記録をもとに、あなた専用の課題を作成しています。';
-    document.getElementById('submit-btn').disabled = true;
-    generateChallengeForDate(savedDate);
-  }
-
-  document.getElementById('record-form').style.display = 'block';
-  document.getElementById('success-screen').classList.remove('visible');
-  document.getElementById('submit-btn').textContent = '記録する';
-  document.getElementById('journal-section').classList.add('visible');
-  document.getElementById('reflection-input').value = '';
-  document.getElementById('record-error').textContent = '';
-  document.getElementById('record-overlay').classList.add('open');
-  document.getElementById('reflection-input').focus();
-}
-
-async function generateChallengeForDate(dateStr) {
-  try {
-    const res = await fetch(GENERATE_DOJO_CHALLENGE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId }),
-    });
-    const data = await res.json();
-    if (!data.ok || !data.challenge) throw new Error('生成に失敗しました');
-
-    const challenge = data.challenge;
-    selectedSpirit   = challenge.spirit;
-    currentChallenge = { title: challenge.title, body: challenge.body };
-
-    const sp   = SPIRITS[challenge.spirit] || {};
-    const card = document.getElementById('challenge-card');
-    card.style.borderColor = sp.color || 'var(--gold)';
-    document.getElementById('challenge-title').style.color = sp.color || 'var(--gold)';
-    document.getElementById('challenge-title').textContent = challenge.title;
-    document.getElementById('challenge-body').textContent  = challenge.body;
-
-    document.getElementById('submit-btn').disabled = false;
-    document.getElementById('reflection-input').focus();
-  } catch(e) {
-    console.error('generateChallengeForDate error:', e);
-    document.getElementById('challenge-title').textContent = '課題の生成に失敗しました';
-    document.getElementById('challenge-body').textContent  = '再度お試しいただくか、画面を閉じてやり直してください。';
-    document.getElementById('record-error').textContent = e.message;
-  }
-}
-
-/* ── Community board ── */
-async function loadCommunity() {
-  const container = document.getElementById('community-list');
-  if (!container) return;
-  try {
-    const today = toDateStr(new Date());
-    const snap = await db.collection('dojo_community')
-      .where('date', '==', today)
-      .limit(30)
-      .get();
-
-    if (snap.empty) {
-      container.innerHTML = '<div class="community-empty">今日はまだ誰も稽古を記録していません。<br>最初の一人になりましょう。</div>';
+  if (phaseEntries.length > 0) {
+    const earliest = [...phaseEntries].sort((a,b) => a.day - b.day)[0];
+    if (earliest.timestamp) {
+      const d = new Date(earliest.timestamp);
+      const base = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      base.setDate(base.getDate() - (earliest.day - 1));
+      startDate = base;
       return;
     }
-
-    // タイムスタンプで降順ソート（クライアントサイド）
-    const docs = snap.docs.sort((a, b) => {
-      const ta = a.data().timestamp?.toMillis?.() || 0;
-      const tb = b.data().timestamp?.toMillis?.() || 0;
-      return tb - ta;
-    });
-
-    container.innerHTML = docs.map((doc, i) => {
-      const d = doc.data();
-      const sp = SPIRITS[d.spirit] || { icon: '⚔️', name: d.spirit, color: 'var(--gold)' };
-      const ts = d.timestamp?.toDate ? d.timestamp.toDate() : null;
-      const timeStr = ts ? `${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
-      return `
-        <div class="community-card">
-          <div class="community-spirit-badge" style="background:${sp.color}22">
-            <span>${sp.icon}</span>
-          </div>
-          <div class="community-body">
-            <div class="community-spirit-name" style="color:${sp.color}">稽古者 #${i + 1} — ${sp.name}</div>
-            <div class="community-reflection">累計 ${d.entryCount} 回目の稽古を記録</div>
-            ${timeStr ? `<div class="community-time">${timeStr}</div>` : ''}
-          </div>
-        </div>`;
-    }).join('');
-  } catch(e) {
-    console.error('community load error:', e);
-    container.innerHTML = '<div class="community-empty">読み込みに失敗しました。</div>';
   }
+  if (todayDay >= 1) {
+    const t = new Date();
+    const base = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+    base.setDate(base.getDate() - (todayDay - 1));
+    startDate = base;
+    return;
+  }
+  startDate = new Date();
+}
+
+function buildDateEntryMap() {
+  dateEntryMap = {};
+  if (!startDate) return;
+  phaseEntries.forEach(e => {
+    if (!e.day) return;
+    const d = addDays(startDate, e.day - 1);
+    dateEntryMap[dateToStr(d)] = e;
+  });
+}
+
+function calcStreak() {
+  if (!stampedDays.size) return 0;
+  const sorted = [...stampedDays].sort((a,b) => b - a);
+  let streak = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === sorted[i-1] - 1) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function calcMaxStreak() {
+  if (!stampedDays.size) return 0;
+  const sorted = [...stampedDays].sort((a,b) => a - b);
+  let max = 1, cur = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    cur = (sorted[i] === sorted[i-1] + 1) ? cur + 1 : 1;
+    if (cur > max) max = cur;
+  }
+  return max;
 }
 
 /* ── Render ── */
 function render() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('main-content').style.display = 'block';
-  document.getElementById('fab-btn').style.display = '';
 
-  const rankName = dojoData.rank || '十級';
-  const rank = RANKS_BY_NAME[rankName] || RANKS_BY_NAME['十級'];
-  document.getElementById('rank-mon').innerHTML = rank.mon;
-  document.getElementById('rank-name').textContent = rank.name;
-  document.getElementById('rank-sub').textContent = rank.sub;
-  document.getElementById('rank-desc').textContent = rank.desc;
+  const info       = SPIRIT_INFO[currentSpirit] || { name: '—', en: '—' };
+  const phaseNum   = currentPhase + 1;
+  const totalPhase = spiritPlan.length || 4;
+  const count      = stampedDays.size;
+  const status     = dojoData.phaseStatus;
 
-  const entries = dojoData.entries || [];
-  const totalEntries = entries.length;
-  const uniqueDays = new Set(entries.map(e => e.date)).size;
-  const streak = calcStreak(entries);
+  document.getElementById('phase-badge').textContent  = `Phase ${phaseNum}/${totalPhase} — ${info.name}`;
+  document.getElementById('spirit-name').textContent  = info.name;
+  document.getElementById('spirit-en').textContent    = info.en;
+  document.getElementById('stamped-count').textContent = count;
+  document.getElementById('progress-fill').style.width = `${Math.min(count / 21 * 100, 100)}%`;
 
-  document.getElementById('stat-total').textContent = totalEntries;
-  document.getElementById('stat-days').textContent = uniqueDays;
-  document.getElementById('stat-streak').textContent = streak;
+  const now = new Date();
+  calYear  = now.getFullYear();
+  calMonth = now.getMonth();
+  renderCalendar();
 
-  renderCompass(entries);
-  renderCompassHistory();
-  renderEntries(entries);
-  renderRankHistory();
-
-  // 21日間達成CTA
-  const ctaSection = document.getElementById('review-cta-section');
-  if (ctaSection) ctaSection.style.display = uniqueDays >= 21 ? 'block' : 'none';
-}
-
-/* ── Pentagon Compass ── */
-function renderCompass(entries) {
-  const svg = document.getElementById('compass-svg');
-  const cx = 140, cy = 140, maxR = 100;
-
-  // 稽古件数は常にカウント（ラベル表示用）
-  const counts = {};
-  SPIRITS_ORDER.forEach(s => counts[s] = 0);
-  entries.forEach(e => { if (counts[e.spirit] !== undefined) counts[e.spirit]++; });
-
-  // AI評価スコアがあればそれを使用、なければ稽古件数ベース
-  const aiScores = dojoData.compassScores;
-  const values = aiScores
-    ? SPIRITS_ORDER.map(s => (aiScores[s] || 0) / 100)
-    : SPIRITS_ORDER.map(s => Math.min(counts[s] / 30, 1));
-
-  // 診断ベースライン（診断で選んだカード数を正規化）
-  const diagCounts = dojoData.diagnosticCounts;
-  const diagTotal  = dojoData.diagnosticTotal || 1;
-  const baseValues = diagCounts
-    ? SPIRITS_ORDER.map(s => Math.min((diagCounts[s] || 0) / diagTotal, 1))
-    : null;
-
-  // Angles: top = -90deg, clockwise
-  const angles = SPIRITS_ORDER.map((_, i) => (-90 + i * 72) * Math.PI / 180);
-
-  const toPath = pts => pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
-
-  const makePoints = (vals) => angles.map((a, i) => ({
-    x: cx + maxR * vals[i] * Math.cos(a),
-    y: cy + maxR * vals[i] * Math.sin(a),
-  }));
-
-  const dataPoints = makePoints(values);
-
-  // Background grid (3 levels)
-  let gridSvg = '';
-  [0.33, 0.66, 1].forEach((frac, idx) => {
-    const gPts = angles.map(a => ({
-      x: (cx + maxR * frac * Math.cos(a)).toFixed(1),
-      y: (cy + maxR * frac * Math.sin(a)).toFixed(1),
-    }));
-    const gPath = gPts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ') + ' Z';
-    gridSvg += `<path d="${gPath}" fill="none" stroke="rgba(201,168,76,.12)" stroke-width="${idx === 2 ? 1.5 : 0.8}"/>`;
-  });
-
-  // Axis lines
-  let axesSvg = angles.map(a => `<line x1="${cx}" y1="${cy}" x2="${(cx + maxR * Math.cos(a)).toFixed(1)}" y2="${(cy + maxR * Math.sin(a)).toFixed(1)}" stroke="rgba(201,168,76,.1)" stroke-width="1"/>`).join('');
-
-  // 診断ベースライン（薄い破線）
-  let baselineSvg = '';
-  if (baseValues) {
-    const basePts = makePoints(baseValues);
-    baselineSvg = `<path d="${toPath(basePts)}" fill="rgba(201,168,76,.08)" stroke="rgba(201,168,76,.35)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-  }
-
-  // 稽古成長（塗りつぶし）
-  const fillPath = toPath(dataPoints);
-
-  // Labels
-  const labelOffset = 22;
-  let labelsSvg = SPIRITS_ORDER.map((s, i) => {
-    const a = angles[i];
-    const lx = (cx + (maxR + labelOffset) * Math.cos(a)).toFixed(1);
-    const ly = (cy + (maxR + labelOffset) * Math.sin(a)).toFixed(1);
-    const sp = SPIRITS[s];
-    const countStr = counts[s] > 0 ? ` (${counts[s]})` : '';
-    return `
-      <text x="${lx}" y="${parseFloat(ly) - 6}" text-anchor="middle" font-size="11" fill="${sp.color}" font-family="sans-serif" font-weight="600">${sp.icon}</text>
-      <text x="${lx}" y="${parseFloat(ly) + 8}" text-anchor="middle" font-size="9" fill="${sp.color}" font-family="sans-serif">${sp.name}${countStr}</text>`;
-  }).join('');
-
-  // Center dot
-  const centerDot = `<circle cx="${cx}" cy="${cy}" r="3" fill="rgba(201,168,76,.4)"/>`;
-
-  svg.innerHTML = gridSvg + axesSvg + baselineSvg +
-    `<path d="${fillPath}" fill="rgba(201,168,76,.18)" stroke="#c9a84c" stroke-width="2" stroke-linejoin="round"/>` +
-    dataPoints.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#c9a84c"/>`).join('') +
-    centerDot + labelsSvg;
-}
-
-/* ── Entries list ── */
-function renderEntries(entries) {
-  const list = document.getElementById('entries-list');
-  const recent = [...entries]
-    .sort((a, b) => new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date))
-    .slice(0, 8);
-
-  if (recent.length === 0) {
-    list.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">まだ稽古の記録がありません。<br>最初の稽古を記録しましょう。</div>`;
-    return;
-  }
-
-  list.innerHTML = recent.map(e => {
-    const sp = SPIRITS[e.spirit] || {};
-    const ts = e.timestamp ? new Date(e.timestamp) : new Date(e.date);
-    const dateStr = `${ts.getFullYear()}/${ts.getMonth()+1}/${ts.getDate()}`;
-    return `
-      <div class="entry-card">
-        <div class="entry-spirit-dot" style="background:${sp.color || '#888'}"></div>
-        <div class="entry-body">
-          <div class="entry-meta">${dateStr} ・ ${sp.icon || ''} ${sp.name || e.spirit}</div>
-          <div class="entry-text">${escHtml(e.reflection || '')}</div>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-/* ── Compass history ── */
-function renderCompassHistory() {
-  const area = document.getElementById('compass-history-area');
-  const history = dojoData?.compassHistory;
-  const updatedAt = dojoData?.compassUpdatedAt;
-
-  if (!history || history.length === 0) {
-    area.innerHTML = `
-      <div style="padding:0 1.5rem">
-        <div class="compass-update-note">
-          Pentagon Compassは稽古記録に基づき、毎週月曜に更新されます。<br>
-          稽古を積み重ねるほど、精度が上がっていきます。
-        </div>
-      </div>`;
-    return;
-  }
-
-  const SPIRIT_COLORS = { hei:'#60a0b8', jiko:'#4aaa5a', flex:'#4a88d8', strat:'#e86040', sei:'#a060e0' };
-  const SPIRIT_LABEL  = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟', strat:'戦略', sei:'誠実' };
-
-  const sorted = [...history].sort((a, b) => a.week - b.week);
-
-  const nextUpdate = updatedAt
-    ? (() => {
-        const d = updatedAt.toDate ? updatedAt.toDate() : new Date(updatedAt);
-        const next = new Date(d.getTime() + 7 * 24 * 60 * 60 * 1000);
-        const diff = Math.ceil((next - Date.now()) / (1000 * 60 * 60 * 24));
-        return diff > 0 ? `次回更新まであと ${diff} 日` : '次回更新は間もなく';
-      })()
-    : '';
-
-  const rows = sorted.map(h => {
-    const bars = SPIRITS_ORDER.map(s => `
-      <div class="compass-bar-row">
-        <div class="compass-bar-label">${SPIRIT_LABEL[s]}</div>
-        <div class="compass-bar-track">
-          <div class="compass-bar-fill" style="width:${h.scores[s] || 0}%;background:${SPIRIT_COLORS[s]}"></div>
-        </div>
-      </div>`).join('');
-
-    const ts = h.updatedAt?.toDate ? h.updatedAt.toDate() : new Date();
-    const dateStr = `${ts.getMonth()+1}/${ts.getDate()}`;
-
-    return `
-      <div class="compass-week-row">
-        <div class="compass-week-num">Week ${h.week}<br><span style="font-size:.55rem">${dateStr}</span></div>
-        <div class="compass-week-bars">${bars}</div>
-        <div class="compass-week-summary">${escHtml(h.summary || '')}</div>
-      </div>`;
-  }).join('');
-
-  area.innerHTML = `
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.2rem;margin:0 1.5rem">
-      <div class="compass-history-title">PENTAGON COMPASS — 週次成長記録</div>
-      ${rows}
-      ${nextUpdate ? `<div class="compass-update-note">${nextUpdate}</div>` : ''}
-    </div>`;
-}
-
-/* ── Rank history ── */
-function renderRankHistory() {
-  const area = document.getElementById('rank-history-area');
-  const history = dojoData?.rankHistory;
-  if (!history || history.length === 0) { area.innerHTML = ''; return; }
-
-  const items = [...history]
-    .sort((a, b) => (b.approvedAt?.toMillis?.() || 0) - (a.approvedAt?.toMillis?.() || 0))
-    .map(h => {
-      const ts = h.approvedAt?.toDate?.();
-      const dateStr = ts ? `${ts.getFullYear()}/${ts.getMonth()+1}/${ts.getDate()}` : '';
-      return `
-        <div style="display:flex;gap:.75rem;align-items:flex-start;padding:.75rem 0;border-bottom:1px solid rgba(201,168,76,.1)">
-          <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;font-family:var(--font-b);font-size:.85rem;color:var(--gold);font-weight:700">${h.rank}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:.78rem;color:var(--cream2);line-height:1.6">${escHtml(h.comment || '')}</div>
-            ${dateStr ? `<div style="font-size:.65rem;color:var(--muted);margin-top:.2rem">${dateStr} 道場長より</div>` : ''}
-          </div>
-        </div>`;
-    }).join('');
-
-  area.innerHTML = `
-    <div style="padding: 0 1.5rem">
-      <div style="padding:1rem 1.2rem;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:14px">
-        <div style="font-size:.68rem;letter-spacing:.12em;color:var(--muted);margin-bottom:.5rem">道場長からの言葉</div>
-        ${items}
-      </div>
-    </div>`;
-}
-
-/* ── Streak calc ── */
-function calcStreak(entries) {
-  const days = [...new Set(entries.map(e => e.date))].sort().reverse();
-  if (days.length === 0) return 0;
-  const today = toDateStr(new Date());
-  const yesterday = toDateStr(new Date(Date.now() - 86400000));
-  if (days[0] !== today && days[0] !== yesterday) return 0;
-  let streak = 1;
-  for (let i = 1; i < days.length; i++) {
-    const prev = new Date(days[i-1]);
-    const curr = new Date(days[i]);
-    const diff = (prev - curr) / 86400000;
-    if (diff === 1) streak++;
-    else break;
-  }
-  return streak;
-}
-
-function toDateStr(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-/* ── Record panel ── */
-function openRecord() {
-  selectedSpirit = null;
-  currentChallenge = null;
-  calSelectedDate = null;
-  pendingGeneratedChallenge = false;
-  document.getElementById('reflection-input').value = '';
-  document.getElementById('record-error').textContent = '';
-  document.getElementById('record-form').style.display = 'block';
-  document.getElementById('success-screen').classList.remove('visible');
-  document.getElementById('record-panel-title').textContent = '今日の稽古を記録する';
-  document.getElementById('spirit-picker-section').style.display = 'none';
-  document.querySelectorAll('.spirit-picker-btn').forEach(b => b.classList.remove('selected'));
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = false;
-  btn.textContent = '記録する';
-
-  const today = toDateStr(new Date());
-  const tc = dojoData.todayChallenge;
-  const card = document.getElementById('challenge-card');
-
-  if (tc && tc.date === today) {
-    // LINEで届いた今日の課題を表示
-    selectedSpirit = tc.spirit;
-    currentChallenge = { title: tc.title, body: tc.body };
-    const sp = SPIRITS[tc.spirit] || {};
-    card.style.borderColor = sp.color || 'var(--gold)';
-    document.getElementById('challenge-title').style.color = sp.color || 'var(--gold)';
-    document.getElementById('challenge-title').textContent = tc.title;
-    document.getElementById('challenge-body').textContent = tc.body;
+  if (status === 'waiting_review' || status === 'completed') {
+    showPhaseComplete(status, info.name);
+    document.getElementById('reflection-area').innerHTML = '';
+  } else if (todayDay >= 1 && todayDay <= 21) {
+    renderReflection(todayDay);
   } else {
-    // 今日の課題がまだ届いていない場合 — 送信ボタンを無効化
-    card.style.borderColor = 'var(--gold)';
-    document.getElementById('challenge-title').style.color = 'var(--gold)';
-    document.getElementById('challenge-title').textContent = '本日の課題';
-    document.getElementById('challenge-body').textContent = '今日の課題はまだ届いていません。毎朝8時にLINEで送られます。';
-    btn.disabled = true;
-    btn.textContent = '課題が届いてから記録できます';
+    document.getElementById('reflection-area').innerHTML = `
+      <div style="text-align:center;padding:1rem 1.5rem">
+        <div style="font-size:.8rem;color:var(--muted)">LINEのメッセージのリンクから<br>今日の稽古を記録してください。</div>
+      </div>`;
+  }
+}
+
+function renderCalendar() {
+  document.getElementById('cal-month-label').textContent = `${calYear}年${calMonth + 1}月`;
+
+  const firstDay   = new Date(calYear, calMonth, 1);
+  const lastDay    = new Date(calYear, calMonth + 1, 0);
+  const startDow   = firstDay.getDay();
+  const todayStr   = dateToStr(new Date());
+  const periodStartStr = startDate ? dateToStr(startDate) : null;
+  const periodEndStr   = startDate ? dateToStr(addDays(startDate, 20)) : null;
+  const todayPracticeStr = (todayDay >= 1 && startDate)
+    ? dateToStr(addDays(startDate, todayDay - 1)) : null;
+
+  let html = '';
+  for (let i = 0; i < startDow; i++) html += `<div class="cal-cell"></div>`;
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dow     = (startDow + d - 1) % 7;
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const inPeriod     = periodStartStr && dateStr >= periodStartStr && dateStr <= periodEndStr;
+    const entry        = dateEntryMap[dateStr];
+    const isCompleted  = !!entry;
+    const isTodayPractice = dateStr === todayPracticeStr;
+    const isSelected   = dateStr === selectedDateStr;
+    const isPast       = dateStr < todayStr;
+
+    let dayNum = null;
+    if (inPeriod && startDate) {
+      dayNum = Math.round((localDate(dateStr) - startDate) / 86400000) + 1;
+    }
+
+    let icon = '';
+    if (isCompleted && dayNum && (dayNum === 7 || dayNum === 14 || dayNum === 21)) {
+      icon = `<div class="cal-icon"><span class="cal-star">⭐</span></div>`;
+    } else if (isCompleted) {
+      icon = `<div class="cal-icon"><div class="cal-check">✓</div></div>`;
+    } else if (isTodayPractice) {
+      icon = `<div class="cal-icon"><div class="cal-dot gold-dot"></div></div>`;
+    } else if (inPeriod && isPast) {
+      icon = `<div class="cal-icon"><div class="cal-dot gray-dot"></div></div>`;
+    }
+
+    let cls = 'cal-cell';
+    if (!inPeriod) cls += ' out-period';
+    else {
+      cls += ' in-period';
+      if (isCompleted)                       cls += ' completed';
+      if (isTodayPractice && !isCompleted)   cls += ' today-unrecorded';
+      if (isSelected)                        cls += ' selected';
+    }
+    if (dow === 0) cls += ' sun-col';
+    if (dow === 6) cls += ' sat-col';
+
+    const click = inPeriod ? `onclick="selectCalDate('${dateStr}',${dayNum})"` : '';
+    html += `<div class="${cls}" ${click}>
+      <span class="cal-num">${d}</span>${icon}
+    </div>`;
   }
 
-  card.classList.add('visible');
-  document.getElementById('journal-section').classList.add('visible');
-  document.getElementById('reflection-input').focus();
-  document.getElementById('record-overlay').classList.add('open');
+  const totalCells = startDow + lastDay.getDate();
+  const rem = totalCells % 7;
+  if (rem) for (let i = 0; i < 7 - rem; i++) html += `<div class="cal-cell"></div>`;
+
+  document.getElementById('cal-grid').innerHTML = html;
+
+  const streak    = calcStreak();
+  const maxStreak = calcMaxStreak();
+  const bar = document.getElementById('streak-bar');
+  if (streak >= 2) {
+    const flames = '🔥'.repeat(Math.min(streak, 5));
+    bar.innerHTML = `<div class="streak-inner">
+      <span class="streak-flames">${flames}</span>
+      <span class="streak-text">${streak}日連続！</span>
+      ${maxStreak > streak ? `<span class="streak-max">最高記録: ${maxStreak}日</span>` : ''}
+    </div>`;
+    bar.style.display = 'flex';
+  } else {
+    bar.style.display = 'none';
+  }
 }
 
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('record-overlay')) closeRecord();
-}
+function selectCalDate(dateStr, dayNum) {
+  selectedDateStr = dateStr;
+  renderCalendar();
 
-function closeRecord() {
-  document.getElementById('record-overlay').classList.remove('open');
-}
+  const entry = dateEntryMap[dateStr];
+  const d = localDate(dateStr);
+  const DOW = ['日','月','火','水','木','金','土'];
+  const label = `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`;
 
+  const wrap = document.getElementById('day-detail-wrap');
+  const area = document.getElementById('day-detail-area');
 
-async function submitRecord() {
-  document.getElementById('record-error').textContent = '';
-  if (!selectedSpirit) {
-    document.getElementById('record-error').textContent = 'Spiritを選んでください。';
+  const todayPracticeStr = (todayDay >= 1 && startDate)
+    ? dateToStr(addDays(startDate, todayDay - 1)) : null;
+
+  if (dateStr === todayPracticeStr && !entry) {
+    wrap.style.display = 'none';
+    document.getElementById('reflection-area').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return;
   }
-  const reflection = document.getElementById('reflection-input').value.trim();
-  if (!reflection) {
-    document.getElementById('record-error').textContent = '振り返りを入力してください。';
+
+  wrap.style.display = '';
+
+  if (entry) {
+    area.innerHTML = `
+      <div class="day-detail-card fade-up">
+        <div class="day-detail-hd">
+          <span class="day-detail-date">${label}</span>
+          <span class="done-badge">✓ Day ${dayNum}</span>
+        </div>
+        <div class="day-reflection-text">
+          ${entry.text ? escHtml(entry.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">（振り返りの記録なし）</span>'}
+        </div>
+      </div>`;
+  } else {
+    const isPast = dateStr < dateToStr(new Date());
+    area.innerHTML = `
+      <div class="day-detail-card fade-up">
+        <div class="day-detail-hd">
+          <span class="day-detail-date">${label}</span>
+          <span style="font-size:.68rem;color:var(--muted)">Day ${dayNum}</span>
+        </div>
+        <div class="day-reflection-text" style="color:var(--muted)">
+          ${isPast ? 'この日の記録はありません。' : '稽古の日を楽しみに。'}
+        </div>
+      </div>`;
+  }
+
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+/* ── Reflection form ── */
+function renderReflection(day) {
+  const area = document.getElementById('reflection-area');
+
+  if (stampedDays.has(day)) {
+    const entry = phaseEntries.find(e => e.day === day);
+    area.innerHTML = `
+      <div class="reflection-card fade-up">
+        <div class="reflection-day-label">DAY ${day} · 記録済み</div>
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">
+          <svg width="28" height="28" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="22" stroke="#3a7a4a" stroke-width="2.5"/><polyline points="15,26 22,34 37,17" stroke="#3a7a4a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size:.88rem;color:var(--cream2)">Day ${day} の稽古を記録しました</span>
+        </div>
+        ${entry?.text ? `<div style="font-size:.82rem;color:var(--muted);line-height:1.7;padding:.55rem .75rem;background:var(--bg3);border-radius:6px">${escHtml(entry.text).replace(/\n/g,'<br>')}</div>` : ''}
+      </div>`;
     return;
   }
 
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.textContent = '記録中...';
+  area.innerHTML = `
+    <div class="reflection-card fade-up">
+      <div class="reflection-day-label">DAY ${day} · 今日の気づき</div>
+      <div class="reflection-title">稽古の振り返り</div>
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:.5rem">ファシリテーターに届きます</div>
+      <textarea class="reflection-textarea" id="reflection-text"
+        placeholder="今日の稽古から何を感じましたか？どんな小さな気づきでも構いません。" rows="4"></textarea>
+      <button class="btn-submit" id="submit-btn" onclick="submitPractice(${day})">
+        ⚔️ 稽古を記録する
+      </button>
+    </div>`;
+}
+
+/* ── Submit practice ── */
+async function submitPractice(day) {
+  const textEl = document.getElementById('reflection-text');
+  const text   = textEl?.value?.trim() || '';
+  const btn    = document.getElementById('submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '記録中...' }
 
   const entry = {
-    spirit: selectedSpirit,
-    challengeTitle: currentChallenge?.title || '',
-    challengeBody:  currentChallenge?.body  || '',
-    reflection,
-    date: calSelectedDate || toDateStr(new Date()),
-    timestamp: new Date().toISOString(),
+    day,
+    phase: currentPhase,
+    spirit: currentSpirit,
+    text,
+    timestamp: new Date().toISOString()
   };
 
   try {
     await db.collection('dojo_practices').doc(userId).set({
       entries: firebase.firestore.FieldValue.arrayUnion(entry),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    // AI生成課題の場合、challengeHistory にも保存してカレンダーに反映
-    if (pendingGeneratedChallenge && currentChallenge) {
-      const challengeRecord = {
-        spirit: selectedSpirit,
-        title:  currentChallenge.title,
-        body:   currentChallenge.body,
-        date:   entry.date,
-      };
-      await db.collection('dojo_practices').doc(userId).set({
-        challengeHistory: firebase.firestore.FieldValue.arrayUnion(challengeRecord),
-      }, { merge: true });
-      if (!dojoData.challengeHistory) dojoData.challengeHistory = [];
-      dojoData.challengeHistory.push(challengeRecord);
-      pendingGeneratedChallenge = false;
-    }
+    stampedDays.add(day);
+    phaseEntries.push({ ...entry, timestamp: new Date() });
+    buildDateEntryMap();
 
-    // 稽古記録を匿名でコミュニティボードに自動書き込み（内容は共有しない）
-    const entryCount = (dojoData.entries || []).length + 1;
-    await db.collection('dojo_community').add({
-      spirit: selectedSpirit,
-      date: entry.date,
-      entryCount,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    });
+    const count = stampedDays.size;
+    document.getElementById('stamped-count').textContent = count;
+    document.getElementById('progress-fill').style.width = `${Math.min(count / 21 * 100, 100)}%`;
 
-    if (!dojoData.entries) dojoData.entries = [];
-    dojoData.entries.push(entry);
-
-    calSelectedDate = null;
-
-    // 完了画面に切り替え
-    showSuccessScreen(entry);
-    render();
     renderCalendar();
-    loadCommunity();
-
-    // バックグラウンドでAIメッセージ生成
-    generateAiMessage(entry);
-
+    renderReflection(day);
   } catch(e) {
     console.error(e);
-    document.getElementById('record-error').textContent = '保存に失敗しました: ' + e.message;
-    btn.disabled = false;
-    btn.textContent = '記録する';
+    if (btn) { btn.disabled = false; btn.textContent = '⚔️ 稽古を記録する' }
+    alert('記録に失敗しました。もう一度お試しください。');
   }
 }
 
-function showSuccessScreen(entry) {
-  document.getElementById('record-form').style.display = 'none';
-  const sp = SPIRITS[entry.spirit];
-  document.getElementById('success-spirit-label').textContent = `${sp.icon} ${sp.name}`;
-  document.getElementById('success-challenge-label').textContent = entry.challengeTitle;
-  const preview = entry.reflection.length > 80
-    ? entry.reflection.slice(0, 80) + '…'
-    : entry.reflection;
-  document.getElementById('success-reflection-preview').textContent = preview;
-  document.getElementById('ai-loading').style.display = 'block';
-  document.getElementById('ai-message-area').style.display = 'none';
-  document.getElementById('success-screen').classList.add('visible');
-}
+/* ── Phase complete screen ── */
+function showPhaseComplete(status, spiritName) {
+  const area = document.getElementById('phase-complete-area');
 
-async function generateAiMessage(entry) {
-  try {
-    const sp = SPIRITS[entry.spirit];
-    const res = await fetch(GENERATE_DOJO_MESSAGE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId,
-        spirit: entry.spirit,
-        spiritName: sp.name,
-        challengeTitle: entry.challengeTitle,
-        challengeBody:  entry.challengeBody,
-        reflection: entry.reflection,
-      }),
-    });
-    const data = await res.json();
-    document.getElementById('ai-loading').style.display = 'none';
-    if (data.message) {
-      document.getElementById('ai-message-text').textContent = data.message;
-      document.getElementById('ai-message-area').style.display = 'block';
-    }
-  } catch(e) {
-    console.error('AI message generation failed:', e);
-    document.getElementById('ai-loading').style.display = 'none';
+  if (status === 'completed') {
+    area.innerHTML = `
+      <div class="waiting-card fade-up">
+        <div style="font-size:2rem;margin-bottom:.7rem">⚔️</div>
+        <div class="waiting-title">すべての稽古、完了。</div>
+        <div class="waiting-desc">
+          4つのSpiritの鍛錬を修めた。<br>
+          これからは、あなた自身が道を切り拓いていく。<br><br>
+          <em>千日の稽古を鍛とし、万日の稽古を錬とす。</em><br>
+          <span style="font-size:.75rem;color:var(--muted)">— 宮本武蔵</span>
+        </div>
+      </div>`;
+  } else {
+    const calUrl = 'https://cal.com/samurai-in-you/21dayafterfeedback';
+    area.innerHTML = `
+      <div class="waiting-card fade-up">
+        <div style="font-size:1.5rem;margin-bottom:.6rem">⚔️</div>
+        <div class="waiting-title">「${spiritName}」の稽古、完了。</div>
+        <div class="waiting-desc">
+          21日間、続けた。<br>それだけで、すでに侍だ。<br><br>
+          振り返りミーティングの予約をしてください。<br>
+          道場長と共に、次のSpiritへと進みます。
+        </div>
+        <a href="${calUrl}" class="cal-link" target="_blank">
+          📅 ミーティングを予約する
+        </a>
+      </div>`;
   }
+
+  area.style.display = '';
 }
 
-/* ── Error ── */
 function showError(msg) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('error-screen').style.display = 'block';
-  document.getElementById('error-msg').textContent = msg;
+  document.getElementById('error-msg').innerHTML = msg;
 }
 
 init();

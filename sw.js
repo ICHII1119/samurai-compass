@@ -1,4 +1,4 @@
-const CACHE_NAME = 'samurai-compass-v11';
+const CACHE_NAME = 'samurai-compass-v12';
 const ASSETS = [
   './index.html',
   './training.html',

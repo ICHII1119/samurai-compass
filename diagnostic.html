@@ -1290,8 +1290,9 @@ const SEND_BROADCAST_URL  = 'https://sendbroadcast-6wuzckrpiq-uc.a.run.app';
 const RESEND_DAILY_TIP_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/resendDailyTip';
 const SEND_DOJO_INVITE_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendDojoInvite';
 const MUSASHI_DOJO_SEND_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendMusashiDojoMessage';
-const START_DOJO_URL         = 'https://us-central1-samurai-compass.cloudfunctions.net/startDojo';
-const ADVANCE_DOJO_PHASE_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/advanceDojoPhase';
+const START_DOJO_URL            = 'https://us-central1-samurai-compass.cloudfunctions.net/startDojo';
+const ADVANCE_DOJO_PHASE_URL    = 'https://us-central1-samurai-compass.cloudfunctions.net/advanceDojoPhase';
+const SEND_DOJO_DIAGNOSTIC_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendDojoDiagnosticUrl';
 
 let selected = new Set();
 let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
@@ -2444,23 +2445,23 @@ async function renderAdminDojo() {
 
     container.innerHTML = docs.map(d => {
       const userId       = d.id;
-      const entries      = [...(d.entries || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const entries      = [...(d.entries || [])].sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
       const spiritPlan   = d.spiritPlan || null;
       const currentPhase = d.currentPhase ?? null;
       const currentDay   = d.currentDay  ?? null;
       const phaseStatus  = d.phaseStatus || null;
 
       entries.forEach(e => {
-        const key = `${userId}-${e.date}`;
-        _dojoEntryMap[key] = { date: e.date, spirit: e.spirit, challengeTitle: e.challengeTitle || '', reflection: e.reflection || '' };
+        const key = `${userId}-${e.phase ?? 0}-${e.day}`;
+        _dojoEntryMap[key] = { day: e.day, phase: e.phase ?? 0, spirit: e.spirit, text: e.text || '' };
       });
 
       const profile  = nameMap[userId];
       const name     = profile?.name || '';
       const pic      = profile?.pic  || '';
-      const latestDate = entries[0]?.date ? new Date(entries[0].date) : null;
-      const latestLabel = latestDate && !isNaN(latestDate)
-        ? `${latestDate.getMonth()+1}/${latestDate.getDate()}`
+      const latestTs = entries[0]?.timestamp ? new Date(entries[0].timestamp) : null;
+      const latestLabel = latestTs && !isNaN(latestTs)
+        ? `${latestTs.getMonth()+1}/${latestTs.getDate()}`
         : '';
 
       // Phase情報パネル
@@ -2469,10 +2470,16 @@ async function renderAdminDojo() {
         phaseHtml = `
           <div style="padding:.7rem 1.1rem;border-bottom:1px solid rgba(201,168,76,.08);display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap">
             <span style="font-size:.75rem;color:var(--muted)">道場未開始</span>
-            <button id="start-dojo-btn-${userId}" onclick="adminStartDojo('${userId}',this)"
-              style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
-              ⛩ 道場開始
-            </button>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+              <button id="diag-btn-${userId}" onclick="adminSendDojoDiagnosticUrl('${userId}',this)"
+                style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(126,184,212,.1);border:1px solid rgba(126,184,212,.4);color:#7eb8d4;cursor:pointer;font-weight:600">
+                📋 詳細診断URLを送る
+              </button>
+              <button id="start-dojo-btn-${userId}" onclick="adminStartDojo('${userId}',this)"
+                style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
+                ⛩ 道場開始
+              </button>
+            </div>
           </div>`;
       } else {
         const spirit    = spiritPlan[currentPhase] || '—';
@@ -2557,6 +2564,25 @@ function toggleDojoCard(userId, headerEl) {
   const isOpen = detail.style.display !== 'none';
   detail.style.display = isOpen ? 'none' : 'block';
   headerEl.querySelector('span:last-child').textContent = isOpen ? '›' : '∨';
+}
+
+async function adminSendDojoDiagnosticUrl(userId, btn) {
+  if (!confirm('詳細診断URLをLINEで送信しますか？')) return;
+  btn.disabled = true; btn.textContent = '送信中...';
+  try {
+    const res = await fetch(SEND_DOJO_DIAGNOSTIC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+      body: JSON.stringify({ userId })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error');
+    btn.textContent = '✓ 送信済み';
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '📋 詳細診断URLを送る';
+    alert('送信に失敗しました: ' + e.message);
+  }
 }
 
 async function adminStartDojo(userId, btn) {
@@ -2841,29 +2867,31 @@ async function toggleDojoEntries(userId, btn) {
       return;
     }
     const data = doc.data();
-    const entries = [...(data.entries || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
-    const nextDaySrc = data.nextDayChallenge?.sourceDate;
+    const entries = [...(data.entries || [])].sort((a, b) => {
+      if (a.phase !== b.phase) return (b.phase ?? 0) - (a.phase ?? 0);
+      return b.day - a.day;
+    });
 
     const SPIRIT_COLORS = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
     const SPIRIT_JP = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
 
     container.innerHTML = entries.map(e => {
-      const key = `${userId}-${e.date}`;
-      _dojoEntryMap[key] = { date: e.date, spirit: e.spirit, challengeTitle: e.challengeTitle || '', reflection: e.reflection || '' };
+      const key = `${userId}-${e.phase ?? 0}-${e.day}`;
+      _dojoEntryMap[key] = { day: e.day, phase: e.phase ?? 0, spirit: e.spirit, text: e.text || '' };
       const col = SPIRIT_COLORS[e.spirit] || 'var(--gold)';
       const spName = SPIRIT_JP[e.spirit] || e.spirit;
-      const alreadySent = nextDaySrc === e.date;
+      const phaseLabel = e.phase !== undefined ? `Phase ${e.phase + 1} ` : '';
+      const tsLabel = e.timestamp ? (() => { const d = new Date(e.timestamp); return `${d.getMonth()+1}/${d.getDate()}`; })() : '';
       return `
         <div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
-          <div style="font-size:.65rem;color:${col};margin-bottom:.2rem">${e.date}　${spName}</div>
-          ${e.challengeTitle ? `<div style="font-size:.7rem;color:var(--muted);margin-bottom:.2rem">課題：${escHtml(e.challengeTitle)}</div>` : ''}
+          <div style="font-size:.65rem;color:${col};margin-bottom:.2rem">${phaseLabel}Day ${e.day} — ${spName}${tsLabel ? `　${tsLabel}` : ''}</div>
           <div style="font-size:.82rem;color:var(--cream2);line-height:1.6;margin-bottom:.4rem">
-            ${e.reflection ? escHtml(e.reflection).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">（記録なし）</span>'}
+            ${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">（記録なし）</span>'}
           </div>
           <div id="musashi-result-${key}" style="display:none;margin-bottom:.4rem;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
           <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
-            style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:${alreadySent ? 'rgba(100,200,100,.1)' : 'rgba(201,168,76,.1)'};border:1px solid ${alreadySent ? 'rgba(100,200,100,.4)' : 'rgba(201,168,76,.35)'};color:${alreadySent ? '#6dc46d' : 'var(--gold)'};cursor:pointer">
-            ${alreadySent ? '✅ 武蔵BOT送信済み' : '⚔️ 武蔵BOT発動'}
+            style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);cursor:pointer">
+            ⚔️ 武蔵BOT発動
           </button>
         </div>`;
     }).join('');
@@ -2876,7 +2904,7 @@ async function toggleDojoEntries(userId, btn) {
 
 async function generateMusashiDojo(userId, entryKey, btn) {
   const entry = _dojoEntryMap[entryKey];
-  if (!entry?.reflection?.trim()) { alert('振り返りが空のため発動できません。'); return; }
+  if (!entry?.text?.trim()) { alert('振り返りが空のため発動できません。'); return; }
 
   const apiKey = getMusashiKey();
   if (!apiKey) {
@@ -2928,9 +2956,9 @@ async function generateMusashiDojo(userId, entryKey, btn) {
         messages: [{
           role: 'user',
           content:
-            `【稽古者が取り組んだ課題】${entry.challengeTitle || '—'}\n` +
+            `【Phase】Phase ${(entry.phase ?? 0) + 1}　Day ${entry.day}\n` +
             `【課題のSpirit】${spiritName}\n` +
-            `【稽古者の振り返り】\n${entry.reflection}\n\n` +
+            `【稽古者の振り返り】\n${entry.text}\n\n` +
             `以下のJSON形式のみで出力してください（前後に余分なテキスト・マークダウン不要）：\n` +
             `{"message":"（武蔵の言葉。60〜120文字）"}`,
         }],
