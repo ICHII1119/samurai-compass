@@ -2744,7 +2744,8 @@ function buildLearnerCard(learner) {
   const spirit = liteData?.spirit || (spiritPlan?.[0]) || '';
   const spiritCol = SPIRIT_COL_L[spirit] || 'var(--gold)';
   const rank = practiceData?.rank || null;
-  const unread = getUnreadCount(userId, liteEntries);
+  const dojoEntries0 = dojoData?.entries || [];
+  const unread = getUnreadCount(userId, [...liteEntries, ...dojoEntries0]);
 
   const allTs = [
     ...(dojoData?.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0),
@@ -2798,7 +2799,7 @@ function buildLearnerCard(learner) {
     : `<div style="width:40px;height:40px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">侍</div>`;
 
   return `
-    <div id="ucard-${userId}" style="background:var(--bg2);border:1px solid ${unread > 0 ? 'rgba(201,168,76,.5)' : 'var(--border)'};border-radius:var(--r);margin-bottom:.9rem;overflow:hidden">
+    <div id="ucard-${userId}" style="background:var(--bg2);border:1px solid ${unread > 0 ? 'rgba(224,80,80,.45)' : 'var(--border)'};border-radius:var(--r);margin-bottom:.9rem;overflow:hidden;${unread > 0 ? 'box-shadow:inset 3px 0 0 #e05050;' : ''}">
       <div onclick="toggleLearnerCard('${userId}')"
            style="padding:.85rem 1.1rem;display:flex;align-items:center;gap:.75rem;cursor:pointer">
         ${avatarHtml}
@@ -2921,13 +2922,18 @@ async function toggleLearnerCard(userId) {
 
       html += `<div style="padding:.65rem 1.1rem .25rem;font-size:.67rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;border-top:1px solid rgba(201,168,76,.1)">⛩ 道場の振り返り</div>`;
       html += dojoEntries.map(e => {
-        const key    = `${userId}-${e.phase ?? 0}-${e.day}`;
-        const col    = SPIRIT_COL_L[e.spirit] || 'var(--gold)';
-        const spName = SPIRIT_JP_L[e.spirit] || e.spirit || '—';
-        const ts     = e.timestamp ? new Date(e.timestamp) : null;
-        const tsLbl  = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()}` : '';
-        return `<div style="padding:.6rem 1.1rem;border-top:1px solid rgba(255,255,255,.04)">
-          <div style="font-size:.65rem;color:${col};margin-bottom:.25rem">Phase ${(e.phase ?? 0) + 1} Day ${e.day} — ${spName}${tsLbl ? ` · ${tsLbl}` : ''}</div>
+        const key      = `${userId}-${e.phase ?? 0}-${e.day}`;
+        const col      = SPIRIT_COL_L[e.spirit] || 'var(--gold)';
+        const spName   = SPIRIT_JP_L[e.spirit] || e.spirit || '—';
+        const ts       = e.timestamp ? new Date(e.timestamp) : null;
+        const tsLbl    = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
+        const isUnread = ts && ts.getTime() > seenUntil;
+        return `<div data-ts="${ts ? ts.getTime() : 0}" ${isUnread ? 'data-unread-dojo="1"' : ''} style="padding:.6rem 1.1rem;border-top:1px solid rgba(255,255,255,.04)${isUnread ? ';background:rgba(224,80,80,.04)' : ''}">
+          <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;flex-wrap:wrap">
+            <span style="font-size:.65rem;color:${col}">Phase ${(e.phase ?? 0) + 1} Day ${e.day} — ${spName}</span>
+            ${tsLbl ? `<span style="font-size:.62rem;color:var(--muted)">${tsLbl}</span>` : ''}
+            ${isUnread ? `<span class="unread-label-dojo" style="font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">未読</span>` : ''}
+          </div>
           <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
           <div id="musashi-result-${key}" style="display:none;margin:.4rem 0;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
           <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
@@ -2946,7 +2952,7 @@ async function toggleLearnerCard(userId) {
     const badge = document.getElementById(`badge-${userId}`);
     if (badge) badge.innerHTML = '';
     const card = document.getElementById(`ucard-${userId}`);
-    if (card) card.style.borderColor = 'var(--border)';
+    if (card) { card.style.borderColor = 'var(--border)'; card.style.boxShadow = ''; }
 
     detail.innerHTML = html;
     detail.dataset.loaded = '1';
