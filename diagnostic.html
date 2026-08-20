@@ -2856,96 +2856,96 @@ async function toggleLearnerCard(userId) {
     const seenUntil    = _readStateCache?.[userId] || 0;
     const rank         = practiceData?.rank || '見習い';
 
-    let html = '';
+    // 入門編・道場をタイムスタンプ順に統合
+    const liteRaw = (practiceData?.entries || []).map(e => ({ ...e, _src: 'lite' }));
+    const dojoRaw = (dojoData?.entries || []).map(e => ({ ...e, _src: 'dojo' }));
 
-    // ── 入門編の振り返り ──
-    const liteEntries = [...(practiceData?.entries || [])].sort((a, b) => {
-      const ta = a.timestamp ? new Date(a.timestamp).getTime() : a.day;
-      const tb = b.timestamp ? new Date(b.timestamp).getTime() : b.day;
-      return tb - ta;
+    // _dojoEntryMap を事前登録
+    dojoRaw.forEach(e => {
+      const key = `${userId}-${e.phase ?? 0}-${e.day}`;
+      _dojoEntryMap[key] = { day: e.day, phase: e.phase ?? 0, spirit: e.spirit, text: e.text || '' };
     });
 
-    if (liteEntries.length > 0) {
-      html += `<div style="padding:.65rem 1.1rem .25rem;font-size:.67rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase">⚔️ 入門編の振り返り</div>`;
-      html += liteEntries.map(e => {
-        const ts      = e.timestamp ? new Date(e.timestamp) : null;
-        const dateStr = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
-        const isUnread = ts && ts.getTime() > seenUntil;
-        const dayComments = (practiceData?.adminComments || []).filter(c => c.day === e.day);
-        const commentsHtml = dayComments.map(c => {
-          const ct = c.sentAt?.toDate ? c.sentAt.toDate() : (c.sentAt ? new Date(c.sentAt) : null);
-          const ctStr = ct && !isNaN(ct) ? `${ct.getMonth()+1}/${ct.getDate()} ${String(ct.getHours()).padStart(2,'0')}:${String(ct.getMinutes()).padStart(2,'0')}` : '';
-          return `<div style="margin-top:.5rem;padding:.4rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0">
-            <div style="font-size:.62rem;color:var(--gold);margin-bottom:.2rem">⚔️ あなたのコメント${ctStr ? ` · ${ctStr}` : ''}</div>
-            <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${escHtml(c.text).replace(/\n/g,'<br>')}</div>
-          </div>`;
-        }).join('');
+    const allEntries = [...liteRaw, ...dojoRaw].sort((a, b) => {
+      const ta = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+      const tb = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+      return tb - ta; // 最新が上
+    });
 
-        return `<div data-ts="${ts ? ts.getTime() : 0}" ${isUnread ? 'data-unread="1"' : ''} style="padding:.6rem 1.1rem;border-top:1px solid rgba(255,255,255,.04)">
-          <div style="display:flex;gap:.7rem;align-items:flex-start">
-            <div style="flex-shrink:0;width:32px;height:32px;background:${isUnread ? 'rgba(201,168,76,.25)' : 'var(--gold-dim)'};border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;position:relative">
-              ${isUnread ? `<div style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#e05050;border-radius:50%;border:1.5px solid var(--bg2)"></div>` : ''}
-              <span style="font-size:.52rem;color:var(--muted)">DAY</span>
-              <span style="font-size:.78rem;font-weight:600;color:var(--gold)">${e.day}</span>
-            </div>
-            <div style="flex:1">
-              ${dateStr ? `<div style="font-size:.65rem;color:var(--muted);margin-bottom:.2rem">${dateStr}${isUnread ? '<span style="margin-left:.4rem;font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">未読</span>' : ''}</div>` : ''}
-              <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
-              ${commentsHtml}
-              <div style="margin-top:.55rem;display:flex;flex-direction:column;gap:.35rem">
-                <textarea placeholder="コメントを送る..." rows="2" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>
-                <div style="display:flex;gap:.4rem;justify-content:flex-end">
-                  <button data-reflection="${(e.text || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-day="${e.day}" data-rank="${rank}" onclick="generateMusashiComment(this.dataset.reflection, +this.dataset.day, this.dataset.rank, this)"
-                    style="padding:.35rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);font-size:.75rem;cursor:pointer;white-space:nowrap">
-                    ⚔️ 武蔵BOT
-                  </button>
-                  <button onclick="sendAdminComment('${userId}', ${e.day}, this)"
-                    style="padding:.35rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer;white-space:nowrap">送信</button>
+    let html = '';
+
+    if (allEntries.length === 0) {
+      html = '<div style="padding:.8rem 1.1rem;font-size:.82rem;color:var(--muted)">振り返り記録はまだありません</div>';
+    } else {
+      html = allEntries.map(e => {
+        const ts       = e.timestamp ? new Date(e.timestamp) : null;
+        const dateStr  = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
+        const isUnread = ts && ts.getTime() > seenUntil;
+
+        if (e._src === 'lite') {
+          const dayComments = (practiceData?.adminComments || []).filter(c => c.day === e.day);
+          const commentsHtml = dayComments.map(c => {
+            const ct = c.sentAt?.toDate ? c.sentAt.toDate() : (c.sentAt ? new Date(c.sentAt) : null);
+            const ctStr = ct && !isNaN(ct) ? `${ct.getMonth()+1}/${ct.getDate()} ${String(ct.getHours()).padStart(2,'0')}:${String(ct.getMinutes()).padStart(2,'0')}` : '';
+            return `<div style="margin-top:.5rem;padding:.4rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0">
+              <div style="font-size:.62rem;color:var(--gold);margin-bottom:.2rem">⚔️ あなたのコメント${ctStr ? ` · ${ctStr}` : ''}</div>
+              <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${escHtml(c.text).replace(/\n/g,'<br>')}</div>
+            </div>`;
+          }).join('');
+          return `<div data-ts="${ts ? ts.getTime() : 0}" ${isUnread ? 'data-unread="1"' : ''} style="padding:.6rem 1.1rem;border-top:1px solid rgba(255,255,255,.04)">
+            <div style="display:flex;gap:.7rem;align-items:flex-start">
+              <div style="flex-shrink:0;width:32px;height:32px;background:${isUnread ? 'rgba(201,168,76,.25)' : 'var(--gold-dim)'};border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;position:relative">
+                ${isUnread ? `<div style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#e05050;border-radius:50%;border:1.5px solid var(--bg2)"></div>` : ''}
+                <span style="font-size:.48rem;color:var(--muted)">入門</span>
+                <span style="font-size:.78rem;font-weight:600;color:var(--gold)">${e.day}</span>
+              </div>
+              <div style="flex:1">
+                ${dateStr ? `<div style="font-size:.65rem;color:var(--muted);margin-bottom:.2rem">${dateStr}${isUnread ? '<span style="margin-left:.4rem;font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">未読</span>' : ''}</div>` : ''}
+                <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
+                ${commentsHtml}
+                <div style="margin-top:.55rem;display:flex;flex-direction:column;gap:.35rem">
+                  <textarea placeholder="コメントを送る..." rows="2" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>
+                  <div style="display:flex;gap:.4rem;justify-content:flex-end">
+                    <button data-reflection="${(e.text || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-day="${e.day}" data-rank="${rank}" onclick="generateMusashiComment(this.dataset.reflection, +this.dataset.day, this.dataset.rank, this)"
+                      style="padding:.35rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);font-size:.75rem;cursor:pointer;white-space:nowrap">
+                      ⚔️ 武蔵BOT
+                    </button>
+                    <button onclick="sendAdminComment('${userId}', ${e.day}, this)"
+                      style="padding:.35rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer;white-space:nowrap">送信</button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>`;
+          </div>`;
+        } else {
+          // 道場エントリ
+          const key    = `${userId}-${e.phase ?? 0}-${e.day}`;
+          const col    = SPIRIT_COL_L[e.spirit] || 'var(--gold)';
+          const spName = SPIRIT_JP_L[e.spirit] || e.spirit || '—';
+          return `<div data-ts="${ts ? ts.getTime() : 0}" ${isUnread ? 'data-unread-dojo="1"' : ''} style="padding:.6rem 1.1rem;border-top:1px solid rgba(255,255,255,.04)${isUnread ? ';background:rgba(224,80,80,.04)' : ''}">
+            <div style="display:flex;gap:.7rem;align-items:flex-start">
+              <div style="flex-shrink:0;width:32px;height:32px;background:${isUnread ? 'rgba(224,80,80,.2)' : col + '22'};border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;position:relative">
+                ${isUnread ? `<div style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#e05050;border-radius:50%;border:1.5px solid var(--bg2)"></div>` : ''}
+                <span style="font-size:.45rem;color:${col}">道場</span>
+                <span style="font-size:.72rem;font-weight:600;color:${col}">D${e.day}</span>
+              </div>
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.2rem;flex-wrap:wrap">
+                  <span style="font-size:.65rem;color:${col}">Phase ${(e.phase ?? 0) + 1} · ${spName}</span>
+                  ${dateStr ? `<span style="font-size:.62rem;color:var(--muted)">${dateStr}</span>` : ''}
+                  ${isUnread ? `<span class="unread-label-dojo" style="font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">未読</span>` : ''}
+                </div>
+                <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
+                <div id="musashi-result-${key}" style="display:none;margin:.4rem 0;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
+                <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
+                  style="margin-top:.4rem;font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);cursor:pointer">
+                  ⚔️ 武蔵BOT発動
+                </button>
+              </div>
+            </div>
+          </div>`;
+        }
       }).join('');
-    }
-
-    // ── 道場の振り返り ──
-    if (dojoData && (dojoData.entries || []).length > 0) {
-      const dojoEntries = [...dojoData.entries].sort((a, b) => {
-        if ((b.phase ?? 0) !== (a.phase ?? 0)) return (b.phase ?? 0) - (a.phase ?? 0);
-        return b.day - a.day;
-      });
-      dojoEntries.forEach(e => {
-        const key = `${userId}-${e.phase ?? 0}-${e.day}`;
-        _dojoEntryMap[key] = { day: e.day, phase: e.phase ?? 0, spirit: e.spirit, text: e.text || '' };
-      });
-
-      html += `<div style="padding:.65rem 1.1rem .25rem;font-size:.67rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;border-top:1px solid rgba(201,168,76,.1)">⛩ 道場の振り返り</div>`;
-      html += dojoEntries.map(e => {
-        const key      = `${userId}-${e.phase ?? 0}-${e.day}`;
-        const col      = SPIRIT_COL_L[e.spirit] || 'var(--gold)';
-        const spName   = SPIRIT_JP_L[e.spirit] || e.spirit || '—';
-        const ts       = e.timestamp ? new Date(e.timestamp) : null;
-        const tsLbl    = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}` : '';
-        const isUnread = ts && ts.getTime() > seenUntil;
-        return `<div data-ts="${ts ? ts.getTime() : 0}" ${isUnread ? 'data-unread-dojo="1"' : ''} style="padding:.6rem 1.1rem;border-top:1px solid rgba(255,255,255,.04)${isUnread ? ';background:rgba(224,80,80,.04)' : ''}">
-          <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;flex-wrap:wrap">
-            <span style="font-size:.65rem;color:${col}">Phase ${(e.phase ?? 0) + 1} Day ${e.day} — ${spName}</span>
-            ${tsLbl ? `<span style="font-size:.62rem;color:var(--muted)">${tsLbl}</span>` : ''}
-            ${isUnread ? `<span class="unread-label-dojo" style="font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">未読</span>` : ''}
-          </div>
-          <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
-          <div id="musashi-result-${key}" style="display:none;margin:.4rem 0;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
-          <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
-            style="margin-top:.4rem;font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);cursor:pointer">
-            ⚔️ 武蔵BOT発動
-          </button>
-        </div>`;
-      }).join('');
-    }
-
-    if (!html) {
-      html = '<div style="padding:.8rem 1.1rem;font-size:.82rem;color:var(--muted)">振り返り記録はまだありません</div>';
     }
 
     markUserRead(userId, Date.now());
