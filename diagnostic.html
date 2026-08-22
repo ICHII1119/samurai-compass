@@ -2858,6 +2858,11 @@ async function toggleLearnerCard(userId) {
 
     // 入門編・道場をタイムスタンプ順に統合
     const liteRaw = (practiceData?.entries || []).map(e => ({ ...e, _src: 'lite' }));
+    const musashiMsgMap = {};
+    (dojoData?.musashiMessages || []).forEach(m => {
+      const k = `${m.phase ?? 0}-${m.day}`;
+      if (!musashiMsgMap[k] || m.sentAt > musashiMsgMap[k].sentAt) musashiMsgMap[k] = m;
+    });
     const dojoRaw = (dojoData?.entries || []).map(e => ({ ...e, _src: 'dojo' }));
 
     // _dojoEntryMap を事前登録
@@ -2936,10 +2941,15 @@ async function toggleLearnerCard(userId) {
                   ${isUnread ? `<span class="unread-label-dojo" style="font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">未読</span>` : ''}
                 </div>
                 <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
-                <div id="musashi-result-${key}" style="display:none;margin:.4rem 0;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
+                ${(() => {
+            const sent = musashiMsgMap[`${e.phase ?? 0}-${e.day}`];
+            return sent
+              ? `<div id="musashi-result-${key}" style="display:block;margin:.4rem 0">${buildMusashiSentHtml(sent.message, sent.sentAt)}</div>`
+              : `<div id="musashi-result-${key}" style="display:none;margin:.4rem 0;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>`;
+          })()}
                 <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
-                  style="margin-top:.4rem;font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);cursor:pointer">
-                  ⚔️ 武蔵BOT発動
+                  style="margin-top:.4rem;font-size:.72rem;padding:.3rem .75rem;border-radius:6px;${musashiMsgMap[`${e.phase ?? 0}-${e.day}`] ? 'background:rgba(100,200,100,.1);border:1px solid rgba(100,200,100,.4);color:#6dc46d' : 'background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold)'};cursor:pointer">
+                  ${musashiMsgMap[`${e.phase ?? 0}-${e.day}`] ? '✅ 送信済み（再送）' : '⚔️ 武蔵BOT発動'}
                 </button>
               </div>
             </div>
@@ -3336,6 +3346,15 @@ function cancelMusashiDojo(entryKey) {
   if (btn) { btn.textContent = '⚔️ 武蔵BOT発動'; btn.disabled = false; }
 }
 
+function buildMusashiSentHtml(message, sentAt) {
+  const dt = sentAt ? new Date(sentAt) : null;
+  const dtStr = dt && !isNaN(dt) ? `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}` : '';
+  return `<div style="padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0">
+    <div style="font-size:.62rem;color:var(--gold);margin-bottom:.25rem">⚔️ 武蔵からの言葉（LINE送信済み）${dtStr ? `<span style="color:var(--muted);margin-left:.4rem">${dtStr}</span>` : ''}</div>
+    <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${escHtml(message).replace(/\n/g,'<br>')}</div>
+  </div>`;
+}
+
 async function sendMusashiDojo(userId, entryKey, btn) {
   const textarea = document.getElementById(`musashi-msg-${entryKey}`);
   const message = textarea?.value?.trim();
@@ -3352,10 +3371,21 @@ async function sendMusashiDojo(userId, entryKey, btn) {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '送信失敗');
 
+    const entry = _dojoEntryMap[entryKey] || {};
+    const sentAt = new Date().toISOString();
+
+    // Firestoreに送付内容を保存
+    await db.collection('dojo_practices').doc(userId).set({
+      musashiMessages: firebase.firestore.FieldValue.arrayUnion({
+        phase: entry.phase ?? 0,
+        day: entry.day ?? 0,
+        message,
+        sentAt,
+      })
+    }, { merge: true });
+
     const resultDiv = document.getElementById(`musashi-result-${entryKey}`);
-    resultDiv.innerHTML = `
-      <div style="font-size:.62rem;color:var(--gold);margin-bottom:.25rem">⚔️ 武蔵からの言葉（LINE送信済み）</div>
-      <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${escHtml(message).replace(/\n/g,'<br>')}</div>`;
+    resultDiv.innerHTML = buildMusashiSentHtml(message, sentAt);
 
     const musashiBtn = document.getElementById(`musashi-btn-${entryKey}`);
     if (musashiBtn) {
