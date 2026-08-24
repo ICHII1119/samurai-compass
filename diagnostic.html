@@ -1148,6 +1148,10 @@ body {
         style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--gold);background:var(--gold-dim);color:var(--gold);cursor:pointer;font-weight:600">
         受講者管理
       </button>
+      <button id="tab-coaches" onclick="switchAdminTab('coaches')"
+        style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
+        コーチ管理
+      </button>
       <button id="tab-diag" onclick="switchAdminTab('diag')"
         style="font-size:.8rem;padding:.4rem 1rem;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">
         詳細診断一覧
@@ -1155,6 +1159,7 @@ body {
     </div>
     <div id="admin-dash-body" style="display:none"></div>
     <div id="admin-learners-body"></div>
+    <div id="admin-coaches-body" style="display:none"></div>
     <div id="admin-list-body" style="display:none">
       <div style="text-align:center;padding:3rem;color:var(--muted)">読み込み中...</div>
     </div>
@@ -1283,6 +1288,8 @@ const MUSASHI_DOJO_SEND_URL  = 'https://us-central1-samurai-compass.cloudfunctio
 const START_DOJO_URL            = 'https://us-central1-samurai-compass.cloudfunctions.net/startDojo';
 const ADVANCE_DOJO_PHASE_URL    = 'https://us-central1-samurai-compass.cloudfunctions.net/advanceDojoPhase';
 const SEND_DOJO_DIAGNOSTIC_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendDojoDiagnosticUrl';
+const SEND_COACH_FEEDBACK_URL   = 'https://us-central1-samurai-compass.cloudfunctions.net/sendCoachFeedback';
+const ASSIGN_COACH_URL          = 'https://us-central1-samurai-compass.cloudfunctions.net/assignCoach';
 
 let selected = new Set();
 let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
@@ -1670,6 +1677,169 @@ function checkAdminPin() {
   }
 }
 
+/* ════════════════════════════════════
+   コーチ管理
+════════════════════════════════════ */
+async function renderAdminCoaches() {
+  const container = document.getElementById('admin-coaches-body');
+  container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
+  try {
+    const snap = await db.collection('coaches').get();
+    _coachMap = {};
+    snap.forEach(d => { _coachMap[d.id] = d.data(); });
+
+    const coaches = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const listHtml = coaches.length === 0
+      ? '<div style="text-align:center;padding:2rem;color:var(--muted);border:1px dashed var(--border);border-radius:var(--r)">コーチはまだ登録されていません</div>'
+      : coaches.map(c => `
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.75rem 1rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.75rem">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.9rem;font-weight:600;color:var(--cream)">${escHtml(c.name || '名前未設定')}</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">
+              ${c.email ? `📧 ${escHtml(c.email)}` : ''}
+              ${c.lineUserId ? ` &nbsp;|&nbsp; LINE: ${escHtml(c.lineUserId.slice(0,12))}…` : ''}
+            </div>
+          </div>
+          <button onclick="deleteCoach('${c.id}',this)"
+            style="font-size:.72rem;padding:.3rem .65rem;border-radius:6px;background:rgba(224,80,80,.1);border:1px solid rgba(224,80,80,.3);color:#e05050;cursor:pointer">削除</button>
+        </div>`).join('');
+
+    container.innerHTML = `
+      <div style="margin-bottom:1.2rem">
+        <div style="font-size:.85rem;font-weight:600;color:var(--cream);margin-bottom:.75rem">コーチを追加</div>
+        <div style="display:flex;flex-direction:column;gap:.45rem;max-width:420px">
+          <input id="coach-add-name" placeholder="名前（例：田中コーチ）"
+            style="background:var(--bg3);border:1px solid var(--border);color:var(--cream);border-radius:6px;padding:.45rem .7rem;font-size:.83rem;font-family:inherit">
+          <input id="coach-add-line" placeholder="LINE User ID（U...）"
+            style="background:var(--bg3);border:1px solid var(--border);color:var(--cream);border-radius:6px;padding:.45rem .7rem;font-size:.83rem;font-family:inherit">
+          <input id="coach-add-email" placeholder="メールアドレス（任意）"
+            style="background:var(--bg3);border:1px solid var(--border);color:var(--cream);border-radius:6px;padding:.45rem .7rem;font-size:.83rem;font-family:inherit">
+          <button onclick="addCoach(this)"
+            style="align-self:flex-start;padding:.4rem 1.1rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);font-size:.8rem;cursor:pointer;font-weight:600">
+            ➕ 追加
+          </button>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:1rem">
+        <div style="font-size:.85rem;font-weight:600;color:var(--cream);margin-bottom:.75rem">登録済みコーチ（${coaches.length}名）</div>
+        ${listHtml}
+      </div>`;
+  } catch(e) {
+    container.innerHTML = `<div style="padding:2rem;color:var(--muted)">読み込みに失敗しました: ${e.message}</div>`;
+  }
+}
+
+async function addCoach(btn) {
+  const name  = document.getElementById('coach-add-name').value.trim();
+  const line  = document.getElementById('coach-add-line').value.trim();
+  const email = document.getElementById('coach-add-email').value.trim();
+  if (!name) { alert('名前を入力してください'); return; }
+  btn.disabled = true; btn.textContent = '追加中…';
+  try {
+    await db.collection('coaches').add({ name, lineUserId: line, email, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    renderAdminCoaches();
+  } catch(e) {
+    alert('追加に失敗しました: ' + e.message);
+    btn.disabled = false; btn.textContent = '➕ 追加';
+  }
+}
+
+async function deleteCoach(coachId, btn) {
+  if (!confirm('このコーチを削除しますか？')) return;
+  btn.disabled = true;
+  try {
+    await db.collection('coaches').doc(coachId).delete();
+    delete _coachMap[coachId];
+    renderAdminCoaches();
+  } catch(e) {
+    alert('削除に失敗しました: ' + e.message);
+    btn.disabled = false;
+  }
+}
+
+async function assignCoach(userId, coachId) {
+  const pin = ADMIN_PIN;
+  if (!pin) return;
+  try {
+    const resp = await fetch(ASSIGN_COACH_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, coachId: coachId || null, pin }),
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'failed');
+    const sel = document.getElementById(`coach-select-${userId}`);
+    if (sel) sel.style.borderColor = '#6dc46d';
+    setTimeout(() => { if (sel) sel.style.borderColor = ''; }, 1500);
+  } catch(e) {
+    alert('割当に失敗しました: ' + e.message);
+  }
+}
+
+async function openCoachFeedbackModal(userId) {
+  const sel = document.getElementById(`coach-select-${userId}`);
+  const coachId = sel?.value;
+  if (!coachId) { alert('コーチを選択してください'); return; }
+  const coach = _coachMap[coachId];
+  if (!coach?.lineUserId) { alert('このコーチにLINE IDが設定されていません'); return; }
+
+  const [practiceDoc, dojoDoc] = await Promise.all([
+    db.collection('practices').doc(userId).get(),
+    db.collection('dojo_practices').doc(userId).get(),
+  ]);
+  const practiceData = practiceDoc.exists ? practiceDoc.data() : null;
+  const dojoData     = dojoDoc.exists ? dojoDoc.data() : null;
+
+  const liteEntries = (practiceData?.entries || []).slice(-3).map(e =>
+    `【入門 Day${e.day}】${(e.text || '').slice(0, 80)}…`
+  ).join('\n');
+  const dojoEntries = (dojoData?.entries || []).slice(-3).map(e => {
+    const sp = SPIRIT_JP_L[e.spirit] || e.spirit || '';
+    return `【道場 Phase${(e.phase ?? 0)+1} D${e.day} ${sp}】${(e.text || '').slice(0, 80)}…`;
+  }).join('\n');
+
+  const defaultMsg = `⚔️ コーチの皆さまへ — SAMURAI in You 進捗フィードバック\n\n${liteEntries}${dojoEntries ? '\n\n' + dojoEntries : ''}\n\n引き続きよろしくお願いします。`;
+
+  const modal = document.createElement('div');
+  modal.id = 'coach-fb-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem';
+  modal.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem;max-width:480px;width:100%;max-height:85vh;overflow-y:auto">
+      <div style="font-size:.9rem;font-weight:600;color:var(--cream);margin-bottom:.75rem">📩 コーチへ共有：${escHtml(coach.name || coachId)}</div>
+      <textarea id="coach-fb-text" rows="10" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);color:var(--cream);border-radius:6px;font-size:.82rem;padding:.55rem .75rem;resize:vertical;font-family:inherit;line-height:1.65">${escHtml(defaultMsg)}</textarea>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.75rem">
+        <button onclick="document.getElementById('coach-fb-modal').remove()"
+          style="padding:.4rem .9rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.8rem;cursor:pointer">キャンセル</button>
+        <button onclick="sendCoachFeedbackFromModal('${userId}','${coachId}',this)"
+          style="padding:.4rem 1rem;border-radius:6px;background:rgba(126,184,212,.15);border:1px solid rgba(126,184,212,.4);color:#7eb8d4;font-size:.8rem;cursor:pointer;font-weight:600">LINE で送信</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function sendCoachFeedbackFromModal(userId, coachId, btn) {
+  const text = document.getElementById('coach-fb-text')?.value?.trim();
+  if (!text) { alert('メッセージを入力してください'); return; }
+  const pin = ADMIN_PIN;
+  if (!pin) return;
+  btn.disabled = true; btn.textContent = '送信中…';
+  try {
+    const resp = await fetch(SEND_COACH_FEEDBACK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, coachId, message: text, pin }),
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'failed');
+    document.getElementById('coach-fb-modal')?.remove();
+    alert('コーチへ送信しました ✅');
+  } catch(e) {
+    alert('送信に失敗しました: ' + e.message);
+    btn.disabled = false; btn.textContent = 'LINE で送信';
+  }
+}
+
 async function renderAdminList() {
   const container = document.getElementById('admin-list-body');
   container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
@@ -1745,7 +1915,7 @@ function backToAdminList() {
   showScreen('s-admin-list');
 }
 
-let currentAdminTab = 'lite';
+let currentAdminTab = 'dash';
 let adminSelectMode = false;
 let adminSelectedIds = new Set(); // Firestore doc IDs
 
@@ -1810,12 +1980,14 @@ function switchAdminTab(tab) {
   currentAdminTab = tab;
   document.getElementById('admin-dash-body').style.display     = tab === 'dash'     ? 'block' : 'none';
   document.getElementById('admin-learners-body').style.display = tab === 'learners' ? 'block' : 'none';
+  document.getElementById('admin-coaches-body').style.display  = tab === 'coaches'  ? 'block' : 'none';
   document.getElementById('admin-list-body').style.display     = tab === 'diag'     ? 'block' : 'none';
 
   const ON  = ';border-color:var(--gold);background:var(--gold-dim);color:var(--gold);font-weight:600';
   const OFF = ';border-color:var(--border);background:transparent;color:var(--muted);font-weight:400';
   document.getElementById('tab-dash').style.cssText      += tab === 'dash'     ? ON : OFF;
   document.getElementById('tab-learners').style.cssText  += tab === 'learners' ? ON : OFF;
+  document.getElementById('tab-coaches').style.cssText   += tab === 'coaches'  ? ON : OFF;
   document.getElementById('tab-diag').style.cssText      += tab === 'diag'     ? ON : OFF;
 
   document.getElementById('admin-count').style.display = tab === 'diag' ? '' : 'none';
@@ -1825,12 +1997,14 @@ function switchAdminTab(tab) {
 
   if (tab === 'dash')     renderAdminDashboard();
   if (tab === 'learners') renderAdminLearners();
+  if (tab === 'coaches')  renderAdminCoaches();
   if (tab === 'diag')     renderAdminList();
 }
 
 function refreshAdmin() {
-  if (currentAdminTab === 'dash')     renderAdminDashboard();
-  else if (currentAdminTab === 'diag') renderAdminList();
+  if (currentAdminTab === 'dash')       renderAdminDashboard();
+  else if (currentAdminTab === 'diag')  renderAdminList();
+  else if (currentAdminTab === 'coaches') renderAdminCoaches();
   else renderAdminLearners();
 }
 
@@ -2626,13 +2800,17 @@ async function renderAdminLearners() {
   const container = document.getElementById('admin-learners-body');
   container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
   try {
-    const [profileSnap, liteSnap, practiceSnap, dojoSnap] = await Promise.all([
+    const [profileSnap, liteSnap, practiceSnap, dojoSnap, coachSnap] = await Promise.all([
       db.collection('profiles').get(),
       db.collection('lite_results').get(),
       db.collection('practices').get(),
       db.collection('dojo_practices').get(),
-      loadReadState(),
+      db.collection('coaches').get(),
     ]);
+    await loadReadState();
+
+    _coachMap = {};
+    coachSnap.forEach(d => { _coachMap[d.id] = d.data(); });
 
     const profiles = {};
     profileSnap.forEach(d => { profiles[d.id] = d.data(); });
@@ -2813,6 +2991,7 @@ function buildLearnerCard(learner) {
           <div style="display:flex;gap:.3rem;align-items:center;flex-wrap:wrap">
             ${spirit ? `<span style="font-size:.68rem;padding:.1rem .45rem;border-radius:100px;background:${spiritCol}22;color:${spiritCol};border:1px solid ${spiritCol}55">${SPIRIT_JP_L[spirit] || spirit}</span>` : ''}
             ${rank ? `<span style="font-size:.68rem;padding:.1rem .45rem;border-radius:100px;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,.4)">${rank}</span>` : ''}
+            ${profile.referredBy && _coachMap[profile.referredBy] ? `<span style="font-size:.65rem;padding:.1rem .45rem;border-radius:100px;background:rgba(126,184,212,.08);color:#7eb8d4;border:1px solid rgba(126,184,212,.35)">🤝 ${_coachMap[profile.referredBy].name || 'コーチ'}</span>` : ''}
             <span style="font-size:.7rem;color:var(--muted)">${stageInfo}</span>
           </div>
           ${phaseBar}
@@ -2964,7 +3143,30 @@ async function toggleLearnerCard(userId) {
     const card = document.getElementById(`ucard-${userId}`);
     if (card) { card.style.borderColor = 'var(--border)'; card.style.boxShadow = ''; }
 
-    detail.innerHTML = html;
+    // コーチ担当セクション
+    const profileDoc = await db.collection('profiles').doc(userId).get();
+    const profileData = profileDoc.exists ? profileDoc.data() : {};
+    const referredBy = profileData.referredBy || '';
+    const coachOptions = Object.entries(_coachMap).map(([id, c]) =>
+      `<option value="${id}" ${id === referredBy ? 'selected' : ''}>${c.name || id}</option>`
+    ).join('');
+    const coachSectionHtml = `
+      <div style="padding:.75rem 1.1rem;border-top:1px solid rgba(255,255,255,.06);background:rgba(126,184,212,.04)">
+        <div style="font-size:.7rem;color:var(--muted);margin-bottom:.5rem;font-weight:600;letter-spacing:.04em">コーチ担当</div>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <select id="coach-select-${userId}" onchange="assignCoach('${userId}',this.value)"
+            style="background:var(--bg3);border:1px solid var(--border);color:var(--cream);border-radius:6px;font-size:.78rem;padding:.3rem .5rem;flex:1;min-width:120px">
+            <option value="">— 未割当 —</option>
+            ${coachOptions}
+          </select>
+          <button onclick="openCoachFeedbackModal('${userId}')"
+            style="font-size:.73rem;padding:.3rem .8rem;border-radius:6px;background:rgba(126,184,212,.1);border:1px solid rgba(126,184,212,.4);color:#7eb8d4;cursor:pointer;font-weight:600;white-space:nowrap">
+            📩 コーチへ共有
+          </button>
+        </div>
+      </div>`;
+
+    detail.innerHTML = coachSectionHtml + html;
     detail.dataset.loaded = '1';
   } catch(e) {
     console.error(e);
@@ -3182,6 +3384,7 @@ function updateMusashiBanner() {
 
 const _dojoEntryMap = {}; // userId-date → entry object
 const _pendingDojoChallenge = {}; // entryKey → {spirit, title, body}
+let _coachMap = {}; // coachId → { name, lineUserId, email }
 const SPIRIT_JP_NAMES = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
 
 async function toggleDojoEntries(userId, btn) {
