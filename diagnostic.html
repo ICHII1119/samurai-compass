@@ -1784,12 +1784,17 @@ async function openCoachFeedbackModal(userId) {
   const coach = _coachMap[coachId];
   if (!coach?.lineUserId) { alert('この侍導にLINE IDが設定されていません'); return; }
 
-  const [practiceDoc, dojoDoc] = await Promise.all([
+  const [practiceDoc, dojoDoc, liteDoc, profileDoc2] = await Promise.all([
     db.collection('practices').doc(userId).get(),
     db.collection('dojo_practices').doc(userId).get(),
+    db.collection('lite_results').doc(userId).get(),
+    db.collection('profiles').doc(userId).get(),
   ]);
   const practiceData = practiceDoc.exists ? practiceDoc.data() : null;
   const dojoData     = dojoDoc.exists ? dojoDoc.data() : null;
+  const nickname = liteDoc.exists ? (liteDoc.data().nickname || '') : '';
+  const displayName = profileDoc2.exists ? (profileDoc2.data().displayName || '') : '';
+  const learnerName = nickname || displayName || userId.slice(0, 12) + '…';
 
   const liteEntries = (practiceData?.entries || []).slice(-3).map(e =>
     `【入門 Day${e.day}】${(e.text || '').slice(0, 80)}…`
@@ -1799,7 +1804,7 @@ async function openCoachFeedbackModal(userId) {
     return `【道場 Phase${(e.phase ?? 0)+1} D${e.day} ${sp}】${(e.text || '').slice(0, 80)}…`;
   }).join('\n');
 
-  const defaultMsg = `⚔️ 侍導の皆さまへ — SAMURAI in You 進捗フィードバック\n\n${liteEntries}${dojoEntries ? '\n\n' + dojoEntries : ''}\n\n引き続きよろしくお願いします。`;
+  const defaultMsg = `⚔️ 侍導の皆さまへ — SAMURAI in You 進捗フィードバック\n\n▶ 受講者：${learnerName}\n\n${liteEntries}${dojoEntries ? '\n\n' + dojoEntries : ''}\n\n引き続きよろしくお願いします。`;
 
   const modal = document.createElement('div');
   modal.id = 'coach-fb-modal';
