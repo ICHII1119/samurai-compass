@@ -1764,8 +1764,8 @@ async function assignCoach(userId, coachId) {
   try {
     const resp = await fetch(ASSIGN_COACH_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, coachId: coachId || null, pin }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+      body: JSON.stringify({ userId, coachId: coachId || null }),
     });
     const data = await resp.json();
     if (!data.ok) throw new Error(data.error || 'failed');
@@ -1827,8 +1827,8 @@ async function sendCoachFeedbackFromModal(userId, coachId, btn) {
   try {
     const resp = await fetch(SEND_COACH_FEEDBACK_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, coachId, message: text, pin }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+      body: JSON.stringify({ userId, coachId, message: text }),
     });
     const data = await resp.json();
     if (!data.ok) throw new Error(data.error || 'failed');
