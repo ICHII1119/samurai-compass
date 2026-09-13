@@ -2833,6 +2833,7 @@ async function renderAdminLearners() {
     dojoSnap.forEach(d => { dojoMap[d.id] = d.data(); });
 
     const allIds = new Set([
+      ...Array.from(profileSnap.docs).map(d => d.id),
       ...Array.from(liteSnap.docs).map(d => d.data().lineUserId || d.id),
       ...Array.from(dojoSnap.docs).map(d => d.id),
     ]);
