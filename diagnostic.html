@@ -2310,12 +2310,19 @@ async function renderAdminDashboard() {
 
       const sc = _spiritC[spiritKey] || 'rgba(255,255,255,.2)';
       const sn = _spiritN[spiritKey] || '—';
+      let actionCell = `<td style="padding:.45rem .4rem;text-align:right"></td>`;
+      if (stage === '入門完了') {
+        actionCell = `<td style="padding:.45rem .4rem;text-align:right"><button id="start-dojo-tbl-${uid}" onclick="adminStartDojo('${uid}',document.getElementById('start-dojo-tbl-${uid}'))" style="font-size:.63rem;padding:.2rem .5rem;border-radius:5px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600;white-space:nowrap">⛩ 道場開始</button></td>`;
+      } else if (stage === '振り返り待ち') {
+        actionCell = `<td style="padding:.45rem .4rem;text-align:right"><button id="adv-tbl-${uid}" onclick="adminAdvanceDojoPhase('${uid}',document.getElementById('adv-tbl-${uid}'))" style="font-size:.63rem;padding:.2rem .5rem;border-radius:5px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600;white-space:nowrap">⚔️ 次Spiritへ</button></td>`;
+      }
       return `<tr style="border-top:1px solid rgba(255,255,255,.04)">
         <td style="padding:.45rem .5rem;font-size:.82rem;color:var(--cream);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(name)}</td>
         <td style="padding:.45rem .4rem;font-size:.7rem;color:var(--muted);white-space:nowrap">${stage}</td>
         <td style="padding:.45rem .4rem;font-size:.78rem;font-weight:600;color:var(--gold);white-space:nowrap">${dayLabel}</td>
         <td style="padding:.45rem .4rem"><span style="font-size:.63rem;padding:.1rem .4rem;border-radius:100px;background:${sc}22;color:${sc};border:1px solid ${sc}55;white-space:nowrap">${sn}</span></td>
         <td style="padding:.45rem .4rem;font-size:.7rem;color:var(--muted);text-align:right">${lastDate}</td>
+        ${actionCell}
       </tr>`;
     }).join('');
 
@@ -2326,6 +2333,7 @@ async function renderAdminDashboard() {
         <th style="font-size:.63rem;color:var(--muted);font-weight:600;text-align:left;padding:.3rem .4rem">進捗</th>
         <th style="font-size:.63rem;color:var(--muted);font-weight:600;text-align:left;padding:.3rem .4rem">Spirit</th>
         <th style="font-size:.63rem;color:var(--muted);font-weight:600;text-align:right;padding:.3rem .4rem">最終記録</th>
+        <th style="font-size:.63rem;color:var(--muted);font-weight:600;text-align:right;padding:.3rem .4rem">操作</th>
       </tr></thead>
       <tbody>${_tableRows}</tbody>
     </table></div>`;
@@ -2409,15 +2417,15 @@ async function renderAdminDashboard() {
           <div style="font-size:.65rem;color:var(--muted);margin-top:.3rem">件 / 今週の振り返り</div>
         </div>
       </div>
+      <!-- 参加者状況一覧テーブル -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">⚔️ 参加者 稽古状況</div>
+        ${statusTableHtml}
+      </div>
       <!-- Spirit分布 -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
         <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">SPIRIT 分布</div>
         ${spiritBars}
-      </div>
-      <!-- 参加者状況一覧テーブル（buildStatusTableHtmlで生成） -->
-      <div id="dash-status-table" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
-        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">⚔️ 参加者 稽古状況</div>
-        ${statusTableHtml}
       </div>
       <!-- 一斉送信 -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem">
