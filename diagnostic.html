@@ -2254,11 +2254,81 @@ async function renderAdminDashboard() {
   const container = document.getElementById('admin-dash-body');
   container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">読み込み中...</div>';
   try {
-    const [liteSnap, practiceSnap, dojoSnap] = await Promise.all([
+    const [liteSnap, practiceSnap, dojoSnap, profSnap2, pracSnap2, dSnap2, lSnap2] = await Promise.all([
       db.collection('lite_results').get(),
       db.collection('practices').get(),
-      db.collection('submissions').get()
+      db.collection('submissions').get(),
+      db.collection('profiles').get(),
+      db.collection('practices').get(),
+      db.collection('dojo_practices').get(),
+      db.collection('lite_results').get(),
     ]);
+
+    // 参加者状況テーブルを生成
+    const _practiceMap2 = {}, _dojoMap2 = {}, _profMap2 = {}, _liteMap2 = {};
+    pracSnap2.forEach(d => { _practiceMap2[d.id] = d.data(); });
+    dSnap2.forEach(d => { _dojoMap2[d.id] = d.data(); });
+    profSnap2.forEach(d => { _profMap2[d.id] = d.data(); });
+    lSnap2.forEach(d => { const uid = d.data().lineUserId || d.id; _liteMap2[uid] = d.data(); });
+
+    const _spiritN = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
+    const _spiritC = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
+
+    const _allIds2 = new Set([
+      ...Array.from(profSnap2.docs).map(d => d.id),
+      ...Array.from(lSnap2.docs).map(d => d.data().lineUserId || d.id),
+      ...Array.from(dSnap2.docs).map(d => d.id),
+    ]);
+
+    const _tableRows = [..._allIds2].filter(id => id && id.startsWith('U') && id.length >= 20).map(uid => {
+      const prof = _profMap2[uid] || {};
+      const lite = _liteMap2[uid] || null;
+      const prac = _practiceMap2[uid] || null;
+      const dojo = _dojoMap2[uid] || null;
+      const name = lite?.nickname || prof.displayName || uid.slice(0,10)+'…';
+      let stage = '登録済み', dayLabel = '—', spiritKey = '', lastDate = '';
+
+      if (dojo?.spiritPlan) {
+        const ph = dojo.currentPhase ?? 0;
+        spiritKey = dojo.spiritPlan[ph] || '';
+        const day = Math.max(0, (dojo.currentDay ?? 1) - 1);
+        if (dojo.phaseStatus === 'completed')          { stage = '道場完了';    dayLabel = '全完了'; }
+        else if (dojo.phaseStatus === 'waiting_review') { stage = '振り返り待ち'; dayLabel = `P${ph+1} 完了`; }
+        else                                            { stage = '道場中';      dayLabel = `P${ph+1} D${day}/21`; }
+        const ets = (dojo.entries||[]).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0).filter(Boolean);
+        if (ets.length) { const l=new Date(Math.max(...ets)); lastDate=`${l.getMonth()+1}/${l.getDate()}`; }
+      } else if (lite) {
+        spiritKey = lite.spirit || '';
+        const entries = prac?.entries || [];
+        const regTs = lite.timestamp?.toDate?.();
+        const dayNum = regTs ? Math.min(21, Math.floor((Date.now()-regTs.getTime())/86400000)+1) : '?';
+        stage    = entries.length >= 21 ? '入門完了' : '入門中';
+        dayLabel = entries.length >= 21 ? '21/21'    : `Day${dayNum}/21`;
+        const ets = entries.map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0).filter(Boolean);
+        if (ets.length) { const l=new Date(Math.max(...ets)); lastDate=`${l.getMonth()+1}/${l.getDate()}`; }
+      }
+
+      const sc = _spiritC[spiritKey] || 'rgba(255,255,255,.2)';
+      const sn = _spiritN[spiritKey] || '—';
+      return `<tr style="border-top:1px solid rgba(255,255,255,.04)">
+        <td style="padding:.45rem .5rem;font-size:.82rem;color:var(--cream);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(name)}</td>
+        <td style="padding:.45rem .4rem;font-size:.7rem;color:var(--muted);white-space:nowrap">${stage}</td>
+        <td style="padding:.45rem .4rem;font-size:.78rem;font-weight:600;color:var(--gold);white-space:nowrap">${dayLabel}</td>
+        <td style="padding:.45rem .4rem"><span style="font-size:.63rem;padding:.1rem .4rem;border-radius:100px;background:${sc}22;color:${sc};border:1px solid ${sc}55;white-space:nowrap">${sn}</span></td>
+        <td style="padding:.45rem .4rem;font-size:.7rem;color:var(--muted);text-align:right">${lastDate}</td>
+      </tr>`;
+    }).join('');
+
+    const statusTableHtml = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="font-size:.63rem;color:var(--muted);font-weight:600;text-align:left;padding:.3rem .5rem">名前</th>
+        <th style="font-size:.63rem;color:var(--muted);font-weight:600;text-align:left;padding:.3rem .4rem">状態</th>
+        <th style="font-size:.63rem;color:var(--muted);font-weight:600;text-align:left;padding:.3rem .4rem">進捗</th>
+        <th style="font-size:.63rem;color:var(--muted);font-weight:600;text-align:left;padding:.3rem .4rem">Spirit</th>
+        <th style="font-size:.63rem;color:var(--muted);font-weight:600;text-align:right;padding:.3rem .4rem">最終記録</th>
+      </tr></thead>
+      <tbody>${_tableRows}</tbody>
+    </table></div>`;
 
     const spiritNames = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
     const spiritColors = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
@@ -2343,6 +2413,11 @@ async function renderAdminDashboard() {
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
         <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">SPIRIT 分布</div>
         ${spiritBars}
+      </div>
+      <!-- 参加者状況一覧テーブル（buildStatusTableHtmlで生成） -->
+      <div id="dash-status-table" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">⚔️ 参加者 稽古状況</div>
+        ${statusTableHtml}
       </div>
       <!-- 一斉送信 -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem">
