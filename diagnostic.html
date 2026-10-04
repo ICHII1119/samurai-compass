@@ -2310,6 +2310,17 @@ async function renderAdminDashboard() {
 
       const sc = _spiritC[spiritKey] || 'rgba(255,255,255,.2)';
       const sn = _spiritN[spiritKey] || '—';
+      // 滞留アラート: 入門中・道場中で最終記録から3日以上経過
+      const isActive = stage === '入門中' || stage === '道場中';
+      let lastDateHtml = lastDate || '—';
+      if (isActive && lastDate) {
+        const parts = lastDate.split('/');
+        const lastMs = new Date(new Date().getFullYear(), parseInt(parts[0])-1, parseInt(parts[1])).getTime();
+        const daysSince = Math.floor((Date.now() - lastMs) / 86400000);
+        if (daysSince >= 3) lastDateHtml = `<span style="color:#e08040" title="${daysSince}日経過">⚠️ ${lastDate}</span>`;
+      } else if (isActive && !lastDate) {
+        lastDateHtml = `<span style="color:#e08040">⚠️ 未記録</span>`;
+      }
       let actionCell = `<td style="padding:.45rem .4rem;text-align:right"></td>`;
       if (stage === '入門完了') {
         actionCell = `<td style="padding:.45rem .4rem;text-align:right"><button id="start-dojo-tbl-${uid}" onclick="adminStartDojo('${uid}',document.getElementById('start-dojo-tbl-${uid}'))" style="font-size:.63rem;padding:.2rem .5rem;border-radius:5px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600;white-space:nowrap">⛩ 道場開始</button></td>`;
@@ -2321,7 +2332,7 @@ async function renderAdminDashboard() {
         <td style="padding:.45rem .4rem;font-size:.7rem;color:var(--muted);white-space:nowrap">${stage}</td>
         <td style="padding:.45rem .4rem;font-size:.78rem;font-weight:600;color:var(--gold);white-space:nowrap">${dayLabel}</td>
         <td style="padding:.45rem .4rem"><span style="font-size:.63rem;padding:.1rem .4rem;border-radius:100px;background:${sc}22;color:${sc};border:1px solid ${sc}55;white-space:nowrap">${sn}</span></td>
-        <td style="padding:.45rem .4rem;font-size:.7rem;color:var(--muted);text-align:right">${lastDate}</td>
+        <td style="padding:.45rem .4rem;font-size:.7rem;color:var(--muted);text-align:right">${lastDateHtml}</td>
         ${actionCell}
       </tr>`;
     }).join('');
