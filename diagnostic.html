@@ -3214,10 +3214,14 @@ async function toggleLearnerCard(userId) {
     });
     const dojoRaw = (dojoData?.entries || []).map(e => ({ ...e, _src: 'dojo' }));
 
-    // _dojoEntryMap を事前登録
+    // エントリマップを事前登録
     dojoRaw.forEach(e => {
       const key = `${userId}-${e.phase ?? 0}-${e.day}`;
       _dojoEntryMap[key] = { day: e.day, phase: e.phase ?? 0, spirit: e.spirit, text: e.text || '' };
+    });
+    liteRaw.forEach(e => {
+      const key = `${userId}-lite-${e.day}`;
+      _liteEntryMap[key] = { day: e.day, spirit: e.spirit, text: e.text || '' };
     });
 
     const allEntries = [...liteRaw, ...dojoRaw].sort((a, b) => {
@@ -3237,12 +3241,14 @@ async function toggleLearnerCard(userId) {
         const isUnread = ts && ts.getTime() > seenUntil;
 
         if (e._src === 'lite') {
+          const liteKey = `${userId}-lite-${e.day}`;
           const dayComments = (practiceData?.adminComments || []).filter(c => c.day === e.day);
+          const hasSent = dayComments.length > 0;
           const commentsHtml = dayComments.map(c => {
             const ct = c.sentAt?.toDate ? c.sentAt.toDate() : (c.sentAt ? new Date(c.sentAt) : null);
             const ctStr = ct && !isNaN(ct) ? `${ct.getMonth()+1}/${ct.getDate()} ${String(ct.getHours()).padStart(2,'0')}:${String(ct.getMinutes()).padStart(2,'0')}` : '';
             return `<div style="margin-top:.5rem;padding:.4rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0">
-              <div style="font-size:.62rem;color:var(--gold);margin-bottom:.2rem">⚔️ あなたのコメント${ctStr ? ` · ${ctStr}` : ''}</div>
+              <div style="font-size:.62rem;color:var(--gold);margin-bottom:.2rem">⚔️ 武蔵からの言葉（LINE送信済み）${ctStr ? `<span style="color:var(--muted);margin-left:.4rem">${ctStr}</span>` : ''}</div>
               <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${escHtml(c.text).replace(/\n/g,'<br>')}</div>
             </div>`;
           }).join('');
@@ -3257,15 +3263,20 @@ async function toggleLearnerCard(userId) {
                 ${dateStr ? `<div style="font-size:.65rem;color:var(--muted);margin-bottom:.2rem">${dateStr}${isUnread ? '<span style="margin-left:.4rem;font-size:.62rem;background:#e05050;color:#fff;padding:.1rem .4rem;border-radius:100px;font-weight:600">未読</span>' : ''}</div>` : ''}
                 <div style="font-size:.85rem;color:var(--cream2);line-height:1.65">${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted);font-style:italic">（記録なし）</span>'}</div>
                 ${commentsHtml}
-                <div style="margin-top:.55rem;display:flex;flex-direction:column;gap:.35rem">
-                  <textarea placeholder="コメントを送る..." rows="2" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>
-                  <div style="display:flex;gap:.4rem;justify-content:flex-end">
-                    <button data-reflection="${(e.text || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-day="${e.day}" data-rank="${rank}" onclick="generateMusashiComment(this.dataset.reflection, +this.dataset.day, this.dataset.rank, this)"
-                      style="padding:.35rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);font-size:.75rem;cursor:pointer;white-space:nowrap">
-                      ⚔️ 武蔵BOT
-                    </button>
-                    <button onclick="sendAdminComment('${userId}', ${e.day}, this)"
-                      style="padding:.35rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer;white-space:nowrap">送信</button>
+                <div id="musashi-result-lite-${liteKey}" style="display:none;margin:.4rem 0"></div>
+                <div style="margin-top:.5rem;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+                  <button id="musashi-btn-lite-${liteKey}" onclick="generateMusashiLite('${userId}','${liteKey}',this)"
+                    style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;${hasSent ? 'background:rgba(100,200,100,.1);border:1px solid rgba(100,200,100,.4);color:#6dc46d' : 'background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold)'};cursor:pointer">
+                    ${hasSent ? '✅ 送信済み（再送）' : '⚔️ 武蔵BOT発動'}
+                  </button>
+                  <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none'"
+                    style="font-size:.68rem;padding:.25rem .6rem;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer">✏️ 手動</button>
+                  <div style="display:none;width:100%;flex-direction:column;gap:.35rem;margin-top:.3rem">
+                    <textarea placeholder="コメントを直接入力..." rows="2" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>
+                    <div style="display:flex;justify-content:flex-end">
+                      <button onclick="sendAdminComment('${userId}',${e.day},this)"
+                        style="padding:.3rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer">送信</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3552,7 +3563,8 @@ function updateMusashiBanner() {
   }
 }
 
-const _dojoEntryMap = {}; // userId-date → entry object
+const _dojoEntryMap = {}; // userId-phase-day → entry object
+const _liteEntryMap = {}; // userId-lite-day → entry object
 const _pendingDojoChallenge = {}; // entryKey → {spirit, title, body}
 let _coachMap = {}; // coachId → { name, lineUserId, email }
 const SPIRIT_JP_NAMES = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
@@ -3609,6 +3621,126 @@ async function toggleDojoEntries(userId, btn) {
   } catch(e) {
     console.error(e);
     container.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">読み込みに失敗しました</div>';
+  }
+}
+
+async function generateMusashiLite(userId, liteKey, btn) {
+  const entry = _liteEntryMap[liteKey];
+  if (!entry?.text?.trim()) { alert('振り返りが空のため発動できません。'); return; }
+
+  const apiKey = getMusashiKey();
+  if (!apiKey) {
+    alert('APIキーが設定されていません。\n管理画面上部の「⚔️ 武蔵BOT」バナーにキーを入力してください。');
+    document.getElementById('musashi-key-banner').style.display = '';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+  const resultDiv = document.getElementById(`musashi-result-lite-${liteKey}`);
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">武蔵が言葉を選んでいます...</div>';
+
+  const spiritName = SPIRIT_JP_NAMES[entry.spirit] || entry.spirit || '';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 500,
+        system: `あなたは宮本武蔵です。五輪書の著者であり、剣術・兵法の達人として生涯を稽古に捧げた求道者です。
+
+あなたのスタイル：
+- 同じ道を歩む仲間として、穏やかに語りかける
+- 振り返りの内容を具体的に受け止め、次に試せる小さな一歩をそっと示す
+- 「〜してみてはどうか」「〜かもしれぬ」「〜ではなかろうか」など、問いかけや提案の形で語る
+- 相手を指すときは「お主」を使う（「お前」は使わない）
+- 4〜5文以内。命令せず、そっと寄り添う言葉で。
+
+認める言葉について：
+- 振り返りの内容がよければ、武蔵らしい言葉で素直に認めること
+- 「よう気づいた」「それでよい」「その眼、大事にせよ」「よく見ておる」など
+- ただし、内容が薄い場合は認めず、問いかけに留める
+
+禁止事項：
+- 「素晴らしい」「頑張りましたね」「すごい」など現代的な軽い褒め言葉
+- 「〜せよ」「〜しろ」「必ず」「絶対」「すべき」など命令・強制表現
+- 「お前」という表現
+- 抽象的な言葉だけで終わること（具体的な行動をひとつ示す）
+- マークダウン記号（**、#、-など）を一切使わない`,
+        messages: [{
+          role: 'user',
+          content:
+            `【入門編】Day ${entry.day}${spiritName ? `（${spiritName}の稽古）` : ''}\n` +
+            `【稽古者の振り返り】\n${entry.text}\n\n` +
+            `以下のJSON形式のみで出力してください（前後に余分なテキスト・マークダウン不要）：\n` +
+            `{"message":"（武蔵の言葉。60〜120文字）"}`,
+        }],
+      }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || res.status); }
+    const data = await res.json();
+    const rawText = data.content[0].text.trim();
+    const jsonText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+    const parsed = JSON.parse(jsonText);
+    const musashiMessage = parsed.message?.trim() || rawText;
+
+    resultDiv.innerHTML = `
+      <div style="font-size:.62rem;color:var(--gold);margin-bottom:.3rem">⚔️ 武蔵からの言葉（送信前に編集できます）</div>
+      <textarea id="musashi-msg-lite-${liteKey}" rows="4"
+        style="width:100%;box-sizing:border-box;background:var(--bg2);border:1px solid rgba(201,168,76,.3);border-radius:6px;color:var(--cream);font-size:.82rem;padding:.5rem .7rem;resize:vertical;font-family:inherit;line-height:1.6;margin-bottom:.5rem">${musashiMessage}</textarea>
+      <div style="display:flex;gap:.4rem;justify-content:flex-end">
+        <button onclick="document.getElementById('musashi-result-lite-${liteKey}').style.display='none';document.getElementById('musashi-btn-lite-${liteKey}').disabled=false;document.getElementById('musashi-btn-lite-${liteKey}').textContent='⚔️ 武蔵BOT発動'"
+          style="font-size:.73rem;padding:.3rem .8rem;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer">
+          キャンセル
+        </button>
+        <button onclick="sendMusashiLite('${userId}',${entry.day},'${liteKey}',this)"
+          style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
+          ⚔️ LINEで送信
+        </button>
+      </div>`;
+
+    btn.textContent = '✏️ 生成済み';
+    btn.disabled = false;
+  } catch(e) {
+    console.error('武蔵入門BOTエラー:', e);
+    resultDiv.innerHTML = '';
+    resultDiv.style.display = 'none';
+    btn.textContent = '⚔️ 武蔵BOT発動';
+    btn.disabled = false;
+    alert('生成に失敗しました: ' + e.message);
+  }
+}
+
+async function sendMusashiLite(userId, day, liteKey, btn) {
+  const message = document.getElementById(`musashi-msg-lite-${liteKey}`)?.value?.trim();
+  if (!message) { alert('メッセージが空です。'); return; }
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  try {
+    const res = await fetch(SEND_COMMENT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+      body: JSON.stringify({ userId, day, message }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const resultDiv = document.getElementById(`musashi-result-lite-${liteKey}`);
+    resultDiv.innerHTML = buildMusashiSentHtml(message, new Date().toISOString());
+    const musashiBtn = document.getElementById(`musashi-btn-lite-${liteKey}`);
+    musashiBtn.style.cssText = musashiBtn.style.cssText + ';background:rgba(100,200,100,.1)!important;border-color:rgba(100,200,100,.4)!important;color:#6dc46d!important';
+    musashiBtn.textContent = '✅ 送信済み（再送）';
+    musashiBtn.disabled = false;
+  } catch(e) {
+    alert('送信失敗: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '⚔️ LINEで送信';
   }
 }
 
