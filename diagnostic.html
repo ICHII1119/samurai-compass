@@ -2364,8 +2364,8 @@ async function renderAdminDashboard() {
         const entries = prac?.entries || [];
         const regTs = lite.timestamp?.toDate?.();
         const dayNum = regTs ? Math.min(21, Math.floor((Date.now()-regTs.getTime())/86400000)+1) : '?';
-        stage    = entries.length >= 21 ? '入門完了' : '入門中';
-        dayLabel = entries.length >= 21 ? '21/21'    : `Day${dayNum}/21`;
+        stage    = entries.length >= 10 ? '入門完了' : '入門中';
+        dayLabel = entries.length >= 10 ? `${entries.length}/21` : `Day${dayNum}/21`;
         const ets = entries.map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0).filter(Boolean);
         if (ets.length) { const l=new Date(Math.max(...ets)); lastDate=`${l.getMonth()+1}/${l.getDate()}`; }
       }
@@ -3063,11 +3063,11 @@ function buildLearnerCard(learner) {
       const sp = spiritPlan[currentPhase] || '';
       stageInfo = `Phase ${currentPhase + 1}/${spiritPlan.length} · ${SPIRIT_JP_L[sp] || sp} · Day ${Math.max(0, currentDay - 1)}/21`;
     }
-  } else if (liteCount >= 21) {
+  } else if (liteCount >= 10) {
     stage = 'lite_completed';
     stageCfg = { label: '入門完了', color: '#6dc46d', bg: 'rgba(100,200,100,.1)', border: 'rgba(100,200,100,.4)' };
     const sp = liteData?.spirit || '';
-    stageInfo = `${SPIRIT_JP_L[sp] || sp} · 21日完了`;
+    stageInfo = `${SPIRIT_JP_L[sp] || sp} · 振り返り ${liteCount}件完了`;
   } else if (liteData) {
     stage = 'lite_active';
     stageCfg = { label: '入門中', color: '#c9a84c', bg: 'rgba(201,168,76,.1)', border: 'rgba(201,168,76,.4)' };
