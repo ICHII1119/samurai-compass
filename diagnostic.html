@@ -1290,6 +1290,7 @@ const ADVANCE_DOJO_PHASE_URL    = 'https://us-central1-samurai-compass.cloudfunc
 const SEND_DOJO_DIAGNOSTIC_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendDojoDiagnosticUrl';
 const SEND_COACH_FEEDBACK_URL   = 'https://us-central1-samurai-compass.cloudfunctions.net/sendCoachFeedback';
 const ASSIGN_COACH_URL          = 'https://us-central1-samurai-compass.cloudfunctions.net/assignCoach';
+const SEND_SESSION_INVITE_URL   = 'https://us-central1-samurai-compass.cloudfunctions.net/sendSessionInvite';
 
 let selected = new Set();
 let profile = { nickname: '', email: '', role: null, life: [], lifeSkipped: false, urgency: null };
@@ -1842,6 +1843,67 @@ async function sendCoachFeedbackFromModal(userId, coachId, btn) {
   } catch(e) {
     alert('送信に失敗しました: ' + e.message);
     btn.disabled = false; btn.textContent = 'LINE で送信';
+  }
+}
+
+async function openSessionInviteModal(userId) {
+  const profDoc  = await db.collection('profiles').doc(userId).get();
+  const liteSnap = await db.collection('lite_results').where('lineUserId','==',userId).limit(1).get();
+  const dojoDoc  = await db.collection('dojo_practices').doc(userId).get();
+
+  const prof = profDoc.exists ? profDoc.data() : {};
+  const lite = !liteSnap.empty ? liteSnap.docs[0].data() : null;
+  const dojo = dojoDoc.exists ? dojoDoc.data() : null;
+  const name = lite?.nickname || prof.displayName || userId.slice(0,10)+'…';
+
+  const ph = dojo?.currentPhase ?? 0;
+  const spiritNames = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
+  const spirit = spiritNames[lite?.spirit || dojo?.spiritPlan?.[ph]] || '';
+  const phaseInfo = dojo?.spiritPlan ? `（Phase ${ph+1} · ${spirit}）` : spirit ? `（${spirit}）` : '';
+
+  const defaultMsg =
+    `⚔️ ${name} さま\n\n` +
+    `21日間の稽古、お疲れ様でした。\n\n` +
+    `振り返りオンラインセッションのご案内です${phaseInfo}。\n\n` +
+    `ご都合の良い日時をお知らせください。\n` +
+    `セッションは約30分、ZoomまたはGoogle Meetで行います。\n\n` +
+    `引き続き稽古を続けていきましょう。`;
+
+  document.getElementById('session-invite-modal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'session-invite-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem';
+  modal.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem;max-width:480px;width:100%;max-height:85vh;overflow-y:auto">
+      <div style="font-size:.9rem;font-weight:600;color:var(--cream);margin-bottom:.75rem">📅 セッション案内を送る：${escHtml(name)}</div>
+      <textarea id="session-invite-text" rows="12" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);color:var(--cream);border-radius:6px;font-size:.82rem;padding:.55rem .75rem;resize:vertical;font-family:inherit;line-height:1.65">${escHtml(defaultMsg)}</textarea>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.75rem">
+        <button onclick="document.getElementById('session-invite-modal').remove()"
+          style="padding:.4rem .9rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.8rem;cursor:pointer">キャンセル</button>
+        <button onclick="sendSessionInviteFromModal('${userId}',this)"
+          style="padding:.4rem 1rem;border-radius:6px;background:rgba(109,196,109,.15);border:1px solid rgba(109,196,109,.4);color:#6dc46d;font-size:.8rem;cursor:pointer;font-weight:600">📅 LINEで送信</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function sendSessionInviteFromModal(userId, btn) {
+  const text = document.getElementById('session-invite-text')?.value?.trim();
+  if (!text) { alert('メッセージを入力してください'); return; }
+  btn.disabled = true; btn.textContent = '送信中…';
+  try {
+    const resp = await fetch(SEND_SESSION_INVITE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+      body: JSON.stringify({ userId, message: text }),
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'failed');
+    document.getElementById('session-invite-modal')?.remove();
+    alert('セッション案内を送信しました ✅');
+  } catch(e) {
+    alert('送信に失敗しました: ' + e.message);
+    btn.disabled = false; btn.textContent = '📅 LINEで送信';
   }
 }
 
@@ -3061,13 +3123,21 @@ function buildLearnerCard(learner) {
           style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
           ⛩ 道場開始
         </button>
+        <button onclick="openSessionInviteModal('${userId}')"
+          style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(109,196,109,.12);border:1px solid rgba(109,196,109,.4);color:#6dc46d;cursor:pointer;font-weight:600">
+          📅 セッション案内を送る
+        </button>
       </div>`;
   } else if (stage === 'waiting_review') {
     actionBtns = `
-      <div style="padding:.55rem 1rem;border-bottom:1px solid rgba(201,168,76,.06);display:flex;gap:.4rem">
+      <div style="padding:.55rem 1rem;border-bottom:1px solid rgba(201,168,76,.06);display:flex;gap:.4rem;flex-wrap:wrap">
         <button id="advance-btn-${userId}" onclick="adminAdvanceDojoPhase('${userId}',this)"
           style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
           ⚔️ 次のSpiritへ進む
+        </button>
+        <button onclick="openSessionInviteModal('${userId}')"
+          style="font-size:.73rem;padding:.3rem .9rem;border-radius:6px;background:rgba(109,196,109,.12);border:1px solid rgba(109,196,109,.4);color:#6dc46d;cursor:pointer;font-weight:600">
+          📅 セッション案内を送る
         </button>
       </div>`;
   }
