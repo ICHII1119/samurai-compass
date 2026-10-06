@@ -13,6 +13,7 @@
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>emailjs.init('JiYOgiT7R9hyZ3wVs');</script>
@@ -1169,6 +1170,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+firebase.auth().signOut().catch(() => {}); // ページを開くたびにサインアウト（管理者の権限は、PINで入った間だけ）
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1656,12 +1658,23 @@ async function checkAdminPin() {
   const input = document.getElementById('admin-pin-input').value;
   const err = document.getElementById('admin-pin-error');
   let ok = false;
+  let tok = null;
   try {
     const r = await fetch(ADMIN_CHECK_URL, { method: 'POST', headers: { 'Authorization': `Bearer ${input}` } });
-    ok = r.ok && (await r.json()).ok === true;
+    const j = await r.json();
+    ok = r.ok && j.ok === true;
+    tok = j.token || null;
   } catch (e) { ok = false; }
   if (ok) {
     ADMIN_PIN = input;
+    // 管理者の印つきトークンでFirestoreにサインイン（一覧の取得は、これがないと拒否される）
+    try {
+      if (!tok) throw new Error('no token');
+      await firebase.auth().signInWithCustomToken(tok);
+    } catch (e) {
+      console.warn('管理者サインイン失敗:', e);
+      alert('管理者の権限を取得できませんでした。しばらくしてから、もう一度お試しください。');
+    }
     err.textContent = '';
     document.getElementById('admin-pin-input').value = '';
     document.getElementById('btn-select-mode').style.display = '';
