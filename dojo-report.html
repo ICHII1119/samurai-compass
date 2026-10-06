@@ -483,17 +483,12 @@ async function init() {
   if (!userId) { showError('URLが正しくありません。'); return; }
 
   try {
-    const [dojoSnap, submissionSnap, profileSnap, liteSnap, configSnap] = await Promise.all([
+    const [dojoSnap, submissionSnap, profileSnap, liteSnap] = await Promise.all([
       db.collection('dojo_practices').doc(userId).get(),
       db.collection('submissions').doc(userId).get(),
       db.collection('profiles').doc(userId).get(),
       db.collection('lite_results').doc(userId).get(),
-      db.collection('config').doc('admin').get(),
     ]);
-
-    // Firestore からAPIキーを取得してlocalStorageに同期
-    const apiKey = configSnap.data()?.musashiApiKey;
-    if (apiKey) localStorage.setItem('musashi_api_key', apiKey);
 
     const dojo       = dojoSnap.exists    ? dojoSnap.data()       : {};
     const submission = submissionSnap.exists ? submissionSnap.data() : {};
@@ -746,10 +741,11 @@ function renderHighlights(entries) {
 
 /* ── AI Summary ── */
 async function generateSummary() {
-  const apiKey = localStorage.getItem('musashi_api_key') || '';
-  if (!apiKey) {
-    alert('APIキーが設定されていません。管理画面の武蔵BOTセクションでAPIキーを設定してください。');
-    return;
+  // AI呼び出しは管理者用のサーバー関数（anthropicProxy）経由。管理者PINはこのページを開いている間だけメモリに保持する
+  if (!window._adminPin) {
+    const pin = prompt('管理者PINを入力してください');
+    if (!pin) return;
+    window._adminPin = pin;
   }
 
   const btn = document.getElementById('btn-ai-summary');
@@ -775,14 +771,9 @@ async function generateSummary() {
     .join('\n\n');
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://us-central1-samurai-compass.cloudfunctions.net/anthropicProxy', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window._adminPin}` },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 800,
@@ -803,7 +794,8 @@ async function generateSummary() {
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error?.message || res.status);
+    if (res.status === 403) window._adminPin = null; // PINが違う場合は次回あらためて入力
+    if (!res.ok) throw new Error(data.error?.message || (res.status === 403 ? '管理者PINが正しくありません' : res.status));
     const text = data.content?.[0]?.text?.trim() || '';
     box.textContent = text;
   } catch(e) {

@@ -1127,17 +1127,6 @@ body {
         <button id="btn-delete-selected" class="btn btn-secondary" style="font-size:.76rem;padding:.4rem .9rem;color:var(--red);border-color:rgba(139,40,40,.3);display:none" onclick="deleteSelected()">選択削除 (<span id="sel-count">0</span>件)</button>
       </div>
     </div>
-    <!-- 武蔵BOT APIキー設定バナー -->
-    <div id="musashi-key-banner" style="display:none;margin-bottom:1rem;padding:.8rem 1rem;background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.3);border-radius:var(--r)">
-      <div style="font-size:.75rem;color:var(--gold);margin-bottom:.5rem">⚔️ 武蔵BOT — Anthropic APIキーを設定</div>
-      <div style="display:flex;gap:.5rem;align-items:center">
-        <input id="musashi-api-key-input" type="password" placeholder="sk-ant-..." autocomplete="off"
-          style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;font-family:monospace">
-        <button onclick="saveMusashiKey()" style="flex-shrink:0;padding:.4rem .8rem;border-radius:6px;background:var(--gold-dim);border:1px solid rgba(201,168,76,.4);color:var(--gold);font-size:.78rem;cursor:pointer">保存</button>
-        <button id="musashi-key-clear" onclick="clearMusashiKey()" style="flex-shrink:0;padding:.4rem .8rem;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:.78rem;cursor:pointer;display:none">削除</button>
-      </div>
-      <div id="musashi-key-status" style="font-size:.7rem;color:var(--muted);margin-top:.4rem"></div>
-    </div>
     <!-- タブ -->
     <div style="display:flex;gap:.4rem;margin-bottom:1.2rem;border-bottom:1px solid var(--border);padding-bottom:.6rem;flex-wrap:wrap">
       <button id="tab-dash" onclick="switchAdminTab('dash')"
@@ -2066,8 +2055,6 @@ function switchAdminTab(tab) {
 
   document.getElementById('admin-count').style.display = tab === 'diag' ? '' : 'none';
   document.getElementById('btn-select-mode').style.display = tab === 'diag' ? '' : 'none';
-  const banner = document.getElementById('musashi-key-banner');
-  if (banner) banner.style.display = tab === 'learners' ? '' : 'none';
 
   if (tab === 'dash')     renderAdminDashboard();
   if (tab === 'learners') renderAdminLearners();
@@ -3602,55 +3589,9 @@ async function resendTodayTip(btn) {
   }
 }
 
-/* ── 武蔵BOT APIキー管理 ── */
-function getMusashiKey() {
-  return localStorage.getItem('musashi_api_key') || '';
-}
-async function loadMusashiKeyFromFirestore() {
-  try {
-    const doc = await db.collection('config').doc('admin').get();
-    if (doc.exists && doc.data().musashiApiKey) {
-      localStorage.setItem('musashi_api_key', doc.data().musashiApiKey);
-      updateMusashiBanner();
-    }
-  } catch(e) { console.warn('Musashi key load error:', e); }
-}
-async function saveMusashiKey() {
-  const input = document.getElementById('musashi-api-key-input');
-  const key = input.value.trim();
-  if (!key.startsWith('sk-ant-')) {
-    document.getElementById('musashi-key-status').textContent = '⚠️ キーは sk-ant- で始まる必要があります';
-    return;
-  }
-  localStorage.setItem('musashi_api_key', key);
-  input.value = '';
-  updateMusashiBanner();
-  db.collection('config').doc('admin').set({ musashiApiKey: key }, { merge: true })
-    .catch(e => console.warn('Firestore保存失敗（localStorageに保存済み）:', e.message));
-}
-async function clearMusashiKey() {
-  try {
-    await db.collection('config').doc('admin').update({ musashiApiKey: firebase.firestore.FieldValue.delete() });
-  } catch(e) { console.warn('Musashi key clear error:', e); }
-  localStorage.removeItem('musashi_api_key');
-  updateMusashiBanner();
-}
-function updateMusashiBanner() {
-  const key = getMusashiKey();
-  const banner = document.getElementById('musashi-key-banner');
-  const status = document.getElementById('musashi-key-status');
-  const clearBtn = document.getElementById('musashi-key-clear');
-  if (!banner) return;
-  if (key) {
-    status.textContent = '✓ APIキー設定済み（sk-ant-....' + key.slice(-4) + '）';
-    status.style.color = 'var(--gold)';
-    clearBtn.style.display = '';
-  } else {
-    status.textContent = 'APIキーを入力して「保存」を押してください';
-    status.style.color = 'var(--muted)';
-    clearBtn.style.display = 'none';
-  }
-}
+/* ── 武蔵BOT：AI呼び出しはサーバー（anthropicProxy）経由。APIキーはブラウザにもFirestoreにも置かない ── */
+const ANTHROPIC_PROXY_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/anthropicProxy';
+async function loadMusashiKeyFromFirestore() { localStorage.removeItem('musashi_api_key'); } // 旧方式の残りを消す
 
 const _dojoEntryMap = {}; // userId-phase-day → entry object
 const _liteEntryMap = {}; // userId-lite-day → entry object
@@ -3717,12 +3658,6 @@ async function generateMusashiLite(userId, liteKey, btn) {
   const entry = _liteEntryMap[liteKey];
   if (!entry?.text?.trim()) { alert('振り返りが空のため発動できません。'); return; }
 
-  const apiKey = getMusashiKey();
-  if (!apiKey) {
-    alert('APIキーが設定されていません。\n管理画面上部の「⚔️ 武蔵BOT」バナーにキーを入力してください。');
-    document.getElementById('musashi-key-banner').style.display = '';
-    return;
-  }
 
   btn.disabled = true;
   btn.textContent = '生成中...';
@@ -3733,14 +3668,9 @@ async function generateMusashiLite(userId, liteKey, btn) {
   const spiritName = SPIRIT_JP_NAMES[entry.spirit] || entry.spirit || '';
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(ANTHROPIC_PROXY_URL, {
       method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 500,
@@ -3837,12 +3767,6 @@ async function generateMusashiDojo(userId, entryKey, btn) {
   const entry = _dojoEntryMap[entryKey];
   if (!entry?.text?.trim()) { alert('振り返りが空のため発動できません。'); return; }
 
-  const apiKey = getMusashiKey();
-  if (!apiKey) {
-    alert('APIキーが設定されていません。\n管理画面上部の「⚔️ 武蔵BOT」バナーにキーを入力してください。');
-    document.getElementById('musashi-key-banner').style.display = '';
-    return;
-  }
 
   btn.disabled = true;
   btn.textContent = '生成中...';
@@ -3853,14 +3777,9 @@ async function generateMusashiDojo(userId, entryKey, btn) {
   const spiritName = SPIRIT_JP_NAMES[entry.spirit] || entry.spirit;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(ANTHROPIC_PROXY_URL, {
       method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 500,
@@ -4003,26 +3922,14 @@ async function generateMusashiComment(reflectionText, day, spiritName, btn) {
     alert('振り返りテキストがありません。');
     return;
   }
-  const apiKey = getMusashiKey();
-  if (!apiKey) {
-    alert('APIキーが設定されていません。\n管理画面上部の「⚔️ 武蔵BOT」バナーにキーを入力してください。');
-    document.getElementById('musashi-key-banner').style.display = '';
-    document.getElementById('musashi-api-key-input').focus();
-    return;
-  }
   const textarea = btn.parentElement.parentElement.querySelector('textarea');
   const original = btn.innerHTML;
   btn.disabled = true;
   btn.textContent = '生成中...';
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(ANTHROPIC_PROXY_URL, {
       method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 400,
