@@ -1279,7 +1279,8 @@ const CARDS = [
 /* ════════════════════════════════════
    STATE
 ════════════════════════════════════ */
-const ADMIN_PIN = '1234'; // 管理者PINコード（変更可）
+let ADMIN_PIN = ''; // ログイン時にサーバーで確認した値だけを入れる（コードには書かない）
+const ADMIN_CHECK_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/adminCheck';
 const SEND_COMMENT_URL    = 'https://sendadmincomment-6wuzckrpiq-uc.a.run.app';
 const SEND_BROADCAST_URL  = 'https://sendbroadcast-6wuzckrpiq-uc.a.run.app';
 const RESEND_DAILY_TIP_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/resendDailyTip';
@@ -1662,10 +1663,16 @@ async function submitResponse() {
 /* ════════════════════════════════════
    ADMIN
 ════════════════════════════════════ */
-function checkAdminPin() {
+async function checkAdminPin() {
   const input = document.getElementById('admin-pin-input').value;
   const err = document.getElementById('admin-pin-error');
-  if (input === ADMIN_PIN) {
+  let ok = false;
+  try {
+    const r = await fetch(ADMIN_CHECK_URL, { method: 'POST', headers: { 'Authorization': `Bearer ${input}` } });
+    ok = r.ok && (await r.json()).ok === true;
+  } catch (e) { ok = false; }
+  if (ok) {
+    ADMIN_PIN = input;
     err.textContent = '';
     document.getElementById('admin-pin-input').value = '';
     document.getElementById('btn-select-mode').style.display = '';
@@ -2990,7 +2997,7 @@ async function adminStartDojo(userId, btn) {
   try {
     const res = await fetch(START_DOJO_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
       body: JSON.stringify({ userId }),
     });
     const data = await res.json();
@@ -3015,7 +3022,7 @@ async function adminAdvanceDojoPhase(userId, btn) {
   try {
     const res = await fetch(ADVANCE_DOJO_PHASE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
       body: JSON.stringify({ userId }),
     });
     const data = await res.json();
@@ -3952,7 +3959,7 @@ async function sendMusashiDojo(userId, entryKey, btn) {
   try {
     const res = await fetch(MUSASHI_DOJO_SEND_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
       body: JSON.stringify({ userId, message }),
     });
     const data = await res.json();

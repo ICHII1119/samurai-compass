@@ -917,7 +917,8 @@ const CARDS = [
 /* ════════════════════════════════════
    STATE
 ════════════════════════════════════ */
-const ADMIN_PIN = '1234';
+let ADMIN_PIN = ''; // ログイン時にサーバーで確認した値だけを入れる（コードには書かない）
+const ADMIN_CHECK_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/adminCheck';
 const SEND_COMMENT_URL   = 'https://sendadmincomment-6wuzckrpiq-uc.a.run.app';
 const SEND_BROADCAST_URL = 'https://sendbroadcast-6wuzckrpiq-uc.a.run.app';
 
@@ -1098,10 +1099,16 @@ async function submitResponse() {
 /* ════════════════════════════════════
    ADMIN
 ════════════════════════════════════ */
-function checkAdminPin() {
+async function checkAdminPin() {
   const input = document.getElementById('admin-pin-input').value;
   const err = document.getElementById('admin-pin-error');
-  if (input === ADMIN_PIN) {
+  let ok = false;
+  try {
+    const r = await fetch(ADMIN_CHECK_URL, { method: 'POST', headers: { 'Authorization': `Bearer ${input}` } });
+    ok = r.ok && (await r.json()).ok === true;
+  } catch (e) { ok = false; }
+  if (ok) {
+    ADMIN_PIN = input;
     err.textContent = '';
     document.getElementById('admin-pin-input').value = '';
     document.getElementById('btn-select-mode').style.display = '';
@@ -2214,6 +2221,7 @@ const SAMURAI_DB = {
       profile: `The solitary sword-saint. He fought his first duel at 13 and went undefeated in over 60 encounters.\nHe wrote The Book of Five Rings and taught: "One thousand days to forge; ten thousand days to refine." In his later years he left paintings, calligraphy, and garden designs — embodying the spirit of living every pursuit as one unified Way.`,
       quote: 'One thousand days to forge; ten thousand days to refine.',
       match: "Your steadfast commitment to building yourself step by step mirrors Musashi's teaching in the Earth scroll: that patient, unglamorous practice is the only true foundation.",
+      youtube: '',
     },
     {
       name: '上杉謙信', en: 'Uesugi Kenshin', years: '1530–1578', emoji: '🐉',
@@ -2221,6 +2229,7 @@ const SAMURAI_DB = {
       profile: `One of the greatest warlords of the Sengoku era, known as "the Dragon of Echigo." He remained celibate his entire life, devoted to Bishamonten, and practiced rigorous austerity.\nAt the Battles of Kawanakajima he led from the front, spear in hand. He consistently chose inner honor over territorial gain, living simply until the end.`,
       quote: 'Seek not to overcome righteousness, but to live by it.',
       match: "Your way of refining yourself in order to influence those around you resonates with Kenshin's \"gi\" — the conviction that all action must flow from inner integrity.",
+      youtube: '',
     },
   ],
   flex: [
@@ -2230,6 +2239,7 @@ const SAMURAI_DB = {
       profile: `Born the son of a peasant, he rose from Nobunaga's sandal-bearer to unify Japan.\nHe continuously reinvented his own form to fit each situation — cunning in battle, warm and flexible in diplomacy. He was the embodiment of "mu-kamae": adapting completely, whatever the role demanded.`,
       quote: 'A person can change. There is no one who cannot change.',
       match: 'Your ability to release fixed ideas and reshape yourself to meet the moment mirrors the strength Hideyoshi practiced all his life — the power of having no fixed form.',
+      youtube: '',
     },
     {
       name: '伊達政宗', en: 'Date Masamune', years: '1567–1636', emoji: '🦅',
@@ -2237,6 +2247,7 @@ const SAMURAI_DB = {
       profile: `He lost his right eye to smallpox in childhood, yet conquered the Ōshū region, earning the name "One-Eyed Dragon." Through the battles of Sekigahara and Ōsaka he navigated complex allegiances and ultimately survived into the Tokugawa era.\nOne of the first Japanese lords to open trade with the West, dispatching the Keichō Embassy to Europe. He read the times and always kept his options open.`,
       quote: 'Survival is the greatest strategy.',
       match: "Your ability to stay grounded through change and read the situation to move with flexibility resonates with Masamune's wisdom of adaptation — the craft of riding out any storm without losing yourself.",
+      youtube: '',
     },
   ],
   strat: [
@@ -2246,6 +2257,7 @@ const SAMURAI_DB = {
       profile: `He spent his childhood as a hostage, buffeted by the powers of Imagawa, Takeda, Oda, and Toyotomi. Yet each time he was defeated, he chose to wait — and his patience at Sekigahara gave him the realm.\n"Blame yourself, not others," he taught, always favoring reason over emotion and the long view over the short. That discipline became the foundation of a shogunate that lasted over 250 years.`,
       quote: "A man's life is like a long road with a heavy load. Do not hurry.",
       match: 'Your ability to analyze situations from a long-term perspective and choose the optimal move aligns with the "strategic patience" Ieyasu spent his entire life mastering.',
+      youtube: '',
     },
     {
       name: '黒田官兵衛', en: 'Kuroda Kanbei', years: '1546–1604', emoji: '🦊',
@@ -2253,6 +2265,7 @@ const SAMURAI_DB = {
       profile: `As Toyotomi Hideyoshi's chief strategist, he devised the plans that built the realm, earning the saying "he made two rulers of the land."\nEven when imprisoned for a year in Arima Castle, his spirit never broke — and he returned to Hideyoshi's side immediately upon release. His approach: "Go to the field. The answer is in the field." He took Buddhist vows in his final years, closing a strategic life in contemplation.`,
       quote: 'What is needed is not information, but insight.',
       match: "Your ability to synthesize information quickly and anticipate the opponent's next move aligns with Kanbei's \"kan-ken wisdom\" — the eyes that see what is not yet visible.",
+      youtube: '',
     },
   ],
   sei: [
@@ -2262,6 +2275,7 @@ const SAMURAI_DB = {
       profile: `As chief retainer of the Akō domain, he led the Forty-Seven Rōnin to avenge their lord. For two years before the raid, he kept faith with every man without once betraying them — while simultaneously deceiving the shogunate's surveillance.\nAfter the raid, all forty-seven chose to die by seppuku. Their sincere consistency is inscribed in the Japanese spirit three hundred years on.`,
       quote: 'Integrity is doing the same thing whether or not anyone is watching.',
       match: "Your faithfulness to your own beliefs regardless of who is watching echoes the spirit of righteousness that Oishi and his men pledged to each other and kept until the very end.",
+      youtube: '',
     },
     {
       name: '直江兼続', en: 'Naoe Kanetsugu', years: '1560–1619', emoji: '❤️',
@@ -2269,6 +2283,7 @@ const SAMURAI_DB = {
       profile: `Chief retainer of Uesugi Kagekatsu, he rode to battle with the character "ai" (love) on his helmet crest — remarkable for placing love on a battlefield.\nAfter Sekigahara, the Uesugi domain was drastically reduced from 1.2 million koku to 300,000 — yet Kanetsugu never wavered in sincere care for his retainers and people. He is celebrated as a man who united righteousness and compassion.`,
       quote: 'Live by justice, and be sincere to feeling — that is the true path of the warrior.',
       match: "Your commitment to honoring agreements and meeting others with genuine care resonates with the conviction Kanetsugu carried on his helmet: that sincere relationship is the source of true strength.",
+      youtube: '',
     },
   ],
   hei: [
@@ -2278,6 +2293,7 @@ const SAMURAI_DB = {
       profile: `He served as sword instructor to the Tokugawa shogunate and authored Heihō Kadensho. He taught that "the sword is not for taking life but for giving it" (katsujin-ken), developing a philosophy of the mind that transcended swordsmanship.\n"Heijōshin kore dō" — the ordinary everyday mind is itself the Way. He spent his life practicing an unshakeable inner axis through battle, statecraft, and daily living alike.`,
       quote: 'Heijōshin kore dō — the ordinary mind is the Way.',
       match: "Your way of holding a steady axis even under pressure resonates with the realm Munenori reached through the sword — being exactly the same mind in any situation.",
+      youtube: '',
     },
     {
       name: '山本常朝', en: 'Yamamoto Tsunetomo', years: '1659–1719', emoji: '📜',
@@ -2285,9 +2301,12 @@ const SAMURAI_DB = {
       profile: `He served the Saga domain and, after his lord's death, took Buddhist vows and retreated into the mountains. His spoken teachings were compiled as Hagakure.\nKnown for "Bushidō is found in death," its true meaning is: only by accepting death can action in this present moment become completely pure. That is the philosophy of equanimity.`,
       quote: 'Bushidō is found in death — and in that acceptance, true equanimity is born.',
       match: "Your power to focus completely on this present moment without being swept away by emotion resonates with what Tsunetomo described in Hagakure — the equanimity born of resolve: living each instant completely and without reservation.",
+      youtube: '',
     },
   ],
 };
+
+/* youtube: paste a YouTube video ID (e.g. 'dQw4w9WgXcQ') to auto-embed a video on that card. Leave blank to hide the video block. */
 
 function renderSamuraiMatch(counts, total) {
   const ranked = Object.keys(counts).filter(k => counts[k] > 0).sort((a, b) => counts[b] - counts[a]);
@@ -2316,6 +2335,13 @@ function renderSamuraiMatch(counts, total) {
         <div style="font-size:.7rem;letter-spacing:.15em;color:${spirit.color};font-weight:700;margin-bottom:.25rem">Quote</div>
         <div style="font-size:.85rem;color:#2a1f10;font-style:italic;font-family:'Cormorant Garamond',serif">"${s.quote}"</div>
       </div>
+      ${s.youtube ? `
+      <div style="margin-bottom:.8rem">
+        <div style="font-size:.7rem;letter-spacing:.15em;color:${spirit.color};font-weight:700;margin-bottom:.4rem">🎬 Watch the Video</div>
+        <div style="position:relative;padding-top:56.25%;border-radius:8px;overflow:hidden;background:#000">
+          <iframe src="https://www.youtube-nocookie.com/embed/${s.youtube}" title="${s.en}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>` : ''}
       <div style="background:${spirit.color}12;border-radius:8px;padding:.7rem .9rem">
         <div style="font-size:.7rem;letter-spacing:.15em;color:${spirit.color};font-weight:700;margin-bottom:.3rem">Your Resonance</div>
         <div style="font-size:.82rem;color:#3a2a1a;line-height:1.6">${s.match}</div>
