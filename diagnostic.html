@@ -2411,6 +2411,83 @@ async function renderAdminDashboard() {
       <tbody>${_tableRows}</tbody>
     </table></div>`;
 
+    // ── 振り返りカレンダー ──────────────────────────────────────────────────
+    const _calMap = {}; // 'YYYY-MM-DD' → [{name, color}]
+    const _addCal = (ts, name, color) => {
+      const d = new Date(ts);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if (!_calMap[key]) _calMap[key] = [];
+      _calMap[key].push({ name, color });
+    };
+    // 入門編エントリ
+    pracSnap2.forEach(doc => {
+      const uid = doc.id;
+      const spirit = _liteMap2[uid]?.spirit || '';
+      const name = (_liteMap2[uid]?.nickname || _profMap2[uid]?.displayName || uid.slice(0,6)).slice(0,4);
+      const color = _spiritC[spirit] || '#c9a84c';
+      (doc.data().entries || []).forEach(e => { if (e.timestamp) _addCal(e.timestamp, name, color); });
+    });
+    // 道場編エントリ
+    dSnap2.forEach(doc => {
+      const uid = doc.id;
+      const name = (_liteMap2[uid]?.nickname || _profMap2[uid]?.displayName || uid.slice(0,6)).slice(0,4);
+      (doc.data().entries || []).forEach(e => {
+        if (e.timestamp) _addCal(e.timestamp, name, _spiritC[e.spirit] || '#c9a84c');
+      });
+    });
+
+    const _today = new Date();
+    const _DAY_LABELS = ['月','火','水','木','金','土','日'];
+    const _buildCalMonth = (year, month) => {
+      const monthLabel = `${year}年${month+1}月`;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const startOffset = (new Date(year, month, 1).getDay() + 6) % 7; // Mon=0
+      let cells = _DAY_LABELS.map(d =>
+        `<div style="font-size:.58rem;color:var(--muted);text-align:center;padding:.15rem 0">${d}</div>`
+      ).join('');
+      for (let i = 0; i < startOffset; i++) cells += `<div></div>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const acts = _calMap[key] || [];
+        const isToday = year === _today.getFullYear() && month === _today.getMonth() && d === _today.getDate();
+        const isSun = (new Date(year, month, d).getDay() === 0);
+        const isSat = (new Date(year, month, d).getDay() === 6);
+        const numColor = acts.length > 0 ? 'var(--cream)' : isSun ? 'rgba(196,126,126,.5)' : isSat ? 'rgba(126,184,212,.4)' : 'rgba(255,255,255,.18)';
+        const dots = acts.slice(0,6).map(a =>
+          `<div title="${escHtml(a.name)}" style="width:5px;height:5px;border-radius:50%;background:${a.color};flex-shrink:0"></div>`
+        ).join('');
+        const more = acts.length > 6 ? `<div style="font-size:.42rem;color:var(--muted);line-height:1">+${acts.length-6}</div>` : '';
+        cells += `<div style="min-height:36px;padding:.15rem .1rem;border-radius:3px;${isToday ? 'border:1px solid rgba(201,168,76,.5);background:rgba(201,168,76,.05)' : ''}">
+          <div style="font-size:.62rem;color:${numColor};text-align:center;line-height:1.4">${d}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:1.5px;justify-content:center;margin-top:1px">${dots}${more}</div>
+        </div>`;
+      }
+      return `<div style="margin-bottom:.8rem">
+        <div style="font-size:.72rem;color:var(--cream2);font-weight:600;margin-bottom:.4rem">${monthLabel}</div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1.5px">${cells}</div>
+      </div>`;
+    };
+
+    // 前月・当月カレンダーを生成
+    const _prevDate = new Date(_today.getFullYear(), _today.getMonth() - 1, 1);
+    const calHtml = _buildCalMonth(_prevDate.getFullYear(), _prevDate.getMonth())
+                  + _buildCalMonth(_today.getFullYear(), _today.getMonth());
+
+    // 凡例（参加者カラー）
+    const _legendItems = [..._allIds2]
+      .filter(uid => uid && uid.startsWith('U') && uid.length >= 20)
+      .map(uid => {
+        const spirit = _liteMap2[uid]?.spirit || (_dojoMap2[uid]?.spiritPlan?.[_dojoMap2[uid]?.currentPhase ?? 0]) || '';
+        const color = _spiritC[spirit] || '#c9a84c';
+        const name = (_liteMap2[uid]?.nickname || _profMap2[uid]?.displayName || uid.slice(0,6)).slice(0,5);
+        return `<span style="display:inline-flex;align-items:center;gap:.3rem;font-size:.65rem;color:var(--cream2)">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color}"></span>${escHtml(name)}
+        </span>`;
+      }).join('');
+
+    const calendarHtml = `<div style="margin-bottom:.6rem">${calHtml}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;padding-top:.4rem;border-top:1px solid rgba(255,255,255,.05)">${_legendItems}</div>`;
+
     const spiritNames = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
     const spiritColors = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
 
@@ -2494,6 +2571,11 @@ async function renderAdminDashboard() {
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
         <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">⚔️ 参加者 稽古状況</div>
         ${statusTableHtml}
+      </div>
+      <!-- 振り返りカレンダー -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem;font-weight:600;letter-spacing:.05em">📅 振り返りカレンダー</div>
+        ${calendarHtml}
       </div>
       <!-- Spirit分布 -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:1.5rem">
