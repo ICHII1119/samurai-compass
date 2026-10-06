@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>SAMURAI in You — お申し込みの前に</title>
+<link rel="icon" href="logo.png">
+<style>
+:root { --bg:#1a1a1f; --panel:#f5f0e6; --gold:#c9a84c; --ink:#1c1610; --muted:#6d6048; --red:#9c3a52; }
+* { box-sizing:border-box; margin:0; padding:0 }
+body { background:var(--bg); color:var(--ink); font-family:'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px; }
+.card { width:100%; max-width:460px; background:var(--panel); border:1px solid var(--gold); padding:34px 28px 30px; text-align:center; }
+.logo { width:64px; height:64px; object-fit:contain; margin-bottom:14px }
+.eyebrow { font-size:11px; letter-spacing:.4em; color:var(--gold); margin-bottom:10px }
+h1 { font-size:21px; font-weight:500; letter-spacing:.08em; margin-bottom:12px; line-height:1.6 }
+.lead { font-size:14px; line-height:2; color:#3b3024; margin-bottom:22px }
+label { display:block; text-align:left; font-size:12px; letter-spacing:.08em; color:var(--muted); margin-bottom:6px }
+input[type=email] { width:100%; font-size:16px; padding:12px 13px; border:1px solid rgba(154,117,32,.55); background:#fff; color:var(--ink); border-radius:1px; font-family:inherit }
+input[type=email]:focus { outline:none; border-color:var(--ink) }
+.note { text-align:left; font-size:12px; line-height:1.9; color:var(--muted); margin:10px 0 20px }
+button { width:100%; background:linear-gradient(180deg,#a8415a,#8a3048); border:1px solid var(--gold); color:#f8f1dc; letter-spacing:.22em; font-weight:600; font-size:14px; padding:15px; border-radius:1px; cursor:pointer; font-family:inherit }
+button:disabled { opacity:.55; cursor:default }
+.err { color:var(--red); font-size:13px; line-height:1.8; margin-top:14px; min-height:1.8em }
+.hidden { display:none }
+</style>
+</head>
+<body>
+<main class="card">
+  <img class="logo" src="logo.png" alt="SAMURAI in You">
+
+  <!-- LINEのご案内から開かれていない場合 -->
+  <section id="invalid" class="hidden">
+    <h1>LINEのご案内から<br>お開きください</h1>
+    <p class="lead">このページは、LINEに届いたご案内のリンクから開くページです。LINEのメッセージを、もう一度ご確認ください。</p>
+  </section>
+
+  <!-- メールアドレスの入力 -->
+  <section id="entry" class="hidden">
+    <div class="eyebrow" id="eyebrow">ENTRY</div>
+    <h1 id="title"></h1>
+    <p class="lead" id="lead"></p>
+    <form id="form" novalidate>
+      <label for="email">メールアドレス</label>
+      <input type="email" id="email" name="email" autocomplete="email" inputmode="email" placeholder="example@mail.com" required>
+      <p class="note">お申し込みのとき、同じメールアドレスが自動で入ります。LINEでのお申し込みの確認と、ご注文内容のお知らせに使います。</p>
+      <button type="submit" id="go">お申し込みへ進む</button>
+      <p class="err" id="err" role="alert"></p>
+    </form>
+  </section>
+</main>
+
+<script>
+// ── 設定（ここだけ書き換える） ─────────────────────────────
+// UTAGE の申込ページ。独自ドメイン（www.samurai-in-you.com）に切り替えたら URL を差し替える。
+var ORDER_URL = {
+  dojo:    'https://utage-system.com/p/NYJQnTz43KlY',
+  program: 'https://utage-system.com/p/YGIqZTJhfWzW'
+};
+var API = 'https://us-central1-samurai-compass.cloudfunctions.net/registerPending';
+
+var PLANS = {
+  dojo:    { eyebrow:'DOJO',    title:'道場に入門する',
+             lead:'道場（月額）のお申し込みの前に、メールアドレスをお知らせください。' },
+  program: { eyebrow:'PROGRAM', title:'4時間プログラムに申し込む',
+             lead:'4時間プログラムのお申し込みの前に、メールアドレスをお知らせください。' }
+};
+
+var q = new URLSearchParams(location.search);
+var lid = (q.get('lid') || '').trim();
+var plan = (q.get('plan') || 'dojo').trim();
+var valid = /^U[0-9a-f]{32}$/.test(lid) && PLANS[plan] && ORDER_URL[plan];
+
+if (!valid) {
+  document.getElementById('invalid').classList.remove('hidden');
+} else {
+  document.getElementById('entry').classList.remove('hidden');
+  document.getElementById('eyebrow').textContent = PLANS[plan].eyebrow;
+  document.getElementById('title').textContent = PLANS[plan].title;
+  document.getElementById('lead').textContent = PLANS[plan].lead;
+  document.title = 'SAMURAI in You — ' + PLANS[plan].title;
+
+  document.getElementById('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('email').value.trim();
+    var err = document.getElementById('err');
+    var btn = document.getElementById('go');
+    err.textContent = '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      err.textContent = 'メールアドレスの形式をご確認ください。';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = '確認しています…';
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lid: lid, email: email })
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, body: j }; });
+    }).then(function (res) {
+      if (!res.ok) throw new Error(res.body && res.body.error || 'error');
+      // メールアドレスは # 以降（フラグメント）で渡す。フラグメントはサーバーには送られない。
+      location.href = ORDER_URL[plan] + '#mail=' + encodeURIComponent(email);
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'お申し込みへ進む';
+      err.textContent = '送信できませんでした。通信状況をご確認のうえ、もう一度お試しください。';
+    });
+  });
+}
+</script>
+</body>
+</html>
