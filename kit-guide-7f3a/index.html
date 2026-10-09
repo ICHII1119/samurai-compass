@@ -58,11 +58,54 @@ table{border-collapse:collapse;width:100%;background:var(--paper);font-size:14.5
 .end .tag{font-family:'Shippori Mincho',serif;font-size:19px;color:var(--gold);line-height:2;margin:34px 0 0}
 .foot{text-align:center;font-size:12.5px;color:#6d6048;padding:24px 20px 40px;border-top:1px solid var(--line);letter-spacing:.06em}.foot img{width:190px;display:block;margin:0 auto 12px;mix-blend-mode:multiply}
 @media(max-width:760px){.cover h1{font-size:28px}.cover .sub{font-size:16px}.box,.steps,.map,.next{grid-template-columns:1fr}.sp{grid-template-columns:1fr 1fr}.qa .r{grid-template-columns:1fr}.qa .ar{display:none}.qa .q:before{content:"Q　";color:var(--gold)}.qa .a{padding-left:0}.step p{font-size:14.5px}.kata{padding:20px 18px 18px}.kata h2{font-size:22px}section>.wrap>h2{font-size:25px}}
-@media print{.bar{display:none}section{page-break-inside:avoid}}
+
+.print-only{display:none}
+.dl{display:inline-block;margin-top:18px;font-size:13px;letter-spacing:.12em;color:var(--ink);text-decoration:none;border:1px solid var(--gold);padding:7px 20px;background:rgba(251,248,240,.7)}
+@page{size:A5;margin:11mm 10mm 12mm}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html,body{background:#f5efe1}
+  body{font-size:9.6pt;line-height:1.85}
+  .bar,.dl,.no-print{display:none!important}
+  .print-only{display:block}
+  .wrap{max-width:none;padding:0}
+  .cover{height:180mm;padding:0;display:flex;flex-direction:column;justify-content:center;page-break-after:always}
+  .cover h1{font-size:26pt}.cover .sub{font-size:13pt}
+  section{padding:0;page-break-before:always;scroll-margin-top:0}
+  section.cont{page-break-before:auto;padding-top:4mm}
+  section>.wrap>h2{font-size:17pt;margin-bottom:2mm}
+  .en{margin-bottom:6mm;font-size:8pt}
+  .lead p{font-size:9.6pt}.gold{font-size:11pt}
+  .box{grid-template-columns:1fr;gap:3mm;margin-top:4mm}
+  .item{padding:3mm 4mm;gap:4mm;page-break-inside:avoid}.item img{width:13mm}.item h3{font-size:10.5pt}.item p{font-size:8.6pt}.themes{font-size:8pt}
+  .steps{grid-template-columns:1fr 1fr;gap:3mm}.step{padding:4mm 3mm;page-break-inside:avoid}.step img{height:13mm}.step h3{font-size:11pt}.step p{font-size:8.6pt;line-height:1.8}
+  .map{grid-template-columns:1fr;gap:3mm}.cat{padding:3mm 4mm;page-break-inside:avoid}.cat h3{font-size:10.5pt}.cat a{font-size:9.6pt;padding:2mm 1mm}
+  .kata{margin:0 0 5mm;padding:5mm 5mm 4mm;page-break-inside:avoid}.kata h2{font-size:14pt}.meta{font-size:8.6pt;gap:1mm 5mm}.kata ol{font-size:9.6pt;margin-bottom:3mm}.hito{font-size:8.8pt;padding:2.4mm 3.4mm}
+  .photo{max-width:80mm;margin:3mm 0}
+  .qa .r{grid-template-columns:1fr 6mm 1.35fr;padding:2.6mm 1mm;font-size:9pt;page-break-inside:avoid}
+  .sp{grid-template-columns:repeat(5,1fr);gap:1.6mm;margin-bottom:4mm}.sp div{padding:2.4mm 1mm;font-size:7pt;line-height:1.55}.sp b{font-size:9pt}.sp i{font-size:8pt}
+  table{font-size:8.4pt}th,td{padding:1.8mm 2.4mm}
+  .next{grid-template-columns:1fr;gap:3mm}.nx{display:grid;grid-template-columns:20mm 1fr;gap:3mm;text-align:left;padding:3mm;page-break-inside:avoid}.nx img{height:auto;width:18mm;margin:0}.nx h3{font-size:10.5pt;grid-column:2}.nx p{font-size:8.6pt;grid-column:2}.nx>div{grid-column:2}.qr img{width:26mm;height:26mm}
+  .end{padding:20mm 0 0;page-break-before:always}.end .big{font-size:12.5pt}.end .tag{font-size:12pt;margin-top:10mm}.end .tag span{font-size:9.6pt!important}
+  .foot{padding:8mm 0 0;border:0;font-size:8pt}.foot img{width:36mm}
+  .print-only.sheet{page-break-before:always;padding-top:2mm}.sheet h2{font-family:'Shippori Mincho',serif;font-size:15pt;text-align:center;margin:0 0 2mm}.sheet p{text-align:center;margin:0 0 4mm;font-size:8.8pt}
+  .sheet table{background:#fff}.sheet td{height:10.4mm}
+  .qa .ar{display:block;text-align:center}.qa .q:before{content:none}.qa .a{padding-left:0}
+  #hajime .lead p{margin:0 0 .6em}.item{padding:2.2mm 3.6mm}.box{gap:2.4mm;margin-top:3mm}
+  .nx{padding:2.4mm 3mm;gap:2.4mm;grid-template-columns:17mm 1fr}.nx img{width:15mm}.nx p{font-size:8.4pt;line-height:1.7}.next{gap:2.4mm}.qr{margin-top:2mm;padding:1.6mm}.qr img{width:22mm;height:22mm}
+  .kata{margin:0 0 4mm}
+  #log .lg{margin-bottom:2mm}
+  .kata{padding:3.6mm 4.4mm 3mm;margin:0 0 2.8mm}.kata h2{font-size:12.5pt;margin:0 0 1.2mm!important}.meta{font-size:8pt;margin:0 0 2mm}.kata ol{font-size:8.9pt;margin:0 0 2mm;line-height:1.75}.kata li{margin-bottom:.2em}.hito{font-size:8.2pt;padding:1.8mm 3mm;line-height:1.7}
+  .photo{max-width:56mm;margin:2mm 0}
+  .cat{padding:2.4mm 3.6mm}.cat a{padding:1.4mm 1mm}
+  .qa .r{padding:1.7mm 1mm;font-size:8.5pt;line-height:1.7}
+  .rec td{height:10.2mm}
+}
+
 </style></head><body>
 <div class="bar"><b>SAMURAI TOOLKIT</b><a href="#hajime">はじめに</a><a href="#first15">最初の15分</a><a href="#kata">5つの型</a><a href="#lost1">迷ったときに</a><a href="#compass">Compass</a><a href="#log">記録</a><a href="#next">次の稽古へ</a></div>
 
-<header class="cover"><div class="ey">SAMURAI TOOLKIT</div><h1>実践ガイドブック</h1><p class="sub">迷ったときに、戻る場所。</p><p class="by">SAMURAI in You</p></header>
+<header class="cover"><div class="ey">SAMURAI TOOLKIT</div><h1>実践ガイドブック</h1><p class="sub">迷ったときに、戻る場所。</p><p class="by">SAMURAI in You</p><a class="dl" href="samurai-toolkit-guidebook.pdf" download>PDF版をダウンロード</a></header>
 
 <section id="hajime"><div class="wrap"><h2>はじめに</h2><div class="en">WELCOME</div>
 <div class="lead"><p>このToolkitは、サムライの流儀である「一つの軸」を、日々の稽古で確かめていくための道具です。</p><p class="gold">いま持っている知識や経験は、捨てなくていい。<br>その上に、一枚、重ねるだけです。</p><p>道場に通わなくても、相手がいなくても、稽古はできます。カードが、その場をつくります。</p><p>このガイドブックは、読み通すためのものではありません。迷ったときに開いて、手順を一つ確かめるためのものです。</p></div>
@@ -89,7 +132,7 @@ table{border-collapse:collapse;width:100%;background:var(--paper);font-size:14.5
 <div class="cat"><h3>他者との線を結ぶ</h3><a href="#k4">型④ 二人で、本音を当てる<span>所要：15分〜30分</span></a></div>
 </div></div></section>
 
-<section style="padding-top:34px"><div class="wrap">
+<section class="cont" style="padding-top:34px"><div class="wrap">
 <article class="kata" id="k1"><h2>型① 朝の一枚</h2><div class="meta"><span><b>いつ</b>朝</span><span><b>所要</b>3〜5分</span><span><b>使うもの</b>Mastery Cards</span></div>
 <ol><li>Mastery Cardを1枚引く。</li><li>書かれた言葉を、声に出して一度読む。</li><li>その言葉を、今日の「題」にする。</li><li>題を記録欄に書き、「今日、この言葉をどう生きるか」を一行だけ書き添える。</li></ol>
 <div class="hito"><b>ひと言</b>その日の終わりに、題が、どんな場面で思い出されたかを、一行だけ書き留めてみてください。思い出されなかった日も、それが記録になります。</div></article>
@@ -141,12 +184,12 @@ table{border-collapse:collapse;width:100%;background:var(--paper);font-size:14.5
 <tr><td rowspan="2"><b>平常心</b></td><td>虚の心（Objectivity）</td><td>偏見を捨て、判断する力</td></tr><tr><td>心身一如（Psychosomatic）</td><td>心身のバランスを保つ力</td></tr></table></div>
 </div></section>
 
-<section id="log"><div class="wrap"><h2>記録のつけ方</h2><div class="en">KEEPING A RECORD</div>
+<section id="log" class="cont"><div class="wrap"><h2>記録のつけ方</h2><div class="en">KEEPING A RECORD</div>
 <div class="lead"><p style="text-align:center">稽古は、書くことで、積み重なります。次の3つだけ、書いてみてください。</p></div>
 <div class="lg"><table><tr><th style="width:15%">日付</th><th>今日の題</th><th>自分なら</th><th>気づいたこと</th></tr>
 <tr><td>○月○日</td><td>（カードの言葉・引いた場面）</td><td>（一行で構いません）</td><td>（なければ、空欄で構いません）</td></tr>
 <tr><td>&nbsp;</td><td></td><td></td><td></td></tr><tr><td>&nbsp;</td><td></td><td></td><td></td></tr></table></div>
-<p style="text-align:center;margin-top:18px">書き終えたら、手元のノートに続けてください。</p></div></section>
+<p style="text-align:center;margin-top:18px">書き終えたら、手元のノートに続けてください。</p><div class="print-only"><table class="rec" style="margin-top:3mm"><tr><th style="width:15%">日付</th><th>今日の題</th><th>自分なら</th><th>気づいたこと</th></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr></table></div></div></section>
 
 <section id="next"><div class="wrap"><h2>次の稽古へ</h2><div class="en">NEXT STEPS</div>
 <div class="lead"><p style="text-align:center">Toolkitは、稽古の入り口です。</p></div>
