@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive"><title>SAMURAI Toolkit 実践ガイドブック</title>
+<link rel="icon" href="https://dojo.samurai-in-you.com/favicon.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&family=Noto+Serif+JP:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&display=swap');
+:root{--washi:#f5efe1;--paper:#fbf8f0;--ink:#1c1610;--navy:#232a5c;--gold:#9a7520;--enji:#9c3a52;--line:rgba(154,117,32,.4)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--washi);color:var(--ink);font-family:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif;line-height:2}
+h1,h2,h3{font-family:'Shippori Mincho','Cormorant Garamond',serif;font-weight:500;letter-spacing:.06em;margin:0}
+a{color:var(--enji);text-underline-offset:3px}
+img{max-width:100%;height:auto}
+.ic{mix-blend-mode:multiply}
+.bar{position:sticky;top:0;z-index:20;background:rgba(245,239,225,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:14px;align-items:center;overflow-x:auto;white-space:nowrap;font-size:13px;letter-spacing:.08em}
+.bar b{font-family:'Cormorant Garamond',serif;letter-spacing:.3em;font-size:12px;color:var(--gold);margin-right:6px}
+.bar a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}.bar a:hover{border-bottom-color:var(--gold)}
+.wrap{max-width:880px;margin:0 auto;padding:0 22px}
+.cover{text-align:center;padding:84px 22px 70px;position:relative}
+.cover:before,.cover:after{content:"";display:block;width:1px;height:64px;background:var(--enji);margin:0 auto}
+.cover:before{margin-bottom:34px}.cover:after{margin-top:34px}
+.cover .ey{font-family:'Cormorant Garamond',serif;letter-spacing:.5em;color:var(--gold);font-size:13px;font-weight:600;margin:0 0 14px}
+.cover h1{font-size:40px;line-height:1.5}.cover .sub{font-size:19px;margin:16px 0 0;letter-spacing:.1em}
+.cover .by{font-family:'Cormorant Garamond',serif;letter-spacing:.32em;font-size:14px;margin:26px 0 0}
+section{padding:58px 0 8px;scroll-margin-top:52px}
+section>.wrap>h2{font-size:30px;text-align:center;margin:0 0 6px}
+.en{text-align:center;font-family:'Cormorant Garamond',serif;letter-spacing:.4em;color:var(--gold);font-size:12px;font-weight:600;margin:0 0 30px}
+.lead{max-width:640px;margin:0 auto 1.2em}.lead p{margin:0 0 1.1em;font-size:16px}
+.gold{color:var(--gold);font-weight:600;font-size:18px;line-height:2.1}
+.box{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:26px}
+.item{display:flex;gap:16px;align-items:center;background:var(--paper);border:1px solid var(--line);padding:16px 18px}
+.item img{width:62px;flex:none}.item h3{font-size:17px;margin:0 0 2px}.item p{margin:0;font-size:13.5px;line-height:1.8}
+.themes{margin:6px 0 0;font-size:12.5px;line-height:1.8;color:#4a3f33}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px}
+.step{background:var(--paper);border:1px solid var(--line);padding:20px 16px 18px;text-align:center}
+.step img{height:68px;width:auto;margin:0 auto 10px;display:block}.step h3{font-size:18px;margin:0 0 8px}.step h3 small{display:block;font-size:12px;color:var(--gold);letter-spacing:.2em;margin-top:2px}
+.step p{margin:0;font-size:14px;line-height:1.95;text-align:left}.step .key{color:var(--enji);font-weight:600;margin-top:.7em}
+.map{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cat{background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--navy);padding:18px 18px 12px}
+.cat h3{font-size:16px;text-align:center;margin:0 0 10px}.cat a{display:block;color:var(--ink);text-decoration:none;border-top:1px dashed var(--line);padding:9px 2px;font-size:15px;line-height:1.7}
+.cat a span{display:block;font-size:12px;color:#6d6048}.cat a:hover{color:var(--enji)}
+.kata{background:var(--paper);border:1px solid var(--line);margin:0 0 22px;padding:26px 26px 22px}
+.kata h2{font-size:25px;text-align:left!important;margin:0 0 10px!important}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:14px;margin:0 0 14px;color:#34385f}.meta b{color:var(--gold);font-weight:600;letter-spacing:.1em;font-size:12.5px;margin-right:6px}
+.kata ol{margin:0 0 14px;padding-left:1.5em;font-size:15.5px}.kata li{margin-bottom:.4em}
+.hito{border:1px solid var(--gold);padding:12px 16px;font-size:14.5px;line-height:1.95;background:rgba(154,117,32,.06)}.hito b{color:var(--gold);letter-spacing:.12em;margin-right:8px}
+.photo{margin:14px 0;max-width:430px}.photo img{width:100%;border:1px solid var(--line);padding:6px;background:#fff;box-shadow:0 8px 20px rgba(60,40,10,.1)}
+.qa{max-width:760px;margin:0 auto}.qa .r{display:grid;grid-template-columns:1fr 28px 1.25fr;gap:10px;align-items:start;padding:14px 4px;border-top:1px solid var(--line);font-size:15px}
+.qa .r:last-child{border-bottom:1px solid var(--line)}.qa .q{font-weight:600}.qa .ar{color:var(--gold);text-align:center}.qa .a em{font-style:normal;color:var(--enji)}
+.sp{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px}
+.sp div{background:var(--paper);border:1px solid var(--line);padding:14px 10px;text-align:center;font-size:13px;line-height:1.7}
+.sp b{display:block;font-family:'Shippori Mincho',serif;font-size:18px;font-weight:500}.sp i{display:block;font-style:normal;font-family:'Cormorant Garamond',serif;color:var(--gold);letter-spacing:.12em;font-size:13px;margin:2px 0 6px}
+table{border-collapse:collapse;width:100%;background:var(--paper);font-size:14.5px}th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;line-height:1.7;vertical-align:top}th{background:rgba(154,117,32,.1);font-weight:600;font-size:13px;letter-spacing:.1em}
+.lg{overflow-x:auto}
+.next{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.nx{background:var(--paper);border:1px solid var(--line);padding:20px 18px;text-align:center}.nx img{height:96px;width:auto;margin:0 auto 8px;display:block}.nx h3{font-size:17px;margin:0 0 8px}.nx p{margin:0;font-size:14px;line-height:1.9;text-align:left}
+.qr{display:inline-block;background:#fff;padding:10px;border:1px solid var(--gold);margin-top:14px}.qr img{width:140px;height:140px;display:block}
+.end{text-align:center;padding:60px 22px 70px}.end .big{font-size:20px;line-height:2.1;margin:0 0 6px}
+.end .tag{font-family:'Shippori Mincho',serif;font-size:19px;color:var(--gold);line-height:2;margin:34px 0 0}
+.foot{text-align:center;font-size:12.5px;color:#6d6048;padding:24px 20px 40px;border-top:1px solid var(--line);letter-spacing:.06em}.foot img{width:190px;display:block;margin:0 auto 12px;mix-blend-mode:multiply}
+@media(max-width:760px){.cover h1{font-size:28px}.cover .sub{font-size:16px}.box,.steps,.map,.next{grid-template-columns:1fr}.sp{grid-template-columns:1fr 1fr}.qa .r{grid-template-columns:1fr}.qa .ar{display:none}.qa .q:before{content:"Q　";color:var(--gold)}.qa .a{padding-left:0}.step p{font-size:14.5px}.kata{padding:20px 18px 18px}.kata h2{font-size:22px}section>.wrap>h2{font-size:25px}}
+@media print{.bar{display:none}section{page-break-inside:avoid}}
+</style></head><body>
+<div class="bar"><b>SAMURAI TOOLKIT</b><a href="#hajime">はじめに</a><a href="#first15">最初の15分</a><a href="#kata">5つの型</a><a href="#lost1">迷ったときに</a><a href="#compass">Compass</a><a href="#log">記録</a><a href="#next">次の稽古へ</a></div>
+
+<header class="cover"><div class="ey">SAMURAI TOOLKIT</div><h1>実践ガイドブック</h1><p class="sub">迷ったときに、戻る場所。</p><p class="by">SAMURAI in You</p></header>
+
+<section id="hajime"><div class="wrap"><h2>はじめに</h2><div class="en">WELCOME</div>
+<div class="lead"><p>このToolkitは、サムライの流儀である「一つの軸」を、日々の稽古で確かめていくための道具です。</p><p class="gold">いま持っている知識や経験は、捨てなくていい。<br>その上に、一枚、重ねるだけです。</p><p>道場に通わなくても、相手がいなくても、稽古はできます。カードが、その場をつくります。</p><p>このガイドブックは、読み通すためのものではありません。迷ったときに開いて、手順を一つ確かめるためのものです。</p></div>
+<div class="box">
+<div class="item"><img class="ic" src="img/ic-cards.jpg" alt=""><div><h3>Challenge Cards（162枚）</h3><p>稽古の「相手」。3つのテーマ、各54枚。</p><p class="themes">キャリア開発（例：役割を越える責任感）<br>チームビルディング（例：本音で話せない）<br>事業継続マネジメント</p></div></div>
+<div class="item"><img class="ic" src="img/ic-quote.jpg" alt=""><div><h3>Mastery Cards（50枚）</h3><p>師匠の声。</p></div></div>
+<div class="item"><img class="ic" src="img/ic-pent.jpg" alt=""><div><h3>Pentagon Compass（15枚）</h3><p>自分の軸を確かめる道具。</p></div></div>
+<div class="item"><img class="ic" src="img/ic-book.jpg" alt=""><div><h3>実践ガイドブック</h3><p>迷ったときに戻る手順書。（このページです）</p></div></div>
+</div></div></section>
+
+<section id="first15"><div class="wrap"><h2>最初の15分</h2><div class="en">YOUR FIRST 15 MINUTES</div>
+<div class="lead"><p style="text-align:center">開けた日に、まず一度だけ、この順で稽古してみてください。</p></div>
+<div class="steps">
+<div class="step"><img class="ic" src="img/s1-fan.jpg" alt=""><h3>見る<small>3分</small></h3><p>Pentagon Compassから、紺色のSpiritカード5枚を並べる。感情を挟む前に、直感で「今の自分に最も近い」1枚を選ぶ。</p></div>
+<div class="step"><img class="ic" src="img/s2-pile.jpg" alt=""><h3>引く<small>5分</small></h3><p>Challenge Cardsから、いまの自分に近いテーマを1枚引く。選んだSpiritを持った自分なら、その場面をどう受けるかを考える。</p></div>
+<div class="step"><img class="ic" src="img/s3-pen.jpg" alt=""><h3>書く<small>5分</small></h3><p>考えたことを、そのまま書く。うまく書こうとしなくて構わない。</p><p class="key">書くことが、この稽古の芯です。</p></div>
+<div class="step"><img class="ic" src="img/s4-quote.jpg" alt=""><h3>言葉を持ち帰る<small>2分</small></h3><p>Mastery Cardを1枚引く。書かれた言葉を今日の題とし、書いたものの下に書き添える。</p></div>
+</div></div></section>
+
+<section id="kata"><div class="wrap"><h2>いま、どんな場面ですか？</h2><div class="en">FIVE FORMS</div>
+<div class="map">
+<div class="cat"><h3>日常の軸を整える</h3><a href="#k1">型① 朝の一枚<span>所要：3〜5分</span></a><a href="#k5">型⑤ 週に一度のCompass<span>所要：10分</span></a></div>
+<div class="cat"><h3>非日常の揺らぎに向き合う</h3><a href="#k2">型② キャリアの節目に<span>所要：10〜15分</span></a><a href="#k3">型③ 事業継続の「もしも」<span>所要：15〜20分</span></a></div>
+<div class="cat"><h3>他者との線を結ぶ</h3><a href="#k4">型④ 二人で、本音を当てる<span>所要：15分〜30分</span></a></div>
+</div></div></section>
+
+<section style="padding-top:34px"><div class="wrap">
+<article class="kata" id="k1"><h2>型① 朝の一枚</h2><div class="meta"><span><b>いつ</b>朝</span><span><b>所要</b>3〜5分</span><span><b>使うもの</b>Mastery Cards</span></div>
+<ol><li>Mastery Cardを1枚引く。</li><li>書かれた言葉を、声に出して一度読む。</li><li>その言葉を、今日の「題」にする。</li><li>題を記録欄に書き、「今日、この言葉をどう生きるか」を一行だけ書き添える。</li></ol>
+<div class="hito"><b>ひと言</b>その日の終わりに、題が、どんな場面で思い出されたかを、一行だけ書き留めてみてください。思い出されなかった日も、それが記録になります。</div></article>
+
+<article class="kata" id="k2"><h2>型② キャリアの節目に</h2><div class="meta"><span><b>いつ</b>異動、転職、昇進、役割の変化など</span><span><b>所要</b>10〜15分</span><span><b>使うもの</b>Challenge Cards</span></div>
+<ol><li>キャリア開発のChallenge Cardを、1枚引く。</li><li>引いた場面を、頭の中で、なぞる。</li><li>自分ならどう受けるかを、考える。</li><li>考えたことを、書き留める。</li></ol>
+<div class="hito"><b>ひと言</b>正しい答えを探す必要はありません。節目のときほど、自分がどう受けるかを、一度、言葉にしておくことに意味があります。</div></article>
+
+<article class="kata" id="k3"><h2>型③ 事業継続の「もしも」</h2><div class="meta"><span><b>いつ</b>事業継続の備えを見直すとき</span><span><b>所要</b>15〜20分</span><span><b>使うもの</b>Challenge Cards</span></div>
+<ol><li>事業継続マネジメントのカードを1枚引く。</li><li>「もしも」その場面が起きたら、と考える。</li><li>起きてから最初の一手、次の一手、と順にたどる。</li><li>たどる途中で、備えが足りないと感じた箇所を、書き出す。</li></ol>
+<div class="hito"><b>ひと言</b>たどって見えた「足りない箇所」が、見直しの出発点になります。</div></article>
+
+<article class="kata" id="k4"><h2>型④ 二人で、本音を当てる</h2><div class="meta"><span><b>いつ</b>1on1、セッションの練習、身近な人と</span><span><b>所要</b>15分（交代して30分）</span><span><b>使うもの</b>Challenge Cards</span></div>
+<ol><li><b>演じる人：</b>Challenge Cardを引き、悩みを抱えた人になります。悩みの裏にある「本当の理由」を、心の中で一つ決めます（言わない）。</li><li><b>聴く人：</b>10分、話を聴きます。</li><li>「あなたの本音は……」と当てて、答え合わせをします。</li><li>二人とも、気づいたことを、一行ずつ書きます。</li><li>役を交代して、もう一度。</li></ol>
+<div class="hito"><b>ひと言</b>当たっても外れても構いません。外れたときは、どこで本音を聞き逃したのかを、二人で振り返ってください。</div></article>
+
+<article class="kata" id="k5"><h2>型⑤ 週に一度のCompass</h2><div class="meta"><span><b>いつ</b>週に一度、決まった曜日に</span><span><b>所要</b>10分</span><span><b>使うもの</b>Pentagon Compass</span></div>
+<div class="photo"><img src="img/compass-photo.jpg" alt="15枚のカードを卓上に広げた様子。紺色が5枚（Spirit）、深緑が10枚（Skill）"></div>
+<ol><li>15枚を卓上に広げる。まず、紺色のSpiritカード5枚だけを見る。</li><li>説明を読む前に、直感で「今の自分に最も近い」1枚を選ぶ。</li><li>選んだSpiritに属する、深緑のSkillカード2枚を取り出す。</li><li>そのSkillを、今週どの場面で使ったか、使いたかったかを自問し、記録欄に一文で書く。</li></ol>
+<div class="hito"><b>ひと言</b>選ぶSpiritは、週によって変わって構いません。何週か分の記録を並べると、自分の軸の動きが見えてきます。</div></article>
+</div></section>
+
+<section id="lost1"><div class="wrap"><h2>迷ったときに</h2><div class="en">WHEN YOU ARE LOST</div>
+<div class="qa">
+<div class="r"><div class="q">何から始めればいいか、分からない。</div><div class="ar">→</div><div class="a"><a href="#first15">「最初の15分」</a>に戻ってください。</div></div>
+<div class="r"><div class="q">どのカードを引けばいいか、分からない。</div><div class="ar">→</div><div class="a">迷ったら、Mastery Cardから。1枚引いて、今日の題にして、一行書くだけで、稽古になります。</div></div>
+<div class="r"><div class="q">引いた場面が、自分と関係ないように思える。</div><div class="ar">→</div><div class="a">無理に当てはめなくて構いません。「自分が、その立場だったら」と考えるだけで、稽古になります。</div></div>
+<div class="r"><div class="q">書いても、あとから読み返さない。</div><div class="ar">→</div><div class="a"><em>読み返さなくて構いません。書く行為そのものが、稽古です。</em>1か月後に、一度だけ、読み返してみてください。</div></div>
+<div class="r"><div class="q">続かない。</div><div class="ar">→</div><div class="a">毎日でなくて構いません。決めるのは、頻度ではなく「いつ」です。朝か、週に一度か、一つだけ決めて始めます。</div></div>
+<div class="r"><div class="q">カードの言葉が、腑に落ちない。</div><div class="ar">→</div><div class="a">腑に落ちないまま、持ち歩いてください。数日後に意味が変わることがあります。そのときは一行書き留めてください。</div></div>
+<div class="r"><div class="q">チームや何人かで使いたい。</div><div class="ar">→</div><div class="a">チームの話題には「チームビルディング」のカードが向いています。全員で同じ場面をどうするか順に話す。他人の話は評価せずに聞く。最後に気づきを共有する。意見をそろえる必要はありません。</div></div>
+<div class="r"><div class="q">もっと深めたくなった。</div><div class="ar">→</div><div class="a"><a href="#next">「次の稽古へ」</a>を見てください。</div></div>
+</div></div></section>
+
+<section id="compass"><div class="wrap"><h2>カードは鏡であり、ラベルではありません。</h2><div class="en">PENTAGON COMPASS</div>
+<div class="lead"><p style="text-align:center;font-size:17px">5つのSpiritは、すべてあなたの中にあります。</p></div>
+<div class="sp">
+<div><i>地</i><b>自己鍛錬</b><i style="font-size:12px;letter-spacing:.06em;color:#6d6048;margin:0 0 6px">Self-Mastery</i>心技体を磨き続ける成長意欲</div>
+<div><i>水</i><b>柔軟な適応力</b><i style="font-size:12px;letter-spacing:.06em;color:#6d6048;margin:0 0 6px">Versatility</i>変化を味方につける柔軟性</div>
+<div><i>火</i><b>戦略的思考</b><i style="font-size:12px;letter-spacing:.06em;color:#6d6048;margin:0 0 6px">Strategic Mindset</i>先を見据えた計画的な行動</div>
+<div><i>風</i><b>誠実さ</b><i style="font-size:12px;letter-spacing:.06em;color:#6d6048;margin:0 0 6px">Integrity</i>有言実行による信頼獲得の構築</div>
+<div><i>空</i><b>平常心</b><i style="font-size:12px;letter-spacing:.06em;color:#6d6048;margin:0 0 6px">Equanimity</i>逆境でも動じない冷静さ</div>
+</div>
+<div class="lg"><table><tr><th>Spirit</th><th>Skill</th><th>力</th></tr>
+<tr><td rowspan="2"><b>自己鍛錬</b></td><td>嗜む（Attunement）</td><td>日々備える力</td></tr><tr><td>資質器量（Cultivation）</td><td>人間性を深める力</td></tr>
+<tr><td rowspan="2"><b>柔軟な適応力</b></td><td>有構無構（Adaptability）</td><td>変化に適応する力</td></tr><tr><td>二刀一（Optimization）</td><td>今あるものを活かす力</td></tr>
+<tr><td rowspan="2"><b>戦略的思考</b></td><td>打つと当たる（Discernment）</td><td>自分の行動と偶然を区別する力</td></tr><tr><td>観見（Perspective）</td><td>視野と細部を切り替える力</td></tr>
+<tr><td rowspan="2"><b>誠実さ</b></td><td>陰陽の足（Rhythm）</td><td>動と静を使い分ける力</td></tr><tr><td>拍子（Timing）</td><td>適切なタイミングで行動する力</td></tr>
+<tr><td rowspan="2"><b>平常心</b></td><td>虚の心（Objectivity）</td><td>偏見を捨て、判断する力</td></tr><tr><td>心身一如（Psychosomatic）</td><td>心身のバランスを保つ力</td></tr></table></div>
+</div></section>
+
+<section id="log"><div class="wrap"><h2>記録のつけ方</h2><div class="en">KEEPING A RECORD</div>
+<div class="lead"><p style="text-align:center">稽古は、書くことで、積み重なります。次の3つだけ、書いてみてください。</p></div>
+<div class="lg"><table><tr><th style="width:15%">日付</th><th>今日の題</th><th>自分なら</th><th>気づいたこと</th></tr>
+<tr><td>○月○日</td><td>（カードの言葉・引いた場面）</td><td>（一行で構いません）</td><td>（なければ、空欄で構いません）</td></tr>
+<tr><td>&nbsp;</td><td></td><td></td><td></td></tr><tr><td>&nbsp;</td><td></td><td></td><td></td></tr></table></div>
+<p style="text-align:center;margin-top:18px">書き終えたら、手元のノートに続けてください。</p></div></section>
+
+<section id="next"><div class="wrap"><h2>次の稽古へ</h2><div class="en">NEXT STEPS</div>
+<div class="lead"><p style="text-align:center">Toolkitは、稽古の入り口です。</p></div>
+<div class="next">
+<div class="nx"><img class="ic" src="img/il-phone.jpg" alt=""><h3>LINEに登録する（無料）</h3><p>最新の稽古の案内や、体験会の日程をお届けします。</p><div style="text-align:center"><a class="qr" href="https://ichii1119.github.io/samurai-compass/join.html"><img src="https://utagesystem.s3.ap-northeast-1.amazonaws.com/566yIz9QfEf2/rYetMGwtRSnDalNdpwlS0uF3BdMFz9eFvjDJlJov.png" alt="LINE公式アカウントのQRコード"></a></div></div>
+<div class="nx"><img class="ic" src="img/il-swords.jpg" alt=""><h3>4時間稽古（対面）</h3><p>木刀を手に、身体で稽古する日です。Toolkitをお持ちの方には、優待があります。</p></div>
+<div class="nx"><img class="ic" src="img/il-circles.jpg" alt=""><h3>続ける稽古</h3><p>同道者とともに、日々の稽古を続ける場があります。</p></div>
+</div></div></section>
+
+<div class="end"><p class="big">先生はいません。同道者がいます。<br>蹴落とし合うのではなく、活かし合う。</p><p class="big">あなたの中にも、SAMURAIはいます。</p>
+<p class="tag">SAMURAI in You<br><span style="font-size:15px">今持っている知識や経験は捨てなくていい。<br>その上に、東洋の視点を重ねるだけ。</span></p></div>
+<footer class="foot"><img src="https://utagesystem.s3.ap-northeast-1.amazonaws.com/566yIz9QfEf2/uy24IxNgo6qJT03GOreEmDSTcLw3hRl0DmHHtK85.png" alt="SAMURAI in You"><div>www.samurai-in-you.com　｜　info@samurai-in-you.com</div><div style="margin-top:8px">&copy; SAMURAI in You</div></footer>
+</body></html>

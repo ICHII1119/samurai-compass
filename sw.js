@@ -1,4 +1,4 @@
-const CACHE_NAME = 'samurai-compass-v15';
+const CACHE_NAME = 'samurai-compass-v16';
 const ASSETS = [
   './index.html',
   './training.html',
@@ -19,6 +19,8 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // 購入者向けガイドブックは、常に最新を読み込む（キャッシュしない）
+  if (e.request.url.includes('/kit-guide-')) return;
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
       if (resp.ok && e.request.url.startsWith('http')) {
