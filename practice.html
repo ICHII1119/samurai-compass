@@ -314,6 +314,34 @@ body {
   100% { transform: scale(1) }
 }
 
+/* ── Pentagon Compass ── */
+.pentagon-section { max-width: 480px; margin: 0 auto; padding: .55rem 1.2rem }
+.pentagon-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: .9rem .5rem .7rem;
+}
+.pentagon-title {
+  text-align: center;
+  font-family: var(--font-b);
+  font-size: .66rem;
+  letter-spacing: .22em;
+  color: var(--muted);
+  margin-bottom: .2rem;
+}
+.pentagon-status {
+  text-align: center;
+  font-size: .72rem;
+  letter-spacing: .06em;
+  margin-top: .35rem;
+  min-height: 1rem;
+}
+@keyframes spiritPulse {
+  0%, 100% { opacity:1 }
+  50%       { opacity:.55 }
+}
+
 /* ── Day detail ── */
 .day-detail-card {
   background: var(--bg2);
@@ -577,6 +605,14 @@ body {
   <!-- Streak Hero -->
   <div class="streak-hero" id="streak-hero"></div>
 
+  <!-- Pentagon Compass -->
+  <div class="pentagon-section">
+    <div class="pentagon-card">
+      <div class="pentagon-title">PENTAGON COMPASS</div>
+      <div id="pentagon-compass"></div>
+    </div>
+  </div>
+
   <!-- Calendar -->
   <div class="sw">
     <div class="cal-card">
@@ -706,6 +742,7 @@ let startDate     = null;
 let dateEntryMap  = {};
 let calYear, calMonth;
 let selectedDateStr = null;
+let liteSpirit    = null;
 
 /* ── Utils ── */
 function escHtml(s) {
@@ -733,8 +770,12 @@ async function init() {
   const rl = document.getElementById('report-link');
   if (rl) { rl.href = `report.html?lid=${userId}`; document.getElementById('report-link-area').style.display = ''; }
   try {
-    const doc = await db.collection('practices').doc(userId).get();
+    const [doc, liteSnap] = await Promise.all([
+      db.collection('practices').doc(userId).get(),
+      db.collection('lite_results').where('lineUserId', '==', userId).limit(1).get()
+    ]);
     practiceData = doc.exists ? doc.data() : { lineUserId: userId, entries: [], cycle: 1 };
+    liteSpirit = liteSnap.empty ? null : liteSnap.docs[0].data().spirit;
     (practiceData.entries || []).forEach(e => stampedDays.add(e.day));
     computeStartDate();
     buildDateEntryMap();
@@ -809,6 +850,60 @@ function calcMaxStreak() {
   return max;
 }
 
+/* ── Pentagon Compass ── */
+function renderPentagonCompass() {
+  const el = document.getElementById('pentagon-compass');
+  if (!el) return;
+
+  // 5 Spirits — clockwise from top
+  const SP = [
+    { id:'hei',   name:'平常心',     kanji:'平', color:'#c9a84c', cx:120, cy: 47, lx:120, ly: 22, ta:'middle' },
+    { id:'jiko',  name:'自己鍛錬',   kanji:'鍛', color:'#c07060', cx:194, cy:101, lx:218, ly:101, ta:'start'  },
+    { id:'strat', name:'戦略的思考', kanji:'謀', color:'#7a6aaa', cx:166, cy:188, lx:182, ly:212, ta:'start'  },
+    { id:'sei',   name:'誠実さ',     kanji:'誠', color:'#5a7aaa', cx: 74, cy:188, lx: 58, ly:212, ta:'end'    },
+    { id:'flex',  name:'柔軟な適応', kanji:'適', color:'#5a9a7a', cx: 46, cy:101, lx: 22, ly:101, ta:'end'    },
+  ];
+
+  const count    = stampedDays.size;
+  const isDone   = count >= 10;
+  const pts      = SP.map(s => `${s.cx},${s.cy}`).join(' ');
+
+  let nodes = '';
+  SP.forEach(s => {
+    const isActive   = s.id === liteSpirit;
+    const isComplete = isActive && isDone;
+    const dim        = !isActive;
+
+    if (isComplete) {
+      nodes += `<circle cx="${s.cx}" cy="${s.cy}" r="19" fill="${s.color}" stroke="${s.color}" stroke-width="2"/>
+        <text x="${s.cx}" y="${s.cy+6}" text-anchor="middle" font-family="serif" font-size="15" fill="#1a1a1f" font-weight="bold">${s.kanji}</text>`;
+    } else if (isActive) {
+      nodes += `<circle cx="${s.cx}" cy="${s.cy}" r="19" fill="${s.color}22" stroke="${s.color}" stroke-width="2.5" style="animation:spiritPulse 1.8s ease-in-out infinite"/>
+        <text x="${s.cx}" y="${s.cy+6}" text-anchor="middle" font-family="serif" font-size="15" fill="${s.color}" font-weight="bold">${s.kanji}</text>`;
+    } else {
+      nodes += `<circle cx="${s.cx}" cy="${s.cy}" r="19" fill="#252530" stroke="#35353f" stroke-width="1.5"/>
+        <text x="${s.cx}" y="${s.cy+6}" text-anchor="middle" font-family="serif" font-size="13" fill="#42424e">${s.kanji}</text>`;
+    }
+    // label
+    const lc = isActive ? s.color : '#3a3a48';
+    nodes += `<text x="${s.lx}" y="${s.ly}" text-anchor="${s.ta}" font-size="8.5" fill="${lc}" letter-spacing="0.5" font-family="'Open Sans',sans-serif">${s.name}</text>`;
+  });
+
+  const active = SP.find(s => s.id === liteSpirit);
+  const statusText = active
+    ? (isDone
+        ? `<span style="color:${active.color}">✓ 入門完了 — ${active.name}</span>`
+        : `<span style="color:${active.color}">⚔️ 入門中 — ${active.name}</span>`)
+    : '';
+
+  el.innerHTML = `
+    <svg viewBox="0 0 240 228" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:260px;display:block;margin:0 auto">
+      <polygon points="${pts}" fill="rgba(201,168,76,.03)" stroke="rgba(201,168,76,.12)" stroke-width="1"/>
+      ${nodes}
+    </svg>
+    <div class="pentagon-status">${statusText}</div>`;
+}
+
 /* ── Streak Hero ── */
 function renderStreakHero() {
   const streak    = calcStreak();
@@ -871,6 +966,7 @@ function render() {
 
   renderRankHistory();
   renderStreakHero();
+  renderPentagonCompass();
 
   const now = new Date();
   calYear  = now.getFullYear();
