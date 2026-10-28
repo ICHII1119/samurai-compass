@@ -1086,8 +1086,10 @@ async function submitPractice(day) {
 
     renderCalendar();
 
-    if (count >= 21) {
+    if (count >= 10) {
       await db.collection('practices').doc(userId).set({ rank: '十級' }, { merge: true });
+      practiceData.rank = '十級';
+      renderStreakHero();
       setTimeout(showCompletion, 600);
     } else {
       renderReflection(day);
