@@ -475,6 +475,69 @@ body {
   to   { opacity: 1; transform: translateY(0) }
 }
 .fade-up { animation: fadeSlideUp .35s ease forwards }
+
+/* ── Stamp Animation ── */
+.stamp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8,6,4,.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  pointer-events: none;
+  animation: stOverlayIn .2s ease forwards;
+}
+.stamp-overlay.out { animation: stOverlayOut .5s ease .9s forwards }
+.stamp-circle {
+  width: 158px;
+  height: 158px;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  background: var(--bg);
+  box-shadow: 0 0 0 1px rgba(201,168,76,.25), 0 0 48px rgba(201,168,76,.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: stCircleIn .38s cubic-bezier(.36,1.55,.5,1) forwards;
+}
+.stamp-icon {
+  font-size: 3.2rem;
+  line-height: 1;
+  animation: stIconIn .3s cubic-bezier(.36,1.55,.5,1) .15s both;
+}
+.stamp-label {
+  font-family: var(--font-b);
+  font-size: .82rem;
+  color: var(--gold);
+  letter-spacing: .14em;
+  margin-top: .3rem;
+  animation: stIconIn .3s ease .25s both;
+}
+.stamp-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(201,168,76,.5);
+  width: 158px; height: 158px;
+  top: -3px; left: -3px;
+  animation: stRing .7s ease var(--d) both;
+}
+@keyframes stOverlayIn  { from { opacity:0 } to { opacity:1 } }
+@keyframes stOverlayOut { from { opacity:1 } to { opacity:0 } }
+@keyframes stCircleIn {
+  from { transform: scale(.3) rotate(-18deg); opacity:0 }
+  to   { transform: scale(1)  rotate(0deg);  opacity:1 }
+}
+@keyframes stIconIn {
+  from { transform: scale(0); opacity:0 }
+  to   { transform: scale(1); opacity:1 }
+}
+@keyframes stRing {
+  from { transform: scale(1);   opacity:.7 }
+  to   { transform: scale(2.1); opacity:0  }
+}
 </style>
 </head>
 <body>
@@ -1056,6 +1119,25 @@ async function saveMemo(day) {
   }
 }
 
+/* ── Stamp Animation ── */
+function showStampAnimation(day, isComplete) {
+  const el = document.createElement('div');
+  el.className = 'stamp-overlay';
+  el.innerHTML = `
+    <div class="stamp-circle">
+      <div class="stamp-ring" style="--d:.1s"></div>
+      <div class="stamp-ring" style="--d:.25s"></div>
+      <div class="stamp-ring" style="--d:.4s"></div>
+      <div class="stamp-icon">${isComplete ? '🏆' : '⚔️'}</div>
+      <div class="stamp-label">Day ${day}${isComplete ? ' — 入門完了' : ' — 完了'}</div>
+    </div>`;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 600);
+  }, 1200);
+}
+
 /* ── Submit practice ── */
 async function submitPractice(day) {
   const textEl = document.getElementById('reflection-text');
@@ -1085,14 +1167,17 @@ async function submitPractice(day) {
     document.getElementById('progress-fill').style.width = `${Math.min(count / 21 * 100, 100)}%`;
 
     renderCalendar();
+    renderStreakHero();
 
-    if (count >= 10) {
+    const isComplete = count >= 10;
+    showStampAnimation(day, isComplete);
+
+    if (isComplete) {
       await db.collection('practices').doc(userId).set({ rank: '十級' }, { merge: true });
       practiceData.rank = '十級';
-      renderStreakHero();
-      setTimeout(showCompletion, 600);
+      setTimeout(showCompletion, 1800);
     } else {
-      renderReflection(day);
+      setTimeout(() => renderReflection(day), 400);
     }
   } catch(e) {
     console.error(e);
