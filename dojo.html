@@ -452,7 +452,15 @@ body {
   margin-top: .35rem;
   min-height: 1rem;
 }
-@keyframes spiritPulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+@keyframes spiritRingPulse {
+  0%   { transform: scale(1);    opacity: .65 }
+  100% { transform: scale(1.65); opacity: 0   }
+}
+.spirit-outer-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spiritRingPulse 2s ease-out infinite;
+}
 </style>
 </head>
 <body>
@@ -692,18 +700,24 @@ function renderPentagonCompass() {
   if (!el) return;
 
   const SP = [
-    { id:'hei',   name:'平常心',     kanji:'平', color:'#c9a84c', cx:120, cy: 47, lx:120, ly: 22, ta:'middle' },
-    { id:'jiko',  name:'自己鍛錬',   kanji:'鍛', color:'#c07060', cx:194, cy:101, lx:218, ly:101, ta:'start'  },
-    { id:'strat', name:'戦略的思考', kanji:'謀', color:'#7a6aaa', cx:166, cy:188, lx:182, ly:212, ta:'start'  },
-    { id:'sei',   name:'誠実さ',     kanji:'誠', color:'#5a7aaa', cx: 74, cy:188, lx: 58, ly:212, ta:'end'    },
-    { id:'flex',  name:'柔軟な適応', kanji:'適', color:'#5a9a7a', cx: 46, cy:101, lx: 22, ly:101, ta:'end'    },
+    { id:'hei',   name:'平常心',     kanji:'平', c1:'#ffe060', c2:'#a07820', cx:120, cy: 47, lx:120, ly: 22, ta:'middle' },
+    { id:'jiko',  name:'自己鍛錬',   kanji:'鍛', c1:'#ff8060', c2:'#b03020', cx:194, cy:101, lx:221, ly:101, ta:'start'  },
+    { id:'strat', name:'戦略的思考', kanji:'謀', c1:'#b070ff', c2:'#6030a0', cx:166, cy:188, lx:184, ly:213, ta:'start'  },
+    { id:'sei',   name:'誠実さ',     kanji:'誠', c1:'#60a0ff', c2:'#2050b0', cx: 74, cy:188, lx: 56, ly:213, ta:'end'    },
+    { id:'flex',  name:'柔軟な適応', kanji:'適', c1:'#50d090', c2:'#1a7050', cx: 46, cy:101, lx: 19, ly:101, ta:'end'    },
   ];
 
-  const excluded   = dojoData.excludedSpirit;
-  const isWaiting  = dojoData.phaseStatus === 'waiting_review';
-  const isAllDone  = dojoData.phaseStatus === 'completed';
-  const count      = stampedDays.size;
-  const pts        = SP.map(s => `${s.cx},${s.cy}`).join(' ');
+  const excluded  = dojoData.excludedSpirit;
+  const isWaiting = dojoData.phaseStatus === 'waiting_review';
+  const isAllDone = dojoData.phaseStatus === 'completed';
+  const count     = stampedDays.size;
+  const pts       = SP.map(s => `${s.cx},${s.cy}`).join(' ');
+
+  const defs = SP.map(s => `
+    <radialGradient id="pg-${s.id}" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="${s.c1}"/>
+      <stop offset="100%" stop-color="${s.c2}"/>
+    </radialGradient>`).join('');
 
   let nodes = '';
   SP.forEach(s => {
@@ -714,43 +728,54 @@ function renderPentagonCompass() {
     const isActive   = planIdx === currentPhase && !isAllDone;
 
     if (isComplete) {
-      nodes += `<circle cx="${s.cx}" cy="${s.cy}" r="19" fill="${s.color}" stroke="${s.color}" stroke-width="2"/>
-        <text x="${s.cx}" y="${s.cy+6}" text-anchor="middle" font-family="serif" font-size="15" fill="#1a1a1f" font-weight="bold">${s.kanji}</text>`;
+      nodes += `
+        <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="url(#pg-${s.id})" stroke="${s.c1}" stroke-width="2"/>
+        <text x="${s.cx}" y="${s.cy+8}" text-anchor="middle" font-family="serif" font-size="19" fill="white" font-weight="bold">${s.kanji}</text>`;
       if (isLite) {
-        nodes += `<circle cx="${s.cx+13}" cy="${s.cy-13}" r="7" fill="#1a1a1f" stroke="${s.color}" stroke-width="1.5"/>
-          <text x="${s.cx+13}" y="${s.cy-10}" text-anchor="middle" font-family="serif" font-size="7.5" fill="${s.color}">入</text>`;
+        nodes += `
+          <circle cx="${s.cx+17}" cy="${s.cy-17}" r="8.5" fill="#1a1a1f" stroke="${s.c1}" stroke-width="1.5"/>
+          <text x="${s.cx+17}" y="${s.cy-13}" text-anchor="middle" font-size="8.5" fill="${s.c1}" font-weight="bold">入</text>`;
+      } else {
+        nodes += `
+          <circle cx="${s.cx+17}" cy="${s.cy-17}" r="8.5" fill="#3a8a4a" stroke="rgba(255,255,255,.85)" stroke-width="1.5"/>
+          <text x="${s.cx+17}" y="${s.cy-13}" text-anchor="middle" font-size="10" fill="white" font-weight="bold">✓</text>`;
       }
     } else if (isActive) {
-      const fill = isWaiting ? `${s.color}44` : `${s.color}22`;
-      const pulse = isWaiting ? '' : `style="animation:spiritPulse 1.8s ease-in-out infinite"`;
-      nodes += `<circle cx="${s.cx}" cy="${s.cy}" r="19" fill="${fill}" stroke="${s.color}" stroke-width="2.5" ${pulse}/>
-        <text x="${s.cx}" y="${s.cy+6}" text-anchor="middle" font-family="serif" font-size="15" fill="${s.color}" font-weight="bold">${s.kanji}</text>`;
+      const fill = isWaiting ? `${s.c1}35` : `${s.c1}1a`;
+      const ringClass = isWaiting ? '' : ' class="spirit-outer-ring"';
+      nodes += `
+        <circle cx="${s.cx}" cy="${s.cy}" r="31" fill="none" stroke="${s.c1}" stroke-width="1.5"${ringClass}/>
+        <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="${fill}" stroke="${s.c1}" stroke-width="2.5"/>
+        <text x="${s.cx}" y="${s.cy+8}" text-anchor="middle" font-family="serif" font-size="19" fill="${s.c1}" font-weight="bold">${s.kanji}</text>`;
     } else {
-      nodes += `<circle cx="${s.cx}" cy="${s.cy}" r="19" fill="#252530" stroke="#35353f" stroke-width="1.5"/>
-        <text x="${s.cx}" y="${s.cy+6}" text-anchor="middle" font-family="serif" font-size="13" fill="#42424e">${s.kanji}</text>`;
+      nodes += `
+        <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="#1c1c26" stroke="#2e2e3a" stroke-width="1.5"/>
+        <text x="${s.cx}" y="${s.cy+8}" text-anchor="middle" font-family="serif" font-size="17" fill="#30303e">${s.kanji}</text>`;
     }
 
-    const lc = (isComplete || isActive) ? s.color : '#3a3a48';
-    nodes += `<text x="${s.lx}" y="${s.ly}" text-anchor="${s.ta}" font-size="8.5" fill="${lc}" letter-spacing="0.5" font-family="'Open Sans',sans-serif">${s.name}</text>`;
+    const lc = (isComplete || isActive) ? s.c1 : '#363646';
+    const fw = (isComplete || isActive) ? '600' : 'normal';
+    nodes += `<text x="${s.lx}" y="${s.ly}" text-anchor="${s.ta}" font-size="8.5" fill="${lc}" letter-spacing="0.5" font-family="'Open Sans',sans-serif" font-weight="${fw}">${s.name}</text>`;
   });
 
   const centerText = isAllDone
-    ? `<text x="120" y="108" text-anchor="middle" font-family="serif" font-size="11" fill="#c9a84c" letter-spacing="1">全完了</text>`
+    ? `<text x="120" y="112" text-anchor="middle" font-family="serif" font-size="12" fill="#ffe060" letter-spacing="1">全完了</text>`
     : `<text x="120" y="108" text-anchor="middle" font-size="10" fill="#4a4a5a" font-family="'Open Sans',sans-serif">Phase ${currentPhase+1}/${spiritPlan.length}</text>
        <text x="120" y="123" text-anchor="middle" font-size="9"  fill="#3a3a48" font-family="'Open Sans',sans-serif">${count}/21日</text>`;
 
   const activeSP = SP.find(s => s.id === spiritPlan[currentPhase]);
   const statusText = isAllDone
-    ? `<span style="color:#c9a84c">✓ 道場全完了</span>`
+    ? `<span style="color:#ffe060">✓ 道場全完了</span>`
     : activeSP
       ? (isWaiting
-          ? `<span style="color:${activeSP.color}">⏳ 振り返り待ち — ${activeSP.name}</span>`
-          : `<span style="color:${activeSP.color}">⚔️ 稽古中 — ${activeSP.name}</span>`)
+          ? `<span style="color:${activeSP.c1}">⏳ 振り返り待ち — ${activeSP.name}</span>`
+          : `<span style="color:${activeSP.c1}">⚔️ 稽古中 — ${activeSP.name}</span>`)
       : '';
 
   el.innerHTML = `
-    <svg viewBox="0 0 240 228" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:260px;display:block;margin:0 auto">
-      <polygon points="${pts}" fill="rgba(201,168,76,.03)" stroke="rgba(201,168,76,.12)" stroke-width="1"/>
+    <svg viewBox="0 0 240 228" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:270px;display:block;margin:0 auto;overflow:visible">
+      <defs>${defs}</defs>
+      <polygon points="${pts}" fill="rgba(201,168,76,.025)" stroke="rgba(255,255,255,.07)" stroke-width="1.5"/>
       ${centerText}
       ${nodes}
     </svg>
