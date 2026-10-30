@@ -542,6 +542,62 @@ body {
   opacity: 0; transition: opacity .4s ease 1.2s;
 }
 #complete-overlay.show #complete-tap { opacity: 1; }
+
+/* ── 節目（Milestone）演出 ── */
+#complete-overlay.milestone { background: rgba(4,3,1,.95); }
+
+#complete-overlay.milestone #complete-card {
+  border: 1px solid rgba(201,168,76,.35);
+  border-radius: 12px;
+  box-shadow: 0 0 40px rgba(201,168,76,.12), inset 0 0 30px rgba(201,168,76,.04);
+}
+
+#complete-milestone-banner {
+  display: none;
+  margin-bottom: .9rem;
+  opacity: 0;
+  transition: opacity .5s ease .1s;
+}
+#complete-overlay.show.milestone #complete-milestone-banner {
+  display: block; opacity: 1;
+}
+
+.milestone-roman {
+  font-family: var(--font-brush);
+  font-size: 1rem; letter-spacing: .3em;
+  color: rgba(201,168,76,.55);
+  margin-bottom: .3rem;
+}
+
+.milestone-headline {
+  font-family: var(--font-brush);
+  font-size: 1.15rem; color: var(--gold);
+  line-height: 1.7;
+}
+
+.milestone-sub {
+  font-size: .78rem; color: var(--cream2);
+  margin-top: .2rem; line-height: 1.6;
+}
+
+@keyframes milestoneGlow {
+  0%,100% { box-shadow: 0 0 40px rgba(201,168,76,.12), inset 0 0 30px rgba(201,168,76,.04); }
+  50%      { box-shadow: 0 0 60px rgba(201,168,76,.22), inset 0 0 40px rgba(201,168,76,.08); }
+}
+#complete-overlay.show.milestone #complete-card {
+  animation: milestoneGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes starFloat {
+  0%   { opacity:0; transform: translateY(0) scale(.6); }
+  30%  { opacity:1; }
+  100% { opacity:0; transform: translateY(-40px) scale(1); }
+}
+.milestone-star {
+  position: absolute; font-size: .9rem;
+  animation: starFloat 2s ease-out forwards;
+  pointer-events: none;
+}
 </style>
 </head>
 <body>
@@ -849,7 +905,7 @@ function renderPentagonCompass() {
 
   const centerText = isAllDone
     ? `<text x="120" y="112" text-anchor="middle" font-family="serif" font-size="12" fill="#ffe060" letter-spacing="1">全完了</text>`
-    : `<text x="120" y="108" text-anchor="middle" font-size="10" fill="#4a4a5a" font-family="'Open Sans',sans-serif">Phase ${currentPhase+1}/${spiritPlan.length}</text>
+    : `<text x="120" y="108" text-anchor="middle" font-size="10" fill="#4a4a5a" font-family="'Open Sans',sans-serif">Phase ${currentPhase+2}/${spiritPlan.length+1}</text>
        <text x="120" y="123" text-anchor="middle" font-size="9"  fill="#3a3a48" font-family="'Open Sans',sans-serif">${count}/21日</text>`;
 
   const activeSP = SP.find(s => s.id === spiritPlan[currentPhase]);
@@ -877,8 +933,8 @@ function render() {
   document.getElementById('main-content').style.display = 'block';
 
   const info       = SPIRIT_INFO[currentSpirit] || { name: '—', en: '—' };
-  const phaseNum   = currentPhase + 1;
-  const totalPhase = spiritPlan.length || 4;
+  const phaseNum   = currentPhase + 2;   // 入門(Phase 1)を含めてカウント
+  const totalPhase = (spiritPlan.length || 4) + 1; // 入門+道場の合計
   const count      = stampedDays.size;
   const status     = dojoData.phaseStatus;
 
@@ -1109,14 +1165,48 @@ const MUSASHI_QUOTES = [
 
 let _completeOverlayTimer = null;
 
+const MILESTONE_DATA = {
+  7:  { roman: 'VII',  headline: '一週間、続けた。',       sub: '継続する者が、侍だ。' },
+  14: { roman: 'XIV',  headline: '折り返しを超えた。',     sub: '軸は、すでにそこにある。' },
+  21: { roman: 'XXI',  headline: '21日間の稽古、完了。',   sub: '千日の鍛錬の、最初の一歩。' },
+};
+
+function spawnMilestoneStars(card) {
+  const icons = ['✦', '✧', '⭐', '✦', '✧'];
+  for (let i = 0; i < 6; i++) {
+    setTimeout(() => {
+      const star = document.createElement('span');
+      star.className = 'milestone-star';
+      star.textContent = icons[Math.floor(Math.random() * icons.length)];
+      star.style.left  = `${10 + Math.random() * 80}%`;
+      star.style.top   = `${20 + Math.random() * 60}%`;
+      star.style.animationDelay = '0s';
+      card.appendChild(star);
+      setTimeout(() => star.remove(), 2200);
+    }, i * 280);
+  }
+}
+
 function showCompleteAnimation(day, streakCount) {
   const SPIRIT_INFO_LOCAL = {
     hei: { kanji: '平' }, jiko: { kanji: '鍛' }, flex: { kanji: '適' },
     strat: { kanji: '謀' }, sei: { kanji: '誠' },
   };
-  const overlay  = document.getElementById('complete-overlay');
-  const quote    = MUSASHI_QUOTES[Math.floor(Math.random() * MUSASHI_QUOTES.length)];
-  const kanji    = SPIRIT_INFO_LOCAL[currentSpirit]?.kanji || '⚔';
+  const overlay   = document.getElementById('complete-overlay');
+  const card      = document.getElementById('complete-card');
+  const quote     = MUSASHI_QUOTES[Math.floor(Math.random() * MUSASHI_QUOTES.length)];
+  const kanji     = SPIRIT_INFO_LOCAL[currentSpirit]?.kanji || '⚔';
+  const milestone = MILESTONE_DATA[day] || null;
+
+  // 節目バナー
+  if (milestone) {
+    document.getElementById('milestone-roman').textContent    = milestone.roman;
+    document.getElementById('milestone-headline').textContent = milestone.headline;
+    document.getElementById('milestone-sub').textContent      = milestone.sub;
+    overlay.classList.add('milestone');
+  } else {
+    overlay.classList.remove('milestone');
+  }
 
   document.getElementById('complete-kanji').textContent  = kanji;
   document.getElementById('complete-day').textContent    = `Day ${day}`;
@@ -1126,10 +1216,13 @@ function showCompleteAnimation(day, streakCount) {
 
   overlay.classList.remove('hide');
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => overlay.classList.add('show'));
+    requestAnimationFrame(() => {
+      overlay.classList.add('show');
+      if (milestone) setTimeout(() => spawnMilestoneStars(card), 600);
+    });
   });
 
-  _completeOverlayTimer = setTimeout(() => dismissCompleteOverlay(), 4000);
+  _completeOverlayTimer = setTimeout(() => dismissCompleteOverlay(), milestone ? 6000 : 4000);
 }
 
 function dismissCompleteOverlay() {
@@ -1231,6 +1324,11 @@ init();
 </script>
 <div id="complete-overlay" onclick="dismissCompleteOverlay()">
   <div id="complete-card">
+    <div id="complete-milestone-banner">
+      <div class="milestone-roman" id="milestone-roman"></div>
+      <div class="milestone-headline" id="milestone-headline"></div>
+      <div class="milestone-sub" id="milestone-sub"></div>
+    </div>
     <div id="complete-brush"></div>
     <div id="complete-kanji">⚔</div>
     <div id="complete-label">稽古完了</div>
