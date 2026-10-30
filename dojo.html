@@ -34,6 +34,7 @@ body {
   background: var(--bg);
   color: var(--cream);
   font-family: var(--font);
+  font-size: 16px;
   min-height: 100vh;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
@@ -49,7 +50,7 @@ body {
 .logo-img { width: 38px; height: 38px; object-fit: contain; margin-bottom: .35rem }
 .page-title {
   font-family: var(--font-b);
-  font-size: .9rem;
+  font-size: 1rem;
   letter-spacing: .22em;
   color: var(--gold);
 }
@@ -78,14 +79,14 @@ body {
 .phase-info { flex-shrink: 0 }
 .phase-spirit-name {
   font-family: var(--font-b);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 900;
   color: var(--cream);
   letter-spacing: .04em;
   line-height: 1;
 }
 .phase-spirit-en {
-  font-size: .6rem;
+  font-size: .72rem;
   color: var(--muted);
   letter-spacing: .15em;
   margin-top: .15rem;
@@ -94,7 +95,7 @@ body {
 .phase-progress-label {
   display: flex;
   justify-content: space-between;
-  font-size: .68rem;
+  font-size: .78rem;
   color: var(--muted);
   margin-bottom: .28rem;
 }
@@ -125,8 +126,8 @@ body {
   background: rgba(201,168,76,.08);
   border: 1px solid rgba(201,168,76,.25);
   border-radius: 100px;
-  padding: .25rem .75rem;
-  font-size: .78rem;
+  padding: .28rem .85rem;
+  font-size: .85rem;
   color: var(--gold);
   letter-spacing: .1em;
 }
@@ -173,7 +174,7 @@ body {
 }
 .cal-wd {
   text-align: center;
-  font-size: .6rem;
+  font-size: .72rem;
   color: var(--muted);
   padding: .12rem 0;
 }
@@ -208,7 +209,7 @@ body {
 .cal-cell.grace-day .cal-num { color: rgba(201,168,76,.45) }
 .cal-cell.grace-day .cal-dot.grace-dot { background: rgba(201,168,76,.3); width: 6px; height: 6px }
 .cal-num {
-  font-size: .8rem;
+  font-size: .88rem;
   line-height: 1;
   color: var(--cream2);
   display: block;
@@ -221,21 +222,21 @@ body {
 
 .cal-icon { margin-top: 2px; display: flex; align-items: center; justify-content: center }
 .cal-check {
-  width: 14px; height: 14px;
+  width: 16px; height: 16px;
   border-radius: 50%;
   background: var(--green);
   color: #fff;
-  font-size: .56rem;
+  font-size: .65rem;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   line-height: 1;
 }
-.cal-dot { width: 5px; height: 5px; border-radius: 50% }
+.cal-dot { width: 6px; height: 6px; border-radius: 50% }
 .gold-dot { background: var(--gold) }
 .gray-dot { background: var(--muted); opacity: .45 }
-.cal-star  { font-size: .68rem; line-height: 1 }
+.cal-star  { font-size: .78rem; line-height: 1 }
 
 .cal-legend {
   display: flex;
@@ -248,7 +249,7 @@ body {
   display: flex;
   align-items: center;
   gap: .28rem;
-  font-size: .62rem;
+  font-size: .75rem;
   color: var(--muted);
 }
 
@@ -267,16 +268,16 @@ body {
   font-size: 2rem; font-weight: 700;
   color: var(--gold); line-height: 1;
 }
-.streak-unit { font-size: .78rem; color: var(--cream2); line-height: 1.3; padding-top: .2rem }
+.streak-unit { font-size: .88rem; color: var(--cream2); line-height: 1.3; padding-top: .2rem }
 .streak-badge {
   margin-left: auto;
-  font-size: .65rem; font-weight: 600;
-  padding: .2rem .5rem; border-radius: 100px;
+  font-size: .75rem; font-weight: 600;
+  padding: .2rem .55rem; border-radius: 100px;
   background: rgba(201,168,76,.15);
   color: var(--gold); letter-spacing: .05em;
 }
 .streak-next {
-  font-size: .78rem; color: var(--cream2); margin-bottom: .35rem;
+  font-size: .85rem; color: var(--cream2); margin-bottom: .35rem;
 }
 .streak-progress-track {
   height: 4px; background: rgba(255,255,255,.07); border-radius: 2px; overflow: hidden;
@@ -287,7 +288,7 @@ body {
   transition: width .6s ease;
 }
 .streak-preview {
-  font-size: .78rem; color: rgba(201,168,76,.6);
+  font-size: .85rem; color: rgba(201,168,76,.6);
   margin-top: .4rem; font-style: italic;
 }
 
@@ -320,17 +321,17 @@ body {
   color: var(--cream);
 }
 .done-badge {
-  font-size: .68rem;
-  padding: .18rem .55rem;
+  font-size: .75rem;
+  padding: .18rem .6rem;
   border-radius: 100px;
   background: var(--green-dim);
   color: #6dc46d;
   border: 1px solid rgba(58,122,74,.4);
 }
 .day-reflection-text {
-  font-size: .84rem;
+  font-size: .9rem;
   color: var(--cream2);
-  line-height: 1.75;
+  line-height: 1.8;
 }
 
 /* ── Reflection form ── */
@@ -351,14 +352,14 @@ body {
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 .reflection-day-label {
-  font-size: .68rem;
+  font-size: .78rem;
   letter-spacing: .2em;
   color: var(--muted);
   margin-bottom: .28rem;
 }
 .reflection-title {
   font-family: var(--font-b);
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   color: var(--cream);
   font-weight: 700;
   margin-bottom: .85rem;
@@ -370,11 +371,11 @@ body {
   border-radius: 8px;
   color: var(--cream);
   font-family: var(--font);
-  font-size: .9rem;
-  line-height: 1.7;
-  padding: .72rem .9rem;
+  font-size: 1rem;
+  line-height: 1.75;
+  padding: .78rem .9rem;
   resize: none;
-  min-height: 88px;
+  min-height: 96px;
   outline: none;
   transition: border-color .2s;
 }
@@ -389,29 +390,29 @@ body {
   border-radius: 0 6px 6px 0;
 }
 .past-quote-label {
-  font-size: .7rem;
+  font-size: .78rem;
   letter-spacing: .06em;
   color: rgba(201,168,76,.55);
   margin-bottom: .35rem;
   text-transform: uppercase;
 }
 .past-quote-text {
-  font-size: .82rem;
+  font-size: .9rem;
   color: var(--muted);
-  line-height: 1.75;
+  line-height: 1.8;
   font-style: italic;
 }
 .btn-submit {
   display: block;
   width: 100%;
-  margin-top: .82rem;
-  padding: .78rem;
+  margin-top: .85rem;
+  padding: .88rem;
   background: linear-gradient(135deg, #8b1a1a, #a02020);
   border: none;
   border-radius: 8px;
   color: var(--cream);
   font-family: var(--font);
-  font-size: .93rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: .06em;
   cursor: pointer;
@@ -439,16 +440,16 @@ body {
 }
 .waiting-title {
   font-family: var(--font-b);
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: var(--gold);
   font-weight: 900;
   letter-spacing: .05em;
-  margin-bottom: .45rem;
+  margin-bottom: .5rem;
 }
 .waiting-desc {
-  font-size: .84rem;
+  font-size: .92rem;
   color: var(--cream2);
-  line-height: 1.8;
+  line-height: 1.85;
   margin-bottom: 1rem;
 }
 .waiting-interim-prompt {
@@ -460,25 +461,25 @@ body {
   text-align: left;
 }
 .waiting-interim-label {
-  font-size: .7rem;
+  font-size: .78rem;
   letter-spacing: .08em;
   color: rgba(201,168,76,.55);
   margin-bottom: .4rem;
 }
 .waiting-interim-q {
-  font-size: .88rem;
+  font-size: .95rem;
   color: var(--cream);
-  line-height: 1.75;
+  line-height: 1.8;
 }
 .waiting-next-spirit {
   margin-top: 1.1rem;
-  font-size: .78rem;
+  font-size: .85rem;
   color: var(--muted);
   letter-spacing: .04em;
 }
 .cal-link {
   display: inline-block;
-  font-size: .82rem;
+  font-size: .9rem;
   color: var(--gold);
   text-decoration: none;
   border: 1px solid rgba(201,168,76,.4);
@@ -508,7 +509,7 @@ body {
 .pentagon-title {
   text-align: center;
   font-family: var(--font);
-  font-size: .72rem;
+  font-size: .8rem;
   font-weight: 500;
   letter-spacing: .18em;
   color: var(--muted);
@@ -516,7 +517,7 @@ body {
 }
 .pentagon-status {
   text-align: center;
-  font-size: .78rem;
+  font-size: .85rem;
   letter-spacing: .06em;
   margin-top: .35rem;
   min-height: 1rem;
@@ -906,11 +907,16 @@ function calcStreak() {
 
 function calcMaxStreak() {
   if (!stampedDays.size) return 0;
+  // 各「run」の末尾（次の日が2日以上空く日）でのみ calcStreakFrom を呼ぶ
   const sorted = [...stampedDays].sort((a,b) => a - b);
   let max = 0;
-  for (const d of sorted) {
-    const s = calcStreakFrom(stampedDays, d);
-    if (s > max) max = s;
+  for (let i = 0; i < sorted.length; i++) {
+    const next = sorted[i + 1];
+    // 次の記録日が2日以上先か、または最後の要素なら run の末尾
+    if (!next || next - sorted[i] >= 2) {
+      const s = calcStreakFrom(stampedDays, sorted[i]);
+      if (s > max) max = s;
+    }
   }
   return max;
 }
@@ -1103,13 +1109,14 @@ function renderCalendar() {
       dayNum = Math.round((localDate(dateStr) - startDate) / 86400000) + 1;
     }
 
-    // 穴埋め猶予判定: この日は未記録だが、前後の記録で連続が保たれている
+    // 穴埋め猶予判定: 前後どちらにも記録があり、かつ2日以上連続で空白ではない日
     const isGraceDay = inPeriod && isPast && !isCompleted && dayNum !== null && (() => {
-      if (!stampedDays.has(dayNum)) {
-        // 前日(dayNum-1)と翌日(dayNum+1)の両方に記録があれば猶予日
-        return stampedDays.has(dayNum - 1) || stampedDays.has(dayNum + 1);
-      }
-      return false;
+      if (stampedDays.has(dayNum)) return false;
+      // 前後1日以内に記録があり、かつ連続した2日空白ではないこと
+      const hasBefore = stampedDays.has(dayNum - 1);
+      const hasAfter  = stampedDays.has(dayNum + 1);
+      const noDoubleGap = !(!stampedDays.has(dayNum - 1) && !stampedDays.has(dayNum - 2));
+      return (hasBefore || hasAfter) && noDoubleGap;
     })();
 
     let icon = '';
