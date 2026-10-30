@@ -7,15 +7,15 @@
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:        #1a1a1f;
   --bg2:       #222228;
   --bg3:       #2a2a32;
   --cream:     #f0ead8;
-  --cream2:    #c8bfa8;
-  --muted:     #7a7060;
+  --cream2:    #d8d0bc;
+  --muted:     #a09480;
   --gold:      #c9a84c;
   --gold2:     #a07828;
   --gold-dim:  rgba(201,168,76,.12);
@@ -24,8 +24,9 @@
   --green:     #3a7a4a;
   --green-dim: rgba(58,122,74,.18);
   --r:         12px;
-  --font:      'Open Sans', -apple-system, sans-serif;
+  --font:      'Inter', 'Open Sans', -apple-system, sans-serif;
   --font-b:    'Zen Old Mincho', serif;
+  --font-brush: 'Cormorant Garamond', serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 html { -webkit-text-size-adjust: 100% }
@@ -125,7 +126,7 @@ body {
   border: 1px solid rgba(201,168,76,.25);
   border-radius: 100px;
   padding: .25rem .75rem;
-  font-size: .7rem;
+  font-size: .78rem;
   color: var(--gold);
   letter-spacing: .1em;
 }
@@ -147,10 +148,11 @@ body {
   margin-bottom: .55rem;
 }
 .cal-month-label {
-  font-family: var(--font-b);
+  font-family: var(--font);
   font-size: .95rem;
+  font-weight: 600;
   color: var(--cream);
-  letter-spacing: .04em;
+  letter-spacing: .02em;
 }
 .cal-nav-btn {
   background: none;
@@ -272,7 +274,7 @@ body {
   color: var(--gold); letter-spacing: .05em;
 }
 .streak-next {
-  font-size: .72rem; color: var(--cream2); margin-bottom: .35rem;
+  font-size: .78rem; color: var(--cream2); margin-bottom: .35rem;
 }
 .streak-progress-track {
   height: 4px; background: rgba(255,255,255,.07); border-radius: 2px; overflow: hidden;
@@ -283,7 +285,7 @@ body {
   transition: width .6s ease;
 }
 .streak-preview {
-  font-size: .7rem; color: rgba(201,168,76,.6);
+  font-size: .78rem; color: rgba(201,168,76,.6);
   margin-top: .4rem; font-style: italic;
 }
 
@@ -310,10 +312,10 @@ body {
   margin-bottom: .6rem;
 }
 .day-detail-date {
-  font-family: var(--font-b);
+  font-family: var(--font);
   font-size: .92rem;
+  font-weight: 600;
   color: var(--cream);
-  letter-spacing: .03em;
 }
 .done-badge {
   font-size: .68rem;
@@ -385,10 +387,10 @@ body {
   border: none;
   border-radius: 8px;
   color: var(--cream);
-  font-family: var(--font-b);
+  font-family: var(--font);
   font-size: .93rem;
-  font-weight: 700;
-  letter-spacing: .1em;
+  font-weight: 600;
+  letter-spacing: .06em;
   cursor: pointer;
   transition: opacity .2s;
 }
@@ -457,15 +459,16 @@ body {
 }
 .pentagon-title {
   text-align: center;
-  font-family: var(--font-b);
-  font-size: .66rem;
-  letter-spacing: .22em;
+  font-family: var(--font);
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .18em;
   color: var(--muted);
   margin-bottom: .2rem;
 }
 .pentagon-status {
   text-align: center;
-  font-size: .72rem;
+  font-size: .78rem;
   letter-spacing: .06em;
   margin-top: .35rem;
   min-height: 1rem;
@@ -549,13 +552,13 @@ body {
 #complete-overlay.show #complete-quote { opacity: 1; }
 
 #complete-author {
-  font-size: .72rem; color: var(--muted);
+  font-size: .78rem; color: var(--muted);
   opacity: 0; transition: opacity .4s ease .85s;
 }
 #complete-overlay.show #complete-author { opacity: 1; }
 
 #complete-tap {
-  font-size: .72rem; color: var(--muted);
+  font-size: .78rem; color: var(--muted);
   margin-top: 1.6rem; letter-spacing: .1em;
   opacity: 0; transition: opacity .4s ease 1.2s;
 }
@@ -1192,7 +1195,7 @@ function renderReflection(day) {
     <div class="reflection-card fade-up">
       <div class="reflection-day-label">DAY ${day} · 今日の気づき</div>
       <div class="reflection-title">稽古の振り返り</div>
-      <div style="font-size:.7rem;color:var(--muted);margin-bottom:.5rem">ファシリテーターに届きます</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">ファシリテーターに届きます</div>
       <textarea class="reflection-textarea" id="reflection-text"
         placeholder="今日の稽古から何を感じましたか？どんな小さな気づきでも構いません。" rows="4"></textarea>
       <button class="btn-submit" id="submit-btn" onclick="submitPractice(${day})">
