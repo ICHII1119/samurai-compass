@@ -699,12 +699,13 @@ function renderPentagonCompass() {
   const el = document.getElementById('pentagon-compass');
   if (!el) return;
 
+  // c1=bright highlight, c2=dark gradient end, cs=3D shadow color
   const SP = [
-    { id:'hei',   name:'平常心',     kanji:'平', c1:'#ffe060', c2:'#a07820', cx:120, cy: 47, lx:120, ly: 22, ta:'middle' },
-    { id:'jiko',  name:'自己鍛錬',   kanji:'鍛', c1:'#ff8060', c2:'#b03020', cx:194, cy:101, lx:221, ly:101, ta:'start'  },
-    { id:'strat', name:'戦略的思考', kanji:'謀', c1:'#b070ff', c2:'#6030a0', cx:166, cy:188, lx:184, ly:213, ta:'start'  },
-    { id:'sei',   name:'誠実さ',     kanji:'誠', c1:'#60a0ff', c2:'#2050b0', cx: 74, cy:188, lx: 56, ly:213, ta:'end'    },
-    { id:'flex',  name:'柔軟な適応', kanji:'適', c1:'#50d090', c2:'#1a7050', cx: 46, cy:101, lx: 19, ly:101, ta:'end'    },
+    { id:'hei',   name:'平常心',     kanji:'平', c1:'#ffe060', c2:'#a07820', cs:'#705010', cx:120, cy: 47, lx:120, ly: 22, ta:'middle' },
+    { id:'jiko',  name:'自己鍛錬',   kanji:'鍛', c1:'#ff8060', c2:'#b03020', cs:'#7a1a08', cx:194, cy:101, lx:221, ly:101, ta:'start'  },
+    { id:'strat', name:'戦略的思考', kanji:'謀', c1:'#b070ff', c2:'#6030a0', cs:'#3a1878', cx:166, cy:188, lx:184, ly:213, ta:'start'  },
+    { id:'sei',   name:'誠実さ',     kanji:'誠', c1:'#60a0ff', c2:'#2050b0', cs:'#0e2878', cx: 74, cy:188, lx: 56, ly:213, ta:'end'    },
+    { id:'flex',  name:'柔軟な適応', kanji:'適', c1:'#50d090', c2:'#1a7050', cs:'#0a3820', cx: 46, cy:101, lx: 19, ly:101, ta:'end'    },
   ];
 
   const excluded  = dojoData.excludedSpirit;
@@ -712,6 +713,7 @@ function renderPentagonCompass() {
   const isAllDone = dojoData.phaseStatus === 'completed';
   const count     = stampedDays.size;
   const pts       = SP.map(s => `${s.cx},${s.cy}`).join(' ');
+  const CIRC      = (2 * Math.PI * 28).toFixed(1); // progress ring circumference (r=28)
 
   const defs = SP.map(s => `
     <radialGradient id="pg-${s.id}" cx="35%" cy="30%" r="70%">
@@ -726,9 +728,11 @@ function renderPentagonCompass() {
     const isDojoDone = planIdx >= 0 && (planIdx < currentPhase || isAllDone);
     const isComplete = isLite || isDojoDone;
     const isActive   = planIdx === currentPhase && !isAllDone;
+    const arc        = (Math.min(count / 21, 1) * parseFloat(CIRC)).toFixed(1);
 
     if (isComplete) {
       nodes += `
+        <circle cx="${s.cx}" cy="${s.cy+4}" r="24" fill="${s.cs}" opacity=".9"/>
         <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="url(#pg-${s.id})" stroke="${s.c1}" stroke-width="2"/>
         <text x="${s.cx}" y="${s.cy+8}" text-anchor="middle" font-family="serif" font-size="19" fill="white" font-weight="bold">${s.kanji}</text>`;
       if (isLite) {
@@ -741,16 +745,20 @@ function renderPentagonCompass() {
           <text x="${s.cx+17}" y="${s.cy-13}" text-anchor="middle" font-size="10" fill="white" font-weight="bold">✓</text>`;
       }
     } else if (isActive) {
-      const fill = isWaiting ? `${s.c1}35` : `${s.c1}1a`;
+      const fill = isWaiting ? `${s.c1}35` : `${s.c1}18`;
       const ringClass = isWaiting ? '' : ' class="spirit-outer-ring"';
       nodes += `
         <circle cx="${s.cx}" cy="${s.cy}" r="31" fill="none" stroke="${s.c1}" stroke-width="1.5"${ringClass}/>
+        <circle cx="${s.cx}" cy="${s.cy+4}" r="24" fill="${s.cs}" opacity=".9"/>
         <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="${fill}" stroke="${s.c1}" stroke-width="2.5"/>
+        <circle cx="${s.cx}" cy="${s.cy}" r="28" fill="none" stroke="${s.c1}" stroke-width="2.5" opacity=".5"
+          stroke-dasharray="${arc} ${CIRC}" transform="rotate(-90 ${s.cx} ${s.cy})" stroke-linecap="round"/>
         <text x="${s.cx}" y="${s.cy+8}" text-anchor="middle" font-family="serif" font-size="19" fill="${s.c1}" font-weight="bold">${s.kanji}</text>`;
     } else {
       nodes += `
-        <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="#1c1c26" stroke="#2e2e3a" stroke-width="1.5"/>
-        <text x="${s.cx}" y="${s.cy+8}" text-anchor="middle" font-family="serif" font-size="17" fill="#30303e">${s.kanji}</text>`;
+        <circle cx="${s.cx}" cy="${s.cy+4}" r="24" fill="#0c0c14" opacity=".9"/>
+        <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="#1c1c26" stroke="#2a2a36" stroke-width="1.5"/>
+        <text x="${s.cx}" y="${s.cy+8}" text-anchor="middle" font-family="serif" font-size="17" fill="#2c2c3a">${s.kanji}</text>`;
     }
 
     const lc = (isComplete || isActive) ? s.c1 : '#363646';
@@ -773,7 +781,7 @@ function renderPentagonCompass() {
       : '';
 
   el.innerHTML = `
-    <svg viewBox="0 0 240 228" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:270px;display:block;margin:0 auto;overflow:visible">
+    <svg viewBox="0 0 240 230" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:270px;display:block;margin:0 auto;overflow:visible">
       <defs>${defs}</defs>
       <polygon points="${pts}" fill="rgba(201,168,76,.025)" stroke="rgba(255,255,255,.07)" stroke-width="1.5"/>
       ${centerText}
