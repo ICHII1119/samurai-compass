@@ -380,6 +380,27 @@ body {
 }
 .reflection-textarea:focus { border-color: var(--gold) }
 .reflection-textarea::placeholder { color: var(--muted) }
+
+.past-quote {
+  margin-bottom: .9rem;
+  padding: .7rem .85rem;
+  background: rgba(201,168,76,.05);
+  border-left: 2px solid rgba(201,168,76,.35);
+  border-radius: 0 6px 6px 0;
+}
+.past-quote-label {
+  font-size: .7rem;
+  letter-spacing: .06em;
+  color: rgba(201,168,76,.55);
+  margin-bottom: .35rem;
+  text-transform: uppercase;
+}
+.past-quote-text {
+  font-size: .82rem;
+  color: var(--muted);
+  line-height: 1.75;
+  font-style: italic;
+}
 .btn-submit {
   display: block;
   width: 100%;
@@ -1231,13 +1252,32 @@ function renderReflection(day) {
     return;
   }
 
+  // 過去記録の引用を探す（7日前→14日前→3日前→1日前の順で優先）
+  const LOOK_BACK = [7, 14, 3, 1];
+  let pastEntry = null;
+  let pastDaysAgo = 0;
+  for (const delta of LOOK_BACK) {
+    const pastDay = day - delta;
+    if (pastDay >= 1) {
+      const e = phaseEntries.find(e => e.day === pastDay && e.text);
+      if (e) { pastEntry = e; pastDaysAgo = delta; break; }
+    }
+  }
+
+  const pastQuoteHtml = pastEntry ? `
+    <div class="past-quote">
+      <div class="past-quote-label">${pastDaysAgo}日前（Day ${day - pastDaysAgo}）の記録</div>
+      <div class="past-quote-text">${escHtml(pastEntry.text.slice(0, 80))}${pastEntry.text.length > 80 ? '…' : ''}</div>
+    </div>` : '';
+
   area.innerHTML = `
     <div class="reflection-card fade-up">
       <div class="reflection-day-label">DAY ${day} · 今日の気づき</div>
       <div class="reflection-title">稽古の振り返り</div>
-      <div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">ファシリテーターに届きます</div>
+      ${pastQuoteHtml}
       <textarea class="reflection-textarea" id="reflection-text"
         placeholder="今日の稽古から何を感じましたか？どんな小さな気づきでも構いません。" rows="4"></textarea>
+      <div style="font-size:.78rem;color:var(--muted);margin:.35rem 0 .6rem">ファシリテーターに届きます</div>
       <button class="btn-submit" id="submit-btn" onclick="submitPractice(${day})">
         ⚔️ 稽古を記録する
       </button>
