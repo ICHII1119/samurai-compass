@@ -251,23 +251,41 @@ body {
 /* ── Streak bar ── */
 .streak-bar {
   margin-top: .55rem;
-  padding: .5rem .85rem;
+  padding: .75rem 1rem;
   background: rgba(201,168,76,.05);
   border: 1px solid rgba(201,168,76,.2);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
+  border-radius: 10px;
 }
-.streak-inner { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap }
-.streak-flames { font-size: .95rem; line-height: 1 }
-.streak-text {
-  font-family: var(--font-b);
-  font-size: .88rem;
-  font-weight: 700;
-  color: var(--gold);
-  letter-spacing: .04em;
+.streak-main { display: flex; align-items: center; gap: .6rem; margin-bottom: .45rem }
+.streak-flames { font-size: 1.5rem; line-height: 1; flex-shrink: 0 }
+.streak-num {
+  font-family: var(--font-brush);
+  font-size: 2rem; font-weight: 700;
+  color: var(--gold); line-height: 1;
 }
-.streak-max { font-size: .65rem; color: var(--muted) }
+.streak-unit { font-size: .78rem; color: var(--cream2); line-height: 1.3; padding-top: .2rem }
+.streak-badge {
+  margin-left: auto;
+  font-size: .65rem; font-weight: 600;
+  padding: .2rem .5rem; border-radius: 100px;
+  background: rgba(201,168,76,.15);
+  color: var(--gold); letter-spacing: .05em;
+}
+.streak-next {
+  font-size: .72rem; color: var(--cream2); margin-bottom: .35rem;
+}
+.streak-progress-track {
+  height: 4px; background: rgba(255,255,255,.07); border-radius: 2px; overflow: hidden;
+}
+.streak-progress-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, rgba(201,168,76,.6), var(--gold));
+  transition: width .6s ease;
+}
+.streak-preview {
+  font-size: .7rem; color: rgba(201,168,76,.6);
+  margin-top: .4rem; font-style: italic;
+}
 
 /* ── Day detail ── */
 .day-detail-card {
@@ -1049,15 +1067,46 @@ function renderCalendar() {
 
   const streak    = calcStreak();
   const maxStreak = calcMaxStreak();
-  const bar = document.getElementById('streak-bar');
-  if (streak >= 2) {
-    const flames = '🔥'.repeat(Math.min(streak, 5));
-    bar.innerHTML = `<div class="streak-inner">
-      <span class="streak-flames">${flames}</span>
-      <span class="streak-text">${streak}日連続！</span>
-      ${maxStreak > streak ? `<span class="streak-max">最高記録: ${maxStreak}日</span>` : ''}
-    </div>`;
-    bar.style.display = 'flex';
+  const count     = stampedDays.size;
+  const bar       = document.getElementById('streak-bar');
+
+  // 今日未記録かどうか（streak-preview 用）
+  const todayRecorded = todayDay >= 1 && stampedDays.has(todayDay);
+
+  // 次の節目（7/14/21）を求める
+  const MILESTONES = [7, 14, 21];
+  const nextMilestone = MILESTONES.find(m => count < m) || 21;
+  const prevMilestone = MILESTONES.slice().reverse().find(m => count >= m) || 0;
+  const milestoneProgress = nextMilestone - prevMilestone;
+  const milestoneCount    = count - prevMilestone;
+  const milestoneLeft     = nextMilestone - count;
+  const progressPct       = Math.min(100, Math.round(milestoneCount / milestoneProgress * 100));
+
+  const isRecord = streak > 0 && streak >= maxStreak;
+
+  if (streak >= 1 || count > 0) {
+    const flameNum = Math.min(streak, 5);
+    const flames   = streak >= 2 ? '🔥'.repeat(flameNum) : '🕯';
+    const badgeText = isRecord && streak >= 2 ? '最高記録更新中' : streak >= 2 ? `最高 ${maxStreak}日` : '';
+
+    bar.innerHTML = `
+      <div class="streak-main">
+        <span class="streak-flames">${flames}</span>
+        <div>
+          <span class="streak-num">${streak}</span>
+          <span class="streak-unit">日連続</span>
+        </div>
+        ${badgeText ? `<span class="streak-badge">${badgeText}</span>` : ''}
+      </div>
+      ${count < 21 ? `
+        <div class="streak-next">次の節目 Day ${nextMilestone} まであと ${milestoneLeft} 日</div>
+        <div class="streak-progress-track">
+          <div class="streak-progress-fill" style="width:${progressPct}%"></div>
+        </div>
+      ` : ''}
+      ${!todayRecorded && todayDay >= 1 ? `<div class="streak-preview">今日記録すると ${streak + 1}日連続 🔥</div>` : ''}
+    `;
+    bar.style.display = 'block';
   } else {
     bar.style.display = 'none';
   }
