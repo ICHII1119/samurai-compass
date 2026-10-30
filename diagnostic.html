@@ -1944,6 +1944,14 @@ async function renderAdminList() {
       return;
     }
 
+    // LINE表示名を一括取得
+    const profileMap = {};
+    const lineIds = [...new Set(all.map(s => s.lineUserId).filter(Boolean))];
+    if (lineIds.length) {
+      const profileSnaps = await Promise.all(lineIds.map(lid => db.collection('profiles').doc(lid).get()));
+      profileSnaps.forEach(p => { if (p.exists) profileMap[p.id] = p.data().displayName || ''; });
+    }
+
     container.innerHTML = all.map(s => {
       const dt = s.timestamp?.toDate ? s.timestamp.toDate() : new Date();
       const dateStr = `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
@@ -1953,14 +1961,24 @@ async function renderAdminList() {
       const lifeLabel = lifeArr.length ? lifeArr.map(v => LIFE_LBL[v] || v).join('・') : (s.profile?.lifeSkipped ? '回答なし' : '—');
       const urgencyLabel = URGENCY_LBL[s.profile?.urgency] || '—';
       const dChecked = adminSelectedIds.has(s.id);
+
+      const lineDisplayName = s.lineUserId ? (profileMap[s.lineUserId] || '') : '';
+      const nickname = s.profile?.nickname || '';
+      // LINE表示名を主、ニックネームを補足で表示
+      const primaryName = lineDisplayName || nickname || '（名前なし）';
+      const subName = lineDisplayName && nickname && nickname !== lineDisplayName ? `ニックネーム：${nickname}` : '';
+
       return `
         <div class="admin-row" style="${adminSelectMode && dChecked ? 'border-color:rgba(139,40,40,.5);' : ''}"
              onclick="${adminSelectMode ? '' : `showAdminDetail('${s.id}')`}">
           ${adminSelectMode ? `<input type="checkbox" onchange="toggleSelectItem('${s.id}')" ${dChecked ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--red);cursor:pointer;flex-shrink:0;margin-right:.3rem" onclick="event.stopPropagation()">` : ''}
           <div style="flex:1">
             <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">${dateStr}</div>
-            <div style="font-size:.95rem;font-weight:700;color:var(--cream);margin-bottom:.1rem">${s.profile?.nickname || '（名前なし）'}</div>
-            <div style="font-size:.75rem;color:var(--cream2);margin-bottom:.35rem">${s.profile?.email || ''}</div>
+            <div style="font-size:.95rem;font-weight:700;color:var(--cream);margin-bottom:.1rem">${escHtml(primaryName)}</div>
+            <div style="font-size:.75rem;color:var(--cream2);margin-bottom:.2rem">
+              ${subName ? `<span style="color:var(--muted)">${escHtml(subName)}</span>` : ''}
+              ${s.profile?.email ? `<span>${escHtml(s.profile.email)}</span>` : ''}
+            </div>
             <div style="font-size:.8rem;color:var(--muted);margin-bottom:.35rem">${roleLabel} · ${lifeLabel} · ${urgencyLabel}</div>
             <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
               <span style="font-size:.72rem;padding:.18rem .55rem;border-radius:100px;background:${topS.bg};color:${topS.color};border:1px solid ${topS.color}40;font-weight:600">${topS.name}</span>
