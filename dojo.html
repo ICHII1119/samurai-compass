@@ -820,10 +820,29 @@ function render() {
   } else if (todayDay >= 1 && todayDay <= 21) {
     renderReflection(todayDay);
   } else {
-    document.getElementById('reflection-area').innerHTML = `
-      <div style="text-align:center;padding:1rem 1.5rem">
-        <div style="font-size:.8rem;color:var(--muted)">LINEのメッセージのリンクから<br>今日の稽古を記録してください。</div>
-      </div>`;
+    // ?day= なし → phaseStartedAt / dojoStartedAt から今日の日数を算出
+    let computedDay = null;
+    if (dojoData.phaseStatus === 'active') {
+      const refTs = dojoData.phaseStartedAt || dojoData.dojoStartedAt;
+      if (refTs) {
+        const startLocal = refTs.toDate();
+        startLocal.setHours(0, 0, 0, 0);
+        const todayLocal = new Date();
+        todayLocal.setHours(0, 0, 0, 0);
+        const diff = Math.floor((todayLocal - startLocal) / 86400000);
+        computedDay = Math.max(1, Math.min(21, diff + 1));
+      } else {
+        computedDay = 1;
+      }
+    }
+    if (computedDay) {
+      renderReflection(computedDay);
+    } else {
+      document.getElementById('reflection-area').innerHTML = `
+        <div style="text-align:center;padding:1rem 1.5rem">
+          <div style="font-size:.8rem;color:var(--muted)">LINEのメッセージのリンクから<br>今日の稽古を記録してください。</div>
+        </div>`;
+    }
   }
 }
 
