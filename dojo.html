@@ -451,6 +451,31 @@ body {
   line-height: 1.8;
   margin-bottom: 1rem;
 }
+.waiting-interim-prompt {
+  margin: 1rem 0;
+  padding: .8rem 1rem;
+  background: rgba(201,168,76,.06);
+  border-left: 2px solid rgba(201,168,76,.4);
+  border-radius: 0 6px 6px 0;
+  text-align: left;
+}
+.waiting-interim-label {
+  font-size: .7rem;
+  letter-spacing: .08em;
+  color: rgba(201,168,76,.55);
+  margin-bottom: .4rem;
+}
+.waiting-interim-q {
+  font-size: .88rem;
+  color: var(--cream);
+  line-height: 1.75;
+}
+.waiting-next-spirit {
+  margin-top: 1.1rem;
+  font-size: .78rem;
+  color: var(--muted);
+  letter-spacing: .04em;
+}
 .cal-link {
   display: inline-block;
   font-size: .82rem;
@@ -1405,6 +1430,45 @@ async function submitPractice(day) {
   }
 }
 
+// Spirit ごとの「間の問い」（待機期間に毎日考える問い）
+const WAITING_PROMPTS = {
+  hei: [
+    '今日、感情に振り回されそうになった瞬間はあったか？',
+    '「平常心」を保てた場面と崩れた場面、それぞれ何だったか？',
+    '鎧を脱いでも揺れない自分の軸とは、何だろうか？',
+    '21日間の稽古で、最も変わったと感じることは何か？',
+    '次のSpiritに進む前に、今の自分に一言伝えるとしたら？',
+  ],
+  jiko: [
+    '今日、自分に正直でいられた瞬間はあったか？',
+    '自分を鍛錬する上で、最も難しいと感じることは何か？',
+    '21日間で、新たに気づいた自分の強みと弱みは何か？',
+    '「自己鍛錬」という言葉を、今の自分の言葉で定義するとしたら？',
+    '次の稽古に持ち込みたい、今日の問いは何か？',
+  ],
+  flex: [
+    '今日、自分の「形」を変える必要があった場面はあったか？',
+    '固執していた考え方を手放せた経験は、21日間でどれだったか？',
+    '「柔軟さ」と「芯のなさ」の違いを、自分の言葉で語れるか？',
+    '変化に抵抗を感じるとき、自分の中で何が起きているか？',
+    '次のSpiritでも、この柔軟さはどう活きるか？',
+  ],
+  strat: [
+    '今日の選択は、長期的な軸と一致していたか？',
+    '「一手先を読む」ことができた瞬間は、21日間でどれか？',
+    '直感と戦略、どちらを優先したか？それは正しかったか？',
+    '21日間を振り返り、最も「戦略的だった」と感じる行動は何か？',
+    '次のSpiritを磨く上で、戦略的思考はどう役立つか？',
+  ],
+  sei: [
+    '今日、自分の言葉と行動は一致していたか？',
+    '誠実であることのコストを、21日間で感じた場面はあったか？',
+    '「誠実さ」を最もよく体現できた瞬間はいつか？',
+    '自分に不誠実だった瞬間があるとしたら、それはいつか？',
+    '次のSpiritに誠実さをどう持ち込むか？',
+  ],
+};
+
 /* ── Phase complete screen ── */
 function showPhaseComplete(status, spiritName) {
   const area = document.getElementById('phase-complete-area');
@@ -1415,7 +1479,7 @@ function showPhaseComplete(status, spiritName) {
         <div style="font-size:2rem;margin-bottom:.7rem">⚔️</div>
         <div class="waiting-title">すべての稽古、完了。</div>
         <div class="waiting-desc">
-          4つのSpiritの鍛錬を修めた。<br>
+          ${spiritPlan.length}つのSpiritの鍛錬を修めた。<br>
           これからは、あなた自身が道を切り拓いていく。<br><br>
           <em>千日の稽古を鍛とし、万日の稽古を錬とす。</em><br>
           <span style="font-size:.75rem;color:var(--muted)">— 宮本武蔵</span>
@@ -1423,18 +1487,43 @@ function showPhaseComplete(status, spiritName) {
       </div>`;
   } else {
     const calUrl = 'https://cal.com/samurai-in-you/21dayafterfeedback';
+
+    // 今日の「間の問い」を日数から選ぶ（0〜4をループ）
+    const prompts = WAITING_PROMPTS[currentSpirit] || WAITING_PROMPTS.hei;
+    const waitingStartTs = dojoData.phaseCompletedAt || dojoData.phaseStartedAt;
+    let promptIdx = 0;
+    if (waitingStartTs) {
+      const daysSinceComplete = Math.floor(
+        (new Date() - waitingStartTs.toDate()) / 86400000
+      );
+      promptIdx = Math.min(Math.max(0, daysSinceComplete), prompts.length - 1);
+    }
+    const todayPrompt = prompts[promptIdx];
+
+    // 次の Spirit を取得
+    const nextSpirit = spiritPlan[currentPhase + 1] || null;
+    const nextInfo   = nextSpirit ? (SPIRIT_INFO[nextSpirit] || {}) : null;
+    const nextLine   = nextInfo
+      ? `<div class="waiting-next-spirit">次の稽古：Phase ${currentPhase + 3}「${nextInfo.name}」</div>`
+      : '';
+
     area.innerHTML = `
       <div class="waiting-card fade-up">
         <div style="font-size:1.5rem;margin-bottom:.6rem">⚔️</div>
         <div class="waiting-title">「${spiritName}」の稽古、完了。</div>
         <div class="waiting-desc">
-          21日間、続けた。<br>それだけで、すでに侍だ。<br><br>
-          振り返りミーティングの予約をしてください。<br>
-          道場長と共に、次のSpiritへと進みます。
+          21日間、続けた。<br>それだけで、すでに侍だ。
         </div>
+
+        <div class="waiting-interim-prompt">
+          <div class="waiting-interim-label">間の稽古 — 今日の問い</div>
+          <div class="waiting-interim-q">${escHtml(todayPrompt)}</div>
+        </div>
+
         <a href="${calUrl}" class="cal-link" target="_blank">
-          📅 ミーティングを予約する
+          📅 振り返りミーティングを予約する
         </a>
+        ${nextLine}
       </div>`;
   }
 
