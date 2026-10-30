@@ -205,6 +205,8 @@ body {
   background: rgba(201,168,76,.07);
 }
 .cal-cell.today-unrecorded { background: rgba(201,168,76,.1) }
+.cal-cell.grace-day .cal-num { color: rgba(201,168,76,.45) }
+.cal-cell.grace-day .cal-dot.grace-dot { background: rgba(201,168,76,.3); width: 6px; height: 6px }
 .cal-num {
   font-size: .8rem;
   line-height: 1;
@@ -830,26 +832,47 @@ function buildDateEntryMap() {
   });
 }
 
-function calcStreak() {
-  if (!stampedDays.size) return 0;
-  const sorted = [...stampedDays].sort((a,b) => b - a);
-  let streak = 1;
-  for (let i = 1; i < sorted.length; i++) {
-    if (sorted[i] === sorted[i-1] - 1) streak++;
-    else break;
+// 1日穴埋め猶予付き連続計算
+// 記録した日数だけカウント、1日の空白は連続を切らない
+function calcStreakFrom(days, fromDay) {
+  let streak = 0;
+  let gapUsed = false;
+  for (let d = fromDay; d >= 1; d--) {
+    if (days.has(d)) {
+      streak++;
+      gapUsed = false;
+    } else {
+      if (!gapUsed) {
+        gapUsed = true; // 1日だけ猶予
+      } else {
+        break; // 2日連続で空白 → 終了
+      }
+    }
   }
   return streak;
+}
+
+function calcStreak() {
+  if (!stampedDays.size) return 0;
+  const latest = Math.max(...stampedDays);
+  return calcStreakFrom(stampedDays, latest);
 }
 
 function calcMaxStreak() {
   if (!stampedDays.size) return 0;
   const sorted = [...stampedDays].sort((a,b) => a - b);
-  let max = 1, cur = 1;
-  for (let i = 1; i < sorted.length; i++) {
-    cur = (sorted[i] === sorted[i-1] + 1) ? cur + 1 : 1;
-    if (cur > max) max = cur;
+  let max = 0;
+  for (const d of sorted) {
+    const s = calcStreakFrom(stampedDays, d);
+    if (s > max) max = s;
   }
   return max;
+}
+
+// 今日記録した場合の仮ストリーク（プレビュー用）
+function calcStreakIfToday(todayDayNum) {
+  const hypothetical = new Set([...stampedDays, todayDayNum]);
+  return calcStreakFrom(hypothetical, todayDayNum);
 }
 
 /* ── Pentagon Compass ── */
@@ -1034,6 +1057,15 @@ function renderCalendar() {
       dayNum = Math.round((localDate(dateStr) - startDate) / 86400000) + 1;
     }
 
+    // 穴埋め猶予判定: この日は未記録だが、前後の記録で連続が保たれている
+    const isGraceDay = inPeriod && isPast && !isCompleted && dayNum !== null && (() => {
+      if (!stampedDays.has(dayNum)) {
+        // 前日(dayNum-1)と翌日(dayNum+1)の両方に記録があれば猶予日
+        return stampedDays.has(dayNum - 1) || stampedDays.has(dayNum + 1);
+      }
+      return false;
+    })();
+
     let icon = '';
     if (isCompleted && dayNum && (dayNum === 7 || dayNum === 14 || dayNum === 21)) {
       icon = `<div class="cal-icon"><span class="cal-star">⭐</span></div>`;
@@ -1041,6 +1073,8 @@ function renderCalendar() {
       icon = `<div class="cal-icon"><div class="cal-check">✓</div></div>`;
     } else if (isTodayPractice) {
       icon = `<div class="cal-icon"><div class="cal-dot gold-dot"></div></div>`;
+    } else if (isGraceDay) {
+      icon = `<div class="cal-icon"><div class="cal-dot grace-dot"></div></div>`;
     } else if (inPeriod && isPast) {
       icon = `<div class="cal-icon"><div class="cal-dot gray-dot"></div></div>`;
     }
@@ -1051,6 +1085,7 @@ function renderCalendar() {
       cls += ' in-period';
       if (isCompleted)                       cls += ' completed';
       if (isTodayPractice && !isCompleted)   cls += ' today-unrecorded';
+      if (isGraceDay)                        cls += ' grace-day';
       if (isSelected)                        cls += ' selected';
     }
     if (dow === 0) cls += ' sun-col';
@@ -1107,7 +1142,12 @@ function renderCalendar() {
           <div class="streak-progress-fill" style="width:${progressPct}%"></div>
         </div>
       ` : ''}
-      ${!todayRecorded && todayDay >= 1 ? `<div class="streak-preview">今日記録すると ${streak + 1}日連続 🔥</div>` : ''}
+      ${!todayRecorded && todayDay >= 1 ? (() => {
+        const nextStreak = calcStreakIfToday(todayDay);
+        const gapNote = !stampedDays.has(todayDay - 1) && stampedDays.has(todayDay - 2)
+          ? ' （昨日の空白を埋める）' : '';
+        return `<div class="streak-preview">今日記録すると ${nextStreak}日連続 🔥${gapNote}</div>`;
+      })() : ''}
     `;
     bar.style.display = 'block';
   } else {
@@ -1312,13 +1352,8 @@ async function submitPractice(day) {
     document.getElementById('stamped-count').textContent = count;
     document.getElementById('progress-fill').style.width = `${Math.min(count / 21 * 100, 100)}%`;
 
-    // 連続日数を計算してアニメーション表示
-    let streak = 0;
-    for (let d = day - 1; d >= 1; d--) {
-      if (stampedDays.has(d)) streak++;
-      else break;
-    }
-    streak += 1; // 今日を含む
+    // 連続日数を計算してアニメーション表示（1日穴埋め猶予込み）
+    const streak = calcStreakFrom(stampedDays, day);
     showCompleteAnimation(day, streak);
 
     renderCalendar();
