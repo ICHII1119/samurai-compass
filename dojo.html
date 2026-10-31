@@ -420,6 +420,30 @@ body {
   letter-spacing: .1em;
 }
 
+.today-intent {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  margin-bottom: .9rem;
+  padding: .7rem .85rem;
+  background: rgba(58,122,74,.08);
+  border-left: 2px solid rgba(58,122,74,.5);
+  border-radius: 0 6px 6px 0;
+}
+.today-intent-icon { font-size: 1rem; flex-shrink: 0; margin-top: .1rem }
+.today-intent-body {}
+.today-intent-label {
+  font-size: .74rem;
+  letter-spacing: .08em;
+  color: rgba(100,180,120,.7);
+  margin-bottom: .25rem;
+  text-transform: uppercase;
+}
+.today-intent-text {
+  font-size: .92rem;
+  color: var(--cream2);
+  line-height: 1.7;
+}
 .past-quote {
   margin-bottom: .9rem;
   padding: .7rem .85rem;
@@ -1319,6 +1343,17 @@ function renderReflection(day) {
     return;
   }
 
+  // 今日の意図（朝のLINE返信）
+  const intentData = dojoData?.todayIntent;
+  const intentHtml = (intentData && intentData.day === day) ? `
+    <div class="today-intent">
+      <div class="today-intent-icon">💭</div>
+      <div class="today-intent-body">
+        <div class="today-intent-label">今日の意図</div>
+        <div class="today-intent-text">${escHtml(intentData.text)}</div>
+      </div>
+    </div>` : '';
+
   // 過去記録の引用を探す（7日前→14日前→3日前→1日前の順で優先）
   const LOOK_BACK = [7, 14, 3, 1];
   let pastEntry = null;
@@ -1347,6 +1382,7 @@ function renderReflection(day) {
     <div class="reflection-card fade-up">
       <div class="reflection-day-label">DAY ${day} · 今日の気づき</div>
       <div class="reflection-title">稽古の振り返り</div>
+      ${intentHtml}
       ${pastQuoteHtml}
 
       <div class="quick-checkin">
