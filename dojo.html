@@ -382,6 +382,44 @@ body {
 .reflection-textarea:focus { border-color: var(--gold) }
 .reflection-textarea::placeholder { color: var(--muted) }
 
+/* ── Quick check-in ── */
+.quick-checkin {
+  display: flex;
+  gap: .55rem;
+  margin-bottom: .75rem;
+}
+.qci-btn {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  padding: .6rem .3rem;
+  cursor: pointer;
+  text-align: center;
+  transition: background .15s, border-color .15s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.qci-btn:active { transform: scale(.95) }
+.qci-btn.selected {
+  background: rgba(201,168,76,.12);
+  border-color: var(--gold);
+}
+.qci-icon { font-size: 1.5rem; line-height: 1; margin-bottom: .3rem }
+.qci-label {
+  font-size: .72rem;
+  color: var(--cream2);
+  line-height: 1.3;
+}
+.qci-btn.selected .qci-label { color: var(--gold) }
+.qci-or {
+  text-align: center;
+  font-size: .75rem;
+  color: var(--muted);
+  margin: .5rem 0 .4rem;
+  letter-spacing: .1em;
+}
+
 .past-quote {
   margin-bottom: .9rem;
   padding: .7rem .85rem;
@@ -1299,18 +1337,65 @@ function renderReflection(day) {
       <div class="past-quote-text">${escHtml(pastEntry.text.slice(0, 80))}${pastEntry.text.length > 80 ? '…' : ''}</div>
     </div>` : '';
 
+  const QCI = [
+    { icon: '🌿', label: '静かな\n一歩だった',  value: '静かな一歩だった。' },
+    { icon: '💡', label: '新たな\n気づきがあった', value: '新たな気づきがあった。' },
+    { icon: '⚔️', label: '力を\n出せた',       value: '力を出せた稽古だった。' },
+  ];
+
   area.innerHTML = `
     <div class="reflection-card fade-up">
       <div class="reflection-day-label">DAY ${day} · 今日の気づき</div>
       <div class="reflection-title">稽古の振り返り</div>
       ${pastQuoteHtml}
+
+      <div class="quick-checkin">
+        ${QCI.map((q, i) => `
+          <button class="qci-btn" id="qci-${i}" onclick="selectQci(${i}, ${day})" type="button">
+            <div class="qci-icon">${q.icon}</div>
+            <div class="qci-label">${q.label.replace('\n','<br>')}</div>
+          </button>`).join('')}
+      </div>
+
+      <div class="qci-or">— または自由に書く —</div>
       <textarea class="reflection-textarea" id="reflection-text"
-        placeholder="今日の稽古から何を感じましたか？どんな小さな気づきでも構いません。" rows="4"></textarea>
+        placeholder="今日の稽古から何を感じましたか？" rows="3"
+        oninput="onReflectionInput()"></textarea>
       <div style="font-size:.78rem;color:var(--muted);margin:.35rem 0 .6rem">ファシリテーターに届きます</div>
-      <button class="btn-submit" id="submit-btn" onclick="submitPractice(${day})">
+      <button class="btn-submit" id="submit-btn" onclick="submitPractice(${day})" disabled>
         ⚔️ 稽古を記録する
       </button>
     </div>`;
+}
+
+const QCI_VALUES = [
+  '静かな一歩だった。',
+  '新たな気づきがあった。',
+  '力を出せた稽古だった。',
+];
+let _selectedQci = -1;
+
+function selectQci(idx, day) {
+  _selectedQci = idx;
+  [0,1,2].forEach(i => {
+    document.getElementById(`qci-${i}`)?.classList.toggle('selected', i === idx);
+  });
+  // textarea に選択肢の文言を反映（上書き可能）
+  const ta = document.getElementById('reflection-text');
+  if (ta && (!ta.value || QCI_VALUES.includes(ta.value))) {
+    ta.value = QCI_VALUES[idx];
+  }
+  document.getElementById('submit-btn').disabled = false;
+}
+
+function onReflectionInput() {
+  const val = document.getElementById('reflection-text')?.value || '';
+  // QCI 選択を外す（自由入力が優先）
+  if (val && !QCI_VALUES.includes(val)) {
+    _selectedQci = -1;
+    [0,1,2].forEach(i => document.getElementById(`qci-${i}`)?.classList.remove('selected'));
+  }
+  document.getElementById('submit-btn').disabled = val.trim().length === 0 && _selectedQci < 0;
 }
 
 /* ── Submit practice ── */
