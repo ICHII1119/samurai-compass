@@ -129,6 +129,10 @@ body {
   margin-top: .4rem;
   transition: all .4s ease;
 }
+.rank-badge.rank-2 {
+  border-color: rgba(201,168,76,.5);
+  background: rgba(201,168,76,.1);
+}
 .rank-badge.rank-5 {
   border-color: rgba(201,168,76,.7);
   background: rgba(201,168,76,.15);
@@ -987,18 +991,19 @@ function escHtml(s) {
 
 function calcRank() {
   const status = dojoData?.phaseStatus;
-  if (status === 'completed') {
-    return { title: '侍士', sub: 'SAMURAI Practitioner', level: 5 };
+  const totalCompleted = currentPhase + (status === 'completed' ? 1 : 0);
+  if (totalCompleted === 0) return { title: '入門中', sub: 'In Training', level: 0 };
+  // 十級(1完了)〜一級(10完了) → 段位へ
+  const KYU = ['十級','九級','八級','七級','六級','五級','四級','三級','二級','一級'];
+  if (totalCompleted <= 10) {
+    const kyu = KYU[totalCompleted - 1];
+    const level = totalCompleted >= 6 ? 2 : 1;
+    return { title: kyu, sub: `${totalCompleted}st Spirit`, level };
   }
-  const completedPhases = currentPhase; // 完了済みフェーズ数
-  if (completedPhases >= 3) return { title: '三道の途', sub: '3 Spirits', level: 4 };
-  if (completedPhases >= 2) return { title: '二道の途', sub: '2 Spirits', level: 3 };
-  if (completedPhases >= 1) return { title: '一道の途', sub: '1 Spirit',  level: 2 };
-  // 初フェーズ中: 稽古日数で判定
-  const days = stampedDays.size;
-  if (days >= 14) return { title: '練磨の途', sub: 'Week 3', level: 1 };
-  if (days >= 7)  return { title: '修行の途', sub: 'Week 2', level: 1 };
-  return { title: '入門の途', sub: 'Week 1', level: 0 };
+  // 初段以上
+  const DAN = ['初段','二段','三段','四段','五段'];
+  const danIdx = Math.min(totalCompleted - 11, DAN.length - 1);
+  return { title: DAN[danIdx], sub: 'SAMURAI', level: 5 };
 }
 
 function renderRankBadge() {
