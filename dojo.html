@@ -491,6 +491,46 @@ body {
   font-weight: 600;
   font-size: .88rem;
 }
+.past-self {
+  margin-bottom: 1rem;
+  padding: .85rem;
+  background: rgba(126,168,212,.05);
+  border: 1px solid rgba(126,168,212,.18);
+  border-radius: 8px;
+}
+.past-self-header {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  margin-bottom: .55rem;
+}
+.past-self-icon { font-size: 1rem; flex-shrink: 0 }
+.past-self-title {
+  font-size: .78rem;
+  color: rgba(126,184,212,.75);
+  letter-spacing: .07em;
+}
+.past-self-day {
+  font-size: .68rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+.past-self-text {
+  font-size: .9rem;
+  color: var(--cream2);
+  line-height: 1.8;
+  font-style: italic;
+  padding-left: .3rem;
+  border-left: 1.5px solid rgba(126,184,212,.25);
+  padding-left: .6rem;
+}
+.past-self-divider {
+  text-align: center;
+  font-size: .72rem;
+  color: var(--muted);
+  letter-spacing: .12em;
+  margin: .6rem 0 .9rem;
+}
 .today-intent {
   display: flex;
   align-items: flex-start;
@@ -1481,6 +1521,45 @@ function renderReflection(day) {
     return;
   }
 
+  // ── 21日前の自分との対話 ──────────────────────────────
+  let pastSelfHtml = '';
+  const allEntries = dojoData?.entries || [];
+
+  if (day === 21) {
+    // 最終日：同じSpiritの Day 1 を表示
+    const day1Entry = phaseEntries.find(e => e.day === 1 && e.text);
+    if (day1Entry) {
+      pastSelfHtml = `
+        <div class="past-self">
+          <div class="past-self-header">
+            <span class="past-self-icon">🪞</span>
+            <span class="past-self-title">21日前のあなた</span>
+            <span class="past-self-day">Day 1</span>
+          </div>
+          <div class="past-self-text">${escHtml(day1Entry.text.slice(0, 120))}${day1Entry.text.length > 120 ? '…' : ''}</div>
+        </div>
+        <div class="past-self-divider">↑ 21日前のあなたへ、今日の答えを書く</div>`;
+    }
+  } else if (day === 1 && currentPhase > 0) {
+    // 新Phase Day 1：前のSpiritの Day 21 を表示
+    const prevPhase = currentPhase - 1;
+    const prevDay21 = allEntries.find(e => e.phase === prevPhase && e.day === 21 && e.text);
+    const prevSpirit = (dojoData?.spiritPlan || [])[prevPhase];
+    const prevSpiritName = SPIRIT_INFO[prevSpirit]?.name || '前のSpirit';
+    if (prevDay21) {
+      pastSelfHtml = `
+        <div class="past-self">
+          <div class="past-self-header">
+            <span class="past-self-icon">🪞</span>
+            <span class="past-self-title">${prevSpiritName}の最終日に書いたこと</span>
+            <span class="past-self-day">Day 21</span>
+          </div>
+          <div class="past-self-text">${escHtml(prevDay21.text.slice(0, 120))}${prevDay21.text.length > 120 ? '…' : ''}</div>
+        </div>
+        <div class="past-self-divider">↑ あの日からここへ来た。今日は何を感じるか？</div>`;
+    }
+  }
+
   // 今日の意図（朝のLINE返信）
   const intentData = dojoData?.todayIntent;
   const intentHtml = (intentData && intentData.day === day) ? `
@@ -1520,6 +1599,7 @@ function renderReflection(day) {
     <div class="reflection-card fade-up">
       <div class="reflection-day-label">DAY ${day} · 今日の気づき</div>
       <div class="reflection-title">稽古の振り返り</div>
+      ${pastSelfHtml}
       ${intentHtml}
       ${pastQuoteHtml}
 
