@@ -2483,14 +2483,16 @@ async function renderAdminDashboard() {
         const isToday = year === _today.getFullYear() && month === _today.getMonth() && d === _today.getDate();
         const isSun = (new Date(year, month, d).getDay() === 0);
         const isSat = (new Date(year, month, d).getDay() === 6);
-        const numColor = acts.length > 0 ? 'var(--cream)' : isSun ? 'rgba(196,126,126,.5)' : isSat ? 'rgba(126,184,212,.4)' : 'rgba(255,255,255,.18)';
-        const dots = acts.slice(0,6).map(a =>
-          `<div title="${escHtml(a.name)}" style="width:5px;height:5px;border-radius:50%;background:${a.color};flex-shrink:0"></div>`
-        ).join('');
-        const more = acts.length > 6 ? `<div style="font-size:.42rem;color:var(--muted);line-height:1">+${acts.length-6}</div>` : '';
-        cells += `<div style="min-height:36px;padding:.15rem .1rem;border-radius:3px;${isToday ? 'border:1px solid rgba(201,168,76,.5);background:rgba(201,168,76,.05)' : ''}">
+        const cnt = acts.length;
+        const numColor = cnt > 0 ? 'var(--cream)' : isSun ? 'rgba(196,126,126,.5)' : isSat ? 'rgba(126,184,212,.4)' : 'rgba(255,255,255,.18)';
+        const heatAlpha = cnt === 0 ? 0 : cnt <= 2 ? .12 : cnt <= 4 ? .22 : cnt <= 6 ? .34 : .5;
+        const heatBg = cnt > 0 ? `rgba(201,168,76,${heatAlpha})` : 'transparent';
+        const countHtml = cnt > 0
+          ? `<div style="font-size:.7rem;font-weight:600;color:var(--gold);line-height:1;margin-top:2px;text-align:center">${cnt}<span style="font-size:.52rem;font-weight:400;color:var(--muted)">人</span></div>`
+          : '';
+        cells += `<div style="min-height:38px;padding:.2rem .1rem;border-radius:4px;background:${heatBg};${isToday ? 'border:1px solid rgba(201,168,76,.6)' : ''}">
           <div style="font-size:.62rem;color:${numColor};text-align:center;line-height:1.4">${d}</div>
-          <div style="display:flex;flex-wrap:wrap;gap:1.5px;justify-content:center;margin-top:1px">${dots}${more}</div>
+          ${countHtml}
         </div>`;
       }
       return `<div style="margin-bottom:.8rem">
@@ -2517,7 +2519,14 @@ async function renderAdminDashboard() {
       }).join('');
 
     const calendarHtml = `<div style="margin-bottom:.6rem">${calHtml}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:.5rem;padding-top:.4rem;border-top:1px solid rgba(255,255,255,.05)">${_legendItems}</div>`;
+      <div style="display:flex;align-items:center;gap:.6rem;padding-top:.5rem;border-top:1px solid rgba(255,255,255,.05)">
+        <span style="font-size:.65rem;color:var(--muted)">稽古人数：</span>
+        ${[1,3,5,7].map(n => {
+          const a = n <= 2 ? .12 : n <= 4 ? .22 : n <= 6 ? .34 : .5;
+          return `<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:4px;background:rgba(201,168,76,${a});font-size:.68rem;font-weight:600;color:var(--gold)">${n}</span>`;
+        }).join('')}
+        <span style="font-size:.65rem;color:var(--muted)">→ 色が濃いほど人数多</span>
+      </div>`;
 
     const spiritNames = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
     const spiritColors = { hei:'#7eb8d4', jiko:'#c9a84c', flex:'#7ec47e', strat:'#c47eb8', sei:'#c47e7e' };
