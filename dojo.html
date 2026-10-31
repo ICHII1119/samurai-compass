@@ -934,11 +934,11 @@ function renderPentagonCompass() {
 
   // c1=bright highlight, c2=dark gradient end, cs=3D shadow color
   const SP = [
-    { id:'hei',   name:'平常心',     kanji:'平', c1:'#ffe060', c2:'#a07820', cs:'#705010', cx:120, cy: 47, lx:120, ly: 22, ta:'middle' },
-    { id:'jiko',  name:'自己鍛錬',   kanji:'鍛', c1:'#ff8060', c2:'#b03020', cs:'#7a1a08', cx:194, cy:101, lx:221, ly:101, ta:'start'  },
-    { id:'strat', name:'戦略的思考', kanji:'謀', c1:'#b070ff', c2:'#6030a0', cs:'#3a1878', cx:166, cy:188, lx:184, ly:213, ta:'start'  },
-    { id:'sei',   name:'誠実さ',     kanji:'誠', c1:'#60a0ff', c2:'#2050b0', cs:'#0e2878', cx: 74, cy:188, lx: 56, ly:213, ta:'end'    },
-    { id:'flex',  name:'柔軟な適応', kanji:'適', c1:'#50d090', c2:'#1a7050', cs:'#0a3820', cx: 46, cy:101, lx: 19, ly:101, ta:'end'    },
+    { id:'hei',   name:'平常心',     kanji:'平', c1:'#ffe060', c2:'#a07820', cs:'#705010', cx:120, cy: 47, lx:120, ly: 17, ta:'middle' },
+    { id:'jiko',  name:'自己鍛錬',   kanji:'鍛', c1:'#ff8060', c2:'#b03020', cs:'#7a1a08', cx:194, cy:101, lx:228, ly:104, ta:'start'  },
+    { id:'strat', name:'戦略的思考', kanji:'謀', c1:'#b070ff', c2:'#6030a0', cs:'#3a1878', cx:166, cy:188, lx:180, ly:221, ta:'start'  },
+    { id:'sei',   name:'誠実さ',     kanji:'誠', c1:'#60a0ff', c2:'#2050b0', cs:'#0e2878', cx: 74, cy:188, lx: 60, ly:221, ta:'end'    },
+    { id:'flex',  name:'柔軟な適応', kanji:'適', c1:'#50d090', c2:'#1a7050', cs:'#0a3820', cx: 46, cy:101, lx: 18, ly:104, ta:'end'    },
   ];
 
   const excluded  = dojoData.excludedSpirit;
@@ -993,7 +993,7 @@ function renderPentagonCompass() {
 
     const lc = (isComplete || isActive) ? s.c1 : '#363646';
     const fw = (isComplete || isActive) ? '600' : 'normal';
-    nodes += `<text x="${s.lx}" y="${s.ly}" text-anchor="${s.ta}" font-size="8.5" fill="${lc}" letter-spacing="0.5" font-family="'Open Sans',sans-serif" font-weight="${fw}">${s.name}</text>`;
+    nodes += `<text x="${s.lx}" y="${s.ly}" text-anchor="${s.ta}" font-size="10" fill="${lc}" letter-spacing="0.3" font-family="'Open Sans',sans-serif" font-weight="${fw}">${s.name}</text>`;
   });
 
   const centerText = isAllDone
@@ -1011,7 +1011,7 @@ function renderPentagonCompass() {
       : '';
 
   el.innerHTML = `
-    <svg viewBox="0 0 240 230" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:270px;display:block;margin:0 auto;overflow:visible">
+    <svg viewBox="-40 -15 320 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:310px;display:block;margin:0 auto;overflow:visible">
       <defs>${defs}</defs>
       <polygon points="${pts}" fill="rgba(201,168,76,.025)" stroke="rgba(255,255,255,.07)" stroke-width="1.5"/>
       ${centerText}
