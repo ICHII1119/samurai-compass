@@ -113,6 +113,37 @@ body {
   transition: width .6s ease;
 }
 
+/* ── Rank Badge ── */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .28rem .65rem;
+  border-radius: 100px;
+  border: 1px solid rgba(201,168,76,.35);
+  background: rgba(201,168,76,.07);
+  font-family: var(--font-b);
+  font-size: .78rem;
+  color: var(--gold);
+  letter-spacing: .08em;
+  margin-top: .4rem;
+  transition: all .4s ease;
+}
+.rank-badge.rank-5 {
+  border-color: rgba(201,168,76,.7);
+  background: rgba(201,168,76,.15);
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(201,168,76,.15);
+}
+.rank-sub {
+  font-family: var(--font);
+  font-size: .62rem;
+  color: var(--muted);
+  letter-spacing: .12em;
+  display: block;
+  margin-top: .05rem;
+}
+
 /* ── Phase banner ── */
 .phase-banner {
   max-width: 480px;
@@ -794,6 +825,7 @@ body {
     <div class="phase-info">
       <div class="phase-spirit-name" id="spirit-name">—</div>
       <div class="phase-spirit-en"  id="spirit-en">—</div>
+      <div id="rank-badge-wrap"></div>
     </div>
     <div class="phase-progress">
       <div class="phase-progress-label">
@@ -911,6 +943,33 @@ function escHtml(s) {
   return String(s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function calcRank() {
+  const status = dojoData?.phaseStatus;
+  if (status === 'completed') {
+    return { title: '侍士', sub: 'SAMURAI Practitioner', level: 5 };
+  }
+  const completedPhases = currentPhase; // 完了済みフェーズ数
+  if (completedPhases >= 3) return { title: '三道の途', sub: '3 Spirits', level: 4 };
+  if (completedPhases >= 2) return { title: '二道の途', sub: '2 Spirits', level: 3 };
+  if (completedPhases >= 1) return { title: '一道の途', sub: '1 Spirit',  level: 2 };
+  // 初フェーズ中: 稽古日数で判定
+  const days = stampedDays.size;
+  if (days >= 14) return { title: '練磨の途', sub: 'Week 3', level: 1 };
+  if (days >= 7)  return { title: '修行の途', sub: 'Week 2', level: 1 };
+  return { title: '入門の途', sub: 'Week 1', level: 0 };
+}
+
+function renderRankBadge() {
+  const wrap = document.getElementById('rank-badge-wrap');
+  if (!wrap) return;
+  const r = calcRank();
+  wrap.innerHTML = `
+    <div class="rank-badge rank-${r.level}">
+      ⚔ ${r.title}
+    </div>
+    <span class="rank-sub">${r.sub}</span>`;
 }
 
 function updateFellowBanner() {
@@ -1168,6 +1227,7 @@ function render() {
   document.getElementById('stamped-count').textContent = count;
   document.getElementById('progress-fill').style.width = `${Math.min(count / 21 * 100, 100)}%`;
 
+  renderRankBadge();
   renderPentagonCompass();
 
   const now = new Date();
@@ -1619,6 +1679,7 @@ async function submitPractice(day) {
     const count = stampedDays.size;
     document.getElementById('stamped-count').textContent = count;
     document.getElementById('progress-fill').style.width = `${Math.min(count / 21 * 100, 100)}%`;
+    renderRankBadge();
 
     // 連続日数を計算してアニメーション表示（1日穴埋め猶予込み）
     const streak = calcStreakFrom(stampedDays, day);
