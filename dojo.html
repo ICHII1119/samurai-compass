@@ -441,6 +441,25 @@ body {
   line-height: 1.8;
   font-style: italic;
 }
+.fellow-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  margin-top: .7rem;
+  padding: .5rem .8rem;
+  background: rgba(201,168,76,.06);
+  border: 1px solid rgba(201,168,76,.15);
+  border-radius: 8px;
+  font-size: .8rem;
+  color: var(--muted);
+  letter-spacing: .04em;
+}
+.fellow-num {
+  color: var(--gold);
+  font-weight: 600;
+  font-size: .88rem;
+}
 .today-intent {
   display: flex;
   align-items: flex-start;
@@ -828,6 +847,11 @@ body {
   <!-- Today's reflection -->
   <div class="reflection-section" id="reflection-area"></div>
 
+  <!-- Fellow practitioners banner -->
+  <div class="sw" id="fellow-wrap" style="display:none">
+    <div class="fellow-banner" id="fellow-banner"></div>
+  </div>
+
   <!-- Phase complete / Waiting screen -->
   <div class="sw" id="phase-complete-area" style="display:none"></div>
 
@@ -875,12 +899,28 @@ let startDate     = null;
 let dateEntryMap  = {};
 let calYear, calMonth;
 let selectedDateStr = null;
+let fellowCount   = 0;      // 今日稽古した仲間の人数（自分含む）
+
+function todayJstKey() {
+  const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  return `${jst.getUTCFullYear()}${String(jst.getUTCMonth()+1).padStart(2,'0')}${String(jst.getUTCDate()).padStart(2,'0')}`;
+}
 
 /* ── Utils ── */
 function escHtml(s) {
   return String(s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateFellowBanner() {
+  const wrap   = document.getElementById('fellow-wrap');
+  const banner = document.getElementById('fellow-banner');
+  if (!wrap || !banner || fellowCount < 2) { if (wrap) wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const PHRASES = ['が今日も稽古しました', 'が今日の道場に立ちました', 'が同じ道を歩んでいます'];
+  const phrase  = PHRASES[fellowCount % PHRASES.length];
+  banner.innerHTML = `<span class="fellow-num">${fellowCount}人</span><span>${phrase}</span>`;
 }
 function dateToStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -914,6 +954,14 @@ async function init() {
     computeStartDate();
     buildDateEntryMap();
     render();
+
+    // 仲間カウントを非同期で読み込み（表示に遅れがあっても可）
+    db.collection('dojo_stats').doc(todayJstKey()).get().then(snap => {
+      if (snap.exists) {
+        fellowCount = snap.data().count || 0;
+        updateFellowBanner();
+      }
+    }).catch(() => {});
   } catch(e) {
     console.error(e);
     showError('データの読み込みに失敗しました。');
@@ -1575,6 +1623,15 @@ async function submitPractice(day) {
     // 連続日数を計算してアニメーション表示（1日穴埋め猶予込み）
     const streak = calcStreakFrom(stampedDays, day);
     showCompleteAnimation(day, streak);
+
+    // 仲間カウントをインクリメント（非同期・失敗しても続行）
+    db.collection('dojo_stats').doc(todayJstKey()).set(
+      { count: firebase.firestore.FieldValue.increment(1) },
+      { merge: true }
+    ).then(() => {
+      fellowCount++;
+      updateFellowBanner();
+    }).catch(() => {});
 
     renderCalendar();
     renderReflection(day);
