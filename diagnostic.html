@@ -2962,20 +2962,23 @@ async function renderAdminDojo() {
             ${entries.length === 0
               ? `<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:1rem 0">振り返りはまだありません</div>`
               : entries.map(e => {
-                const key    = `${userId}-${e.date}`;
+                const key    = `${userId}-${e.phase ?? 0}-${e.day}`;
                 const col    = SPIRIT_COLORS_D[e.spirit] || 'var(--gold)';
                 const spName = SPIRIT_JP_D[e.spirit]     || e.spirit;
+                const ts     = e.timestamp ? new Date(e.timestamp) : null;
+                const dateStr = ts && !isNaN(ts) ? `${ts.getMonth()+1}/${ts.getDate()}` : '';
+                const ph     = e.phase != null ? `P${e.phase+1}` : '';
+                const sent   = (d.musashiMessages || []).find(m => m.phase === (e.phase ?? 0) && m.day === e.day);
                 return `
                   <div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
-                    <div style="font-size:.65rem;color:${col};margin-bottom:.2rem">${e.date}　${spName}</div>
-                    ${e.challengeTitle ? `<div style="font-size:.7rem;color:var(--muted);margin-bottom:.2rem">課題：${escHtml(e.challengeTitle)}</div>` : ''}
+                    <div style="font-size:.65rem;color:${col};margin-bottom:.2rem">${dateStr}　${ph} Day ${e.day}　${spName}</div>
                     <div style="font-size:.82rem;color:var(--cream2);line-height:1.6;margin-bottom:.4rem">
-                      ${e.reflection ? escHtml(e.reflection).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">（記録なし）</span>'}
+                      ${e.text ? escHtml(e.text).replace(/\n/g,'<br>') : '<span style="color:var(--muted)">（記録なし）</span>'}
                     </div>
-                    <div id="musashi-result-${key}" style="display:none;margin-bottom:.4rem;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>
+                    <div id="musashi-result-${key}" style="${sent ? '' : 'display:none;'}margin-bottom:.4rem;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6">${sent ? buildMusashiSentHtml(sent.message, sent.sentAt) : ''}</div>
                     <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
-                      style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold);cursor:pointer">
-                      ⚔️ 武蔵BOT発動
+                      style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;background:${sent ? 'rgba(100,200,100,.1)' : 'rgba(201,168,76,.1)'};border:1px solid ${sent ? 'rgba(100,200,100,.4)' : 'rgba(201,168,76,.35)'};color:${sent ? '#6dc46d' : 'var(--gold)'};cursor:pointer">
+                      ${sent ? '✅ 送信済み（再送）' : '⚔️ 武蔵BOT発動'}
                     </button>
                   </div>`;
               }).join('')}

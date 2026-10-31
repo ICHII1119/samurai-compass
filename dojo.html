@@ -420,6 +420,27 @@ body {
   letter-spacing: .1em;
 }
 
+.facilitator-comment {
+  margin-top: .8rem;
+  padding: .7rem .85rem;
+  background: rgba(201,168,76,.06);
+  border-left: 2px solid rgba(201,168,76,.5);
+  border-radius: 0 6px 6px 0;
+  animation: fadeUp .4s ease both;
+}
+.facilitator-comment-label {
+  font-size: .72rem;
+  letter-spacing: .08em;
+  color: rgba(201,168,76,.65);
+  margin-bottom: .3rem;
+  text-transform: uppercase;
+}
+.facilitator-comment-text {
+  font-size: .9rem;
+  color: var(--cream2);
+  line-height: 1.8;
+  font-style: italic;
+}
 .today-intent {
   display: flex;
   align-items: flex-start;
@@ -1331,6 +1352,14 @@ function renderReflection(day) {
 
   if (stampedDays.has(day)) {
     const entry = phaseEntries.find(e => e.day === day);
+    // ファシリテーターからのコメント（武蔵BOT経由）
+    const musashiMsg = (dojoData?.musashiMessages || [])
+      .find(m => m.phase === currentPhase && m.day === day);
+    const commentHtml = musashiMsg ? `
+      <div class="facilitator-comment">
+        <div class="facilitator-comment-label">⚔️ ファシリテーターより</div>
+        <div class="facilitator-comment-text">${escHtml(musashiMsg.message).replace(/\n/g,'<br>')}</div>
+      </div>` : '';
     area.innerHTML = `
       <div class="reflection-card fade-up">
         <div class="reflection-day-label">DAY ${day} · 記録済み</div>
@@ -1339,6 +1368,7 @@ function renderReflection(day) {
           <span style="font-size:.88rem;color:var(--cream2)">Day ${day} の稽古を記録しました</span>
         </div>
         ${entry?.text ? `<div style="font-size:.82rem;color:var(--muted);line-height:1.7;padding:.55rem .75rem;background:var(--bg3);border-radius:6px">${escHtml(entry.text).replace(/\n/g,'<br>')}</div>` : ''}
+        ${commentHtml}
       </div>`;
     return;
   }
