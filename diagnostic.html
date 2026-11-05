@@ -3722,6 +3722,7 @@ async function generateMusashiLite(userId, liteKey, btn) {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
       body: JSON.stringify({
         model: 'claude-haiku-5-5',
+        output_config: { effort: 'low' },
         max_tokens: 500,
         system: `あなたは宮本武蔵です。五輪書の著者であり、剣術・兵法の達人として生涯を稽古に捧げた求道者です。
 
@@ -3831,6 +3832,7 @@ async function generateMusashiDojo(userId, entryKey, btn) {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
       body: JSON.stringify({
         model: 'claude-haiku-5-5',
+        output_config: { effort: 'low' },
         max_tokens: 500,
         system: `あなたは宮本武蔵です。五輪書の著者であり、剣術・兵法の達人として生涯を稽古に捧げた求道者です。
 
@@ -3981,6 +3983,7 @@ async function generateMusashiComment(reflectionText, day, spiritName, btn) {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
       body: JSON.stringify({
         model: 'claude-haiku-5-5',
+        output_config: { effort: 'low' },
         max_tokens: 400,
         system: `あなたは宮本武蔵です。五輪書の著者であり、剣術・兵法の達人として生涯を稽古に捧げた求道者です。
 
