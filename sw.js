@@ -1,4 +1,4 @@
-const CACHE_NAME = 'samurai-compass-v17';
+const CACHE_NAME = 'samurai-compass-v18';
 const ASSETS = [
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Zen+Antique+Soft&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap'
@@ -19,7 +19,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = e.request.url;
   // HTMLファイルは常にネットワークから取得（古いキャッシュを返さない）
-  if (e.request.destination === 'document' || url.endsWith('.html')) {
+  const pathname = new URL(url).pathname;
+  if (e.request.destination === 'document' || pathname.endsWith('.html')) {
     e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
     return;
   }

@@ -1194,7 +1194,7 @@ function renderReflection(day) {
     const tip = spiritKey ? (TIPS_COMPACT[spiritKey] || [])[day - 1] : null;
     const musashiRepliesDay = (practiceData.musashiReplies || {})[String(day)];
     // adminComments にその日のコメントがあれば reply として扱う（後方互換）
-    const adminComment = (practiceData.adminComments || []).filter(c => c.day === day).slice(-1)[0];
+    const adminComment = (practiceData.adminComments || []).filter(c => Number(c.day) === day).slice(-1)[0];
     const replies = musashiRepliesDay?.reply
       ? musashiRepliesDay
       : adminComment
