@@ -1192,7 +1192,14 @@ function renderReflection(day) {
     const entry = (practiceData.entries || []).find(e => e.day === day);
     const spiritKey = liteSpirit || null;
     const tip = spiritKey ? (TIPS_COMPACT[spiritKey] || [])[day - 1] : null;
-    const replies = (practiceData.musashiReplies || {})[String(day)];
+    const musashiRepliesDay = (practiceData.musashiReplies || {})[String(day)];
+    // adminComments にその日のコメントがあれば reply として扱う（後方互換）
+    const adminComment = (practiceData.adminComments || []).filter(c => c.day === day).slice(-1)[0];
+    const replies = musashiRepliesDay?.reply
+      ? musashiRepliesDay
+      : adminComment
+        ? { reply: adminComment.text, ...(musashiRepliesDay || {}) }
+        : null;
 
     const challengeBlock = tip ? `
       <div class="conv-block conv-challenge">
