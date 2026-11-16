@@ -1,7 +1,5 @@
-const CACHE_NAME = 'samurai-compass-v16';
+const CACHE_NAME = 'samurai-compass-v17';
 const ASSETS = [
-  './index.html',
-  './training.html',
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Zen+Antique+Soft&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap'
 ];
@@ -19,16 +17,22 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // 購入者向けガイドブックは、常に最新を読み込む（キャッシュしない）
-  if (e.request.url.includes('/kit-guide-')) return;
+  const url = e.request.url;
+  // HTMLファイルは常にネットワークから取得（古いキャッシュを返さない）
+  if (e.request.destination === 'document' || url.endsWith('.html')) {
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    return;
+  }
+  // ガイドブック・その他動的コンテンツはキャッシュしない
+  if (url.includes('/kit-guide-')) return;
+  // 静的アセット（画像・フォント等）はキャッシュ優先
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
-      if (resp.ok && e.request.url.startsWith('http')) {
+      if (resp.ok && url.startsWith('http')) {
         const clone = resp.clone();
         caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
       }
       return resp;
-    })).catch(() => caches.match('./training.html'))
-
+    })).catch(() => caches.match('./manifest.json'))
   );
 });
