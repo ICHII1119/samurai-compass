@@ -1068,8 +1068,13 @@ async function init() {
       }
     }).catch(() => {});
   } catch(e) {
-    console.error(e);
-    showError('データの読み込みに失敗しました。');
+    console.error('dojo init error:', e);
+    const msg = e?.code === 'permission-denied'
+      ? 'アクセス権限エラーが発生しました。管理者にお問い合わせください。'
+      : e?.code === 'unavailable' || e?.name === 'FirebaseError'
+      ? 'ネットワークに接続できません。電波の良い場所で再度お試しください。'
+      : 'データの読み込みに失敗しました。';
+    showError(msg);
   }
 }
 
