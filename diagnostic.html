@@ -1774,6 +1774,29 @@ async function deleteCoach(coachId, btn) {
   }
 }
 
+async function deleteEntryRecord(userId, timestamp, src, btn) {
+  if (!confirm(`Day ${timestamp ? new Date(timestamp).toLocaleDateString('ja-JP') : '?'} の振り返り記録を削除しますか？\n\n削除すると参加者が再度記録できるようになります。`)) return;
+  btn.disabled = true;
+  btn.textContent = '削除中...';
+  try {
+    const col = src === 'dojo' ? 'dojo_practices' : 'practices';
+    const docRef = db.collection(col).doc(userId);
+    const snap = await docRef.get();
+    if (!snap.exists) throw new Error('ドキュメントが見つかりません');
+    const entries = snap.data().entries || [];
+    const filtered = entries.filter(e => e.timestamp !== timestamp);
+    if (filtered.length === entries.length) throw new Error('該当するエントリが見つかりません');
+    await docRef.update({ entries: filtered });
+    const entryDiv = btn.closest('[data-ts]');
+    if (entryDiv) entryDiv.remove();
+    alert('削除しました。参加者は再度記録できます。');
+  } catch(e) {
+    alert('削除に失敗しました: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '🗑 削除';
+  }
+}
+
 async function assignCoach(userId, coachId) {
   const pin = ADMIN_PIN;
   if (!pin) return;
@@ -3394,6 +3417,8 @@ async function toggleLearnerCard(userId) {
                     style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;${hasSent ? 'background:rgba(100,200,100,.1);border:1px solid rgba(100,200,100,.4);color:#6dc46d' : 'background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold)'};cursor:pointer">
                     ${hasSent ? '✅ 送信済み（再送）' : '⚔️ 武蔵BOT発動'}
                   </button>
+                  <button onclick="deleteEntryRecord('${userId}','${e.timestamp}','lite',this)"
+                    style="font-size:.68rem;padding:.25rem .6rem;border-radius:6px;background:rgba(180,60,60,.1);border:1px solid rgba(180,60,60,.35);color:#c06060;cursor:pointer">🗑 削除</button>
                   <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none'"
                     style="font-size:.68rem;padding:.25rem .6rem;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer">✏️ 手動</button>
                   <div style="display:none;width:100%;flex-direction:column;gap:.35rem;margin-top:.3rem">
@@ -3432,10 +3457,14 @@ async function toggleLearnerCard(userId) {
               ? `<div id="musashi-result-${key}" style="display:block;margin:.4rem 0">${buildMusashiSentHtml(sent.message, sent.sentAt)}</div>`
               : `<div id="musashi-result-${key}" style="display:none;margin:.4rem 0;padding:.45rem .65rem;background:rgba(201,168,76,.07);border-left:2px solid var(--gold);border-radius:0 4px 4px 0;font-size:.8rem;color:var(--cream2);line-height:1.6"></div>`;
           })()}
-                <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
-                  style="margin-top:.4rem;font-size:.72rem;padding:.3rem .75rem;border-radius:6px;${musashiMsgMap[`${e.phase ?? 0}-${e.day}`] ? 'background:rgba(100,200,100,.1);border:1px solid rgba(100,200,100,.4);color:#6dc46d' : 'background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold)'};cursor:pointer">
-                  ${musashiMsgMap[`${e.phase ?? 0}-${e.day}`] ? '✅ 送信済み（再送）' : '⚔️ 武蔵BOT発動'}
-                </button>
+                <div style="margin-top:.4rem;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+                  <button id="musashi-btn-${key}" onclick="generateMusashiDojo('${userId}','${key}',this)"
+                    style="font-size:.72rem;padding:.3rem .75rem;border-radius:6px;${musashiMsgMap[`${e.phase ?? 0}-${e.day}`] ? 'background:rgba(100,200,100,.1);border:1px solid rgba(100,200,100,.4);color:#6dc46d' : 'background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.35);color:var(--gold)'};cursor:pointer">
+                    ${musashiMsgMap[`${e.phase ?? 0}-${e.day}`] ? '✅ 送信済み（再送）' : '⚔️ 武蔵BOT発動'}
+                  </button>
+                  <button onclick="deleteEntryRecord('${userId}','${e.timestamp}','dojo',this)"
+                    style="font-size:.68rem;padding:.25rem .6rem;border-radius:6px;background:rgba(180,60,60,.1);border:1px solid rgba(180,60,60,.35);color:#c06060;cursor:pointer">🗑 削除</button>
+                </div>
               </div>
             </div>
           </div>`;
