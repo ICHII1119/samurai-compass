@@ -3816,23 +3816,13 @@ async function generateMusashiLite(userId, liteKey, btn) {
           content:
             `【入門編】Day ${entry.day}${spiritName ? `（${spiritName}の稽古）` : ''}\n` +
             `【稽古者の振り返り】\n${entry.text}\n\n` +
-            `以下のJSON形式のみで出力してください（前後に余分なテキスト・マークダウン不要）：\n` +
-            `{"message":"（武蔵の言葉。60〜120文字）"}`,
+            `宮本武蔵として60〜120文字で返答してください。マークダウン・箇条書き・記号は使わず、地の文のみで。`,
         }],
       }),
     });
     if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || res.status); }
     const data = await res.json();
-    const rawText = ((data.content.find(b => b.type === 'text') || {}).text || '').trim();
-    const jsonText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-    let musashiMessage;
-    try {
-      const parsed = JSON.parse(jsonText);
-      musashiMessage = parsed.message?.trim() || rawText;
-    } catch {
-      const m = jsonText.match(/"message"\s*:\s*"([\s\S]*?)"\s*\}?\s*$/);
-      musashiMessage = m ? m[1].replace(/\\n/g,'\n').replace(/\\"/g,'"') : rawText;
-    }
+    const musashiMessage = ((data.content.find(b => b.type === 'text') || {}).text || '').trim();
 
     resultDiv.innerHTML = `
       <div style="font-size:.62rem;color:var(--gold);margin-bottom:.3rem">⚔️ 武蔵からの言葉（送信前に編集できます）</div>
@@ -3932,23 +3922,13 @@ async function generateMusashiDojo(userId, entryKey, btn) {
             `【Phase】Phase ${(entry.phase ?? 0) + 1}　Day ${entry.day}\n` +
             `【課題のSpirit】${spiritName}\n` +
             `【稽古者の振り返り】\n${entry.text}\n\n` +
-            `以下のJSON形式のみで出力してください（前後に余分なテキスト・マークダウン不要）：\n` +
-            `{"message":"（武蔵の言葉。60〜120文字）"}`,
+            `宮本武蔵として60〜120文字で返答してください。マークダウン・箇条書き・記号は使わず、地の文のみで。`,
         }],
       }),
     });
     if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || res.status); }
     const data = await res.json();
-    const rawText = ((data.content.find(b => b.type === 'text') || {}).text || '').trim();
-    const jsonText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-    let musashiMessage;
-    try {
-      const parsed = JSON.parse(jsonText);
-      musashiMessage = parsed.message?.trim() || rawText;
-    } catch {
-      const m = jsonText.match(/"message"\s*:\s*"([\s\S]*?)"\s*\}?\s*$/);
-      musashiMessage = m ? m[1].replace(/\\n/g,'\n').replace(/\\"/g,'"') : rawText;
-    }
+    const musashiMessage = ((data.content.find(b => b.type === 'text') || {}).text || '').trim();
 
     resultDiv.innerHTML = `
       <div style="font-size:.62rem;color:var(--gold);margin-bottom:.3rem">⚔️ 武蔵からの言葉（送信前に編集できます）</div>
