@@ -3822,7 +3822,8 @@ async function generateMusashiLite(userId, liteKey, btn) {
     });
     if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || res.status); }
     const data = await res.json();
-    const musashiMessage = ((data.content.find(b => b.type === 'text') || {}).text || '').trim();
+    const musashiMessage = ((data?.content || []).find(b => b.type === 'text')?.text || '').trim();
+    if (!musashiMessage) { console.error('武蔵BOT empty response:', JSON.stringify(data)); throw new Error('AIからの返答が空でした。もう一度お試しください。'); }
 
     resultDiv.innerHTML = `
       <div style="font-size:.62rem;color:var(--gold);margin-bottom:.3rem">⚔️ 武蔵からの言葉（送信前に編集できます）</div>
@@ -3928,7 +3929,8 @@ async function generateMusashiDojo(userId, entryKey, btn) {
     });
     if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || res.status); }
     const data = await res.json();
-    const musashiMessage = ((data.content.find(b => b.type === 'text') || {}).text || '').trim();
+    const musashiMessage = ((data?.content || []).find(b => b.type === 'text')?.text || '').trim();
+    if (!musashiMessage) { console.error('武蔵BOT empty response:', JSON.stringify(data)); throw new Error('AIからの返答が空でした。もう一度お試しください。'); }
 
     resultDiv.innerHTML = `
       <div style="font-size:.62rem;color:var(--gold);margin-bottom:.3rem">⚔️ 武蔵からの言葉（送信前に編集できます）</div>
