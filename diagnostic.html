@@ -2406,7 +2406,24 @@ async function renderAdminDashboard() {
       ...Array.from(dSnap2.docs).map(d => d.id),
     ]);
 
-    const _tableRows = [..._allIds2].filter(id => id && id.startsWith('U') && id.length >= 20).map(uid => {
+    const _tableRows = [..._allIds2]
+      .filter(id => id && id.startsWith('U') && id.length >= 20)
+      .sort((uidA, uidB) => {
+        const pracA = _practiceMap2[uidA]; const dojoA = _dojoMap2[uidA];
+        const pracB = _practiceMap2[uidB]; const dojoB = _dojoMap2[uidB];
+        const tsA = Math.max(
+          ...((pracA?.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0)),
+          ...((dojoA?.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0)),
+          0
+        );
+        const tsB = Math.max(
+          ...((pracB?.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0)),
+          ...((dojoB?.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0)),
+          0
+        );
+        return tsB - tsA;
+      })
+      .map(uid => {
       const prof = _profMap2[uid] || {};
       const lite = _liteMap2[uid] || null;
       const prac = _practiceMap2[uid] || null;
