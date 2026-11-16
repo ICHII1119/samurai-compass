@@ -2847,6 +2847,18 @@ async function renderAdminPractices() {
                             </div>`;
                           }).join('');
                         })()}
+                        ${(() => {
+                          const mr = (p.musashiReplies || {})[String(e.day)];
+                          if (!mr?.followUpText) return '';
+                          return `<div style="margin-top:.6rem;padding:.55rem .75rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px">
+                            <div style="font-size:.6rem;letter-spacing:.1em;color:var(--muted);margin-bottom:.3rem;text-transform:uppercase">参加者の報告</div>
+                            <div style="font-size:.82rem;color:var(--cream2);line-height:1.6">${escHtml(mr.followUpText).replace(/\n/g,'<br>')}</div>
+                            ${mr.musashiFollowUp ? `<div style="margin-top:.5rem;padding:.4rem .6rem;background:rgba(201,168,76,.06);border-left:2px solid var(--gold);border-radius:0 6px 6px 0">
+                              <div style="font-size:.6rem;color:var(--gold);margin-bottom:.2rem">⚔ 武蔵の返答</div>
+                              <div style="font-size:.8rem;color:var(--cream2);line-height:1.6">${escHtml(mr.musashiFollowUp).replace(/\n/g,'<br>')}</div>
+                            </div>` : ''}
+                          </div>`;
+                        })()}
                         <div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.4rem">
                           <textarea placeholder="コメントを送る..." rows="2"
                             style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream);font-size:.8rem;padding:.4rem .6rem;resize:none;font-family:inherit;line-height:1.5"></textarea>

@@ -572,6 +572,15 @@ body {
   from { transform: scale(1);   opacity:.7 }
   to   { transform: scale(2.1); opacity:0  }
 }
+/* ── Catch-ball conversation thread ── */
+.conv-thread { display:flex; flex-direction:column; gap:.7rem; margin-bottom:.6rem }
+.conv-block { padding:.7rem .95rem; border-radius:10px; font-size:.82rem; line-height:1.7 }
+.conv-label { font-size:.6rem; letter-spacing:.12em; color:var(--muted); margin-bottom:.28rem; text-transform:uppercase }
+.conv-challenge { background:rgba(201,168,76,.05); border:1px solid rgba(201,168,76,.22) }
+.conv-participant { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07) }
+.conv-musashi { background:rgba(139,26,26,.07); border:1px solid rgba(201,168,76,.2) }
+.conv-musashi .conv-label { color:var(--gold); letter-spacing:.1em }
+.conv-followup-wrap { padding:.85rem .95rem; background:rgba(201,168,76,.03); border:1px solid rgba(201,168,76,.18); border-radius:10px; margin-top:.1rem }
 </style>
 </head>
 <body>
@@ -676,6 +685,10 @@ firebase.initializeApp({
   appId: "1:502771859953:web:89e801832fdd42c6cb0450"
 });
 const db = firebase.firestore();
+
+const FOLLOW_UP_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/submitPracticeFollowUp';
+
+const TIPS_COMPACT = {"hei":[{"t":"重心を確認する","a":"今日、30秒だけ目を閉じて深呼吸を3回。「今の自分の重心はどこにあるか」を感じてみてください。"},{"t":"呼吸が軸になる","a":"今日、緊張やストレスを感じた瞬間に、一度だけゆっくり息を吐いてみてください。それだけでいい。"},{"t":"感情は敵ではない","a":"今日、何か感情が動いた瞬間に「これは感情が動いている」とただ認識してみてください。対処しなくていい。"},{"t":"反応と応答の違い","a":"今日、誰かに何か言われたとき、返答の前に一拍おいてみてください。0.5秒でいい。"},{"t":"間（ま）の力","a":"今日、昼食の最初の一口を、スマホを置いて食べてみてください。その数分が「間」になります。"},{"t":"場を整える","a":"今日、机の上またはバッグの中を5分だけ片付けてみてください。小さな整頓が軸を作ります。"},{"t":"一週間の稽古","a":"今日、この7日間を振り返って、一つだけ「気づいたこと」を書いてみてください。"},{"t":"小さな儀式","a":"今日から、朝に一つだけ決まった行動を加えてみてください。深呼吸でも、お茶を一杯飲むことでも。"},{"t":"平常心は戻るもの","a":"今日、何か乱れを感じたら「気づいた」と思うだけでいい。戻ろうとすることが、すでに稽古です。"},{"t":"嵐の中の目","a":"今日、最も忙しいと感じた瞬間に「自分の中心はどこか」と一度だけ問いかけてみてください。"},{"t":"身体が知っている","a":"今日、気づいたときに肩を一度下ろしてみてください。それだけで軸は少し戻ります。"},{"t":"不安を観る","a":"今日、何か不安を感じたら「何に対して不安か」を一言だけ書いてみてください。観ることが力になります。"},{"t":"今この瞬間","a":"今日、5分だけ先のことを考えるのをやめて、今やっていることだけに集中してみてください。"},{"t":"二週目の確認","a":"今日、1日目の行動（30秒の重心確認）をもう一度やってみてください。最初と何が変わりましたか？"},{"t":"鎧を脱いでも","a":"今日、家に帰ったとき、仕事モードのまま入らず、玄関で一息ついてから入ってみてください。"},{"t":"他者の中の自分","a":"今日、誰かに何か言われて揺れたとき、「自分の重心はどこか」と問いかけてみてください。"},{"t":"揺れることと流されること","a":"今日、何か決断する場面で「自分の軸はここにある」と一度確認してから動いてみてください。"},{"t":"軸が見える人","a":"今日、誰かが焦っているとき、自分が静かでいることを意識してみてください。"},{"t":"静けさが伝わる","a":"今日、誰かと話すとき、少しだけゆっくり話してみてください。静けさは速度からも生まれます。"},{"t":"稽古の積み重ね","a":"今日、20日間で一番印象に残った「気づき」を一言書いてみてください。"},{"t":"Still becoming.","a":"今日、次の21日間に「一つだけ続けること」を決めてください。小さくていい。それが道になります。"}],"jiko":[{"t":"昨日の自分より一歩","a":"今日の終わりに「今日の自分はどうだったか」を一言だけ書いてみてください。日記でなくていい、メモで十分。"},{"t":"自分を観る目","a":"今日、自分が何かをしている最中に「今、自分はどんな状態にあるか」と一度観てみてください。"},{"t":"「できない」の前に","a":"今日、「できない」と感じていることを一つ書いて、「まだやっていない」に言い換えてみてください。"},{"t":"千日の稽古","a":"今日、どんなに忙しくても「自分の成長のための5分」を確保してみてください。内容は何でもいい。"},{"t":"比べる相手","a":"今日、誰かを見て焦りを感じたら「私は今日の自分に何をするか」と問い直してみてください。"},{"t":"弱さと向き合う","a":"今日、自分の「苦手なこと」を一つ書いてみてください。書くことで、それはすでに観えはじめます。"},{"t":"一週間の鏡","a":"今日、この7日間で「少し変わったと思うこと」を一つだけ書いてください。小さなことで十分。"},{"t":"師を持つ","a":"今日、あなたにとって「師」になっているものを一つ挙げてみてください。それは誰ですか、あるいは何ですか？"},{"t":"繰り返しの中に","a":"今日、毎日やっている習慣的な行動を一つ「意識を持って」やってみてください。例：歯磨き、通勤、食事。"},{"t":"自信とは何か","a":"今日、小さな挑戦を一つしてみてください。うまくいかなくても、やったこと自体が自信の種になります。"},{"t":"失敗を稽古にする","a":"今日、最近の失敗や後悔を一つ思い出して「そこから何を学べるか」を一言書いてみてください。"},{"t":"完成しないことの意味","a":"今日、「いつかやろう」と思っていることを一つ書いて「今週いつやるか」を決めてみてください。"},{"t":"「まだ」という言葉","a":"今日、自分に対して「まだ」という言葉を使ってみてください。「まだ途中だ」「まだ成長できる」——言葉が心を作ります。"},{"t":"二週目の振り返り","a":"今日、1日目から今日まで「続けてきたこと」を一つ確認して、それを自分で認めてあげてください。"},{"t":"磨かれる過程","a":"今日、何か「削られる」と感じた経験があれば「これが磨かれる過程だ」と一度捉え直してみてください。"},{"t":"技を超えた何か","a":"今日、仕事やスキル以外のことに「意識を持って」取り組む時間を10分作ってみてください。"},{"t":"自分への誠実さ","a":"今日、「本当はどうしたいか」を一つだけ、正直に書いてみてください。誰かに見せなくていい。"},{"t":"稽古仲間の存在","a":"今日、あなたの成長を応援してくれている人に、感謝の一言を伝えてみてください。"},{"t":"日常が道場","a":"今日、何か「うまくいかないこと」に出会ったら「これが稽古だ」と一度思ってみてください。"},{"t":"万日の錬","a":"今日、「10年後の自分はどんな人でありたいか」を一言書いてみてください。その姿が、今日の稽古の方向になります。"},{"t":"Still becoming.","a":"今日、次の21日間に「一つだけ続けること」を決めてください。昨日の自分より一歩——それだけでいい。"}],"flex":[{"t":"形があって形がない","a":"今日、「いつも通り」やっていることを一つ思い浮かべ「なぜそうしているのか」を自問してみてください。"},{"t":"変化を感じる","a":"今日、最近起きた「変化」を一つ書いて「これは何を教えてくれているか」と問いかけてみてください。"},{"t":"固執のサイン","a":"今日、「変えたくないと思っていること」を一つ正直に書いてみてください。観ることが最初の稽古です。"},{"t":"手放すこと","a":"今日、「もうやめてもいいかもしれない習慣や考え方」を一つ書いてみてください。"},{"t":"新しい見方","a":"今日、「困っていること」を一つ取り上げ「別の角度から見るとどう見えるか」を書いてみてください。"},{"t":"失敗は稽古","a":"今日、最近「うまくいかなかったこと」を一つ「稽古だった」と捉え直してみてください。"},{"t":"一週間の変化","a":"今日、この7日間で「少し柔らかくなったと思う部分」を一つだけ書いてください。"},{"t":"枠の外に出る","a":"今日、「当然こうすべき」と思っていることを一つ選んで「本当にそうか？」と問いかけてみてください。"},{"t":"安定と硬直の違い","a":"今日、「変えたくないこと（軸）」と「変えられること（形）」を一つずつ書いてみてください。"},{"t":"逆境が師匠","a":"今日、最も大変だと感じていることに「ここから何を学べるか」を一問一答で考えてみてください。"},{"t":"身体で変わる","a":"今日、「身体の使い方」を一つ意図的に変えてみてください。例：いつもより背筋を伸ばして座る。"},{"t":"「いつもと違う」","a":"今日、通勤経路、食事のメニュー、作業の順番——何か一つ「いつもと違う」ことをしてみてください。"},{"t":"流れに乗る","a":"今日、何かに「抵抗している」と感じたら「流れを読んで乗るとしたら、どう動くか」を考えてみてください。"},{"t":"二週目の点検","a":"今日、1日目の問い（「いつも通り」を問い直す）をもう一度やってみてください。"},{"t":"有構無構の深み","a":"今日、自分の「得意なやり方」を一つ思い浮かべ「今日は違うやり方をしてみる」と試してみてください。"},{"t":"変わった自分を信じる","a":"今日、最近「変わったな」と感じることを一つ書いて、それを肯定的に受け取ってみてください。"},{"t":"軸があるから変われる","a":"今日、「絶対に変えない自分の核」を一言で書いてみてください。それが、変化を可能にする軸です。"},{"t":"周囲への影響","a":"今日、誰かが変化を恐れているとき「大丈夫だ」と伝えてみてください。言葉でも、態度でも。"},{"t":"変化の先に","a":"今日、「もし形を手放したら、何ができるようになるか」を一つだけ想像して書いてみてください。"},{"t":"柔らかな強さ","a":"今日、「柔らかく対応できたこと」を一つ振り返って、それを自分で認めてあげてください。"},{"t":"Still becoming.","a":"今日、次の21日間に「一つだけ変え続けること」を決めてください。変化は習慣になったとき、本当の力になります。"}],"strat":[{"t":"全体を観る","a":"今日、何か悩んでいることについて「一歩引いて全体を見るとどう見えるか」を書いてみてください。"},{"t":"現場に答えがある","a":"今日、考え込んでいることがあれば「実際に確認できることは何か」を一つ探してみてください。"},{"t":"一歩引く力","a":"今日、急かされている感覚があったら「一歩引いて全体を見る」と意識的に選んでみてください。"},{"t":"観見（かんけん）","a":"今日、何か判断する場面で「観る目（全体）」と「見る目（細部）」を意識的に使ってみてください。"},{"t":"情報と直感","a":"今日、何か判断するとき「データ」と「直感」の両方に耳を傾けてみてください。どちらが何を言っていますか？"},{"t":"決断の前に","a":"今日、何か決断を迫られたら「今すぐ決める必要があるか」を一度問いかけてみてください。"},{"t":"一週間の俯瞰","a":"今日、この一週間を俯瞰して「一番大事だったことは何か」を一言書いてみてください。"},{"t":"小さな決断を積む","a":"今日、何か迷っていることを一つ選んで「今日中に決める」と決めてみてください。"},{"t":"「待つ」という戦略","a":"今日、何か「急がなくていいかもしれないこと」を一つ特定して、意識的に待ってみてください。"},{"t":"タイミングを読む","a":"今日、何かを始めるベストなタイミングを意識してみてください。早すぎず、遅すぎず。"},{"t":"長期と短期","a":"今日、目の前の課題について「5年後の自分はこの判断をどう見るか」を問いかけてみてください。"},{"t":"迷いの正体","a":"今日、迷っていることを一つ書いて「情報不足か、決断不足か」を区別してみてください。"},{"t":"撤退も戦略","a":"今日、「やめた方がいいかもしれないこと」を一つ正直に書いてみてください。"},{"t":"二週目の確認","a":"今日、2週間前に悩んでいたことを振り返って「今はどう見えるか」を書いてみてください。"},{"t":"本質を見抜く","a":"今日、今最も大切なことを一つだけ選んで、それに最初の1時間を使ってみてください。"},{"t":"複雑さを単純に","a":"今日、最も複雑に感じていることを「一言で言うと何か」に挑戦してみてください。"},{"t":"軸から決断する","a":"今日、何か決断するとき「自分の軸に沿っているか」を確認してから動いてみてください。"},{"t":"他者の視点","a":"今日、信頼できる人に「私の見えていないことは何か」を聞いてみてください。"},{"t":"行動が答えを出す","a":"今日、「考えすぎていること」を一つ選んで、小さな行動を一つだけ起こしてみてください。"},{"t":"戦略と誠実さ","a":"今日、「誠実に向き合えていないこと」を一つ書いて、どう対処するかを考えてみてください。"},{"t":"Still becoming.","a":"今日、次の21日間に「一つだけ意識し続けること」を決めてください。全体を観ることを、日常にしていきましょう。"}],"sei":[{"t":"仕事の自分と家の自分","a":"今日、「仕事の自分」と「家の自分」で違うと感じることを一つだけ正直に書いてみてください。"},{"t":"鎧を脱いでも侍","a":"今日、家に帰ったとき「侍としての所作」を一つ意識してみてください。例：丁寧に扉を閉める。"},{"t":"小さな誠実さ","a":"今日、「小さな誠実さ」を一つ実践してみてください。感謝を伝える、約束を確認する、など。"},{"t":"言葉より所作","a":"今日、誰かと話すとき「所作（姿勢、目の向き、聴く態度）」を意識してみてください。"},{"t":"大切な人への時間","a":"今日、大切な人のために「遮られない15分」を作ってみてください。スマホを置いて。"},{"t":"「ありがとう」の力","a":"今日、感謝を伝えていなかった誰かに「ありがとう」を言葉で伝えてみてください。"},{"t":"一週間の点検","a":"今日、この7日間で「誠実にできたと思う場面」を一つ書いてみてください。"},{"t":"役割と自分","a":"今日、あなたが持っている複数の「役割」を書き出して「すべてに共通している自分の核」を探してみてください。"},{"t":"疲れを言葉にする","a":"今日、信頼できる人に「今日少し疲れている」と素直に伝えてみてください。"},{"t":"誠実さは伝わる","a":"今日、誰かに「あなたのここが信頼できる」と一言伝えてみてください。"},{"t":"境界線を持つ","a":"今日、引き受けすぎていることを一つ確認して、必要なら「少し減らす」ことを考えてみてください。"},{"t":"一本の軸","a":"今日、「仕事でも家でも変わらない自分の軸」を一言で書いてみてください。"},{"t":"仕事を持ち込まない","a":"今日、帰宅後の30分間、仕事のことを考えない時間を作ってみてください。"},{"t":"二週目の振り返り","a":"今日、1日目に書いた「仕事の自分と家の自分の違い」をもう一度見直してみてください。何が変わりましたか？"},{"t":"軸が安定する","a":"今日、何か外からの圧力を感じたとき「自分の軸はここにある」と確認してみてください。"},{"t":"家族に侍の所作を","a":"今日、家族や大切な人への所作を一つ意識してみてください。例：食事を一緒に食べる、話を最後まで聞く。"},{"t":"誠実さの積み重ね","a":"今日、「これを続ければ信頼が積まれる」と思う行動を一つ確認してみてください。"},{"t":"対話の質","a":"今日、誰かと話すとき「相手は本当は何を伝えたいのか」を意識して聴いてみてください。"},{"t":"完璧より誠実","a":"今日、誰かに「完璧ではないが誠実でいたい」という気持ちを言葉や態度で伝えてみてください。"},{"t":"同じ人間でいること","a":"今日、「仕事でも家でも変わらない自分」でいられた場面を一つ振り返ってみてください。"},{"t":"Still becoming.","a":"今日、次の21日間に「大切な人のために続けること」を一つ決めてください。誠実さは、続けることで本物になります。"}]};
 
 /* ── Ranks ── */
 const RANKS_BY_ID = {
@@ -1177,14 +1190,62 @@ function renderReflection(day) {
 
   if (stampedDays.has(day)) {
     const entry = (practiceData.entries || []).find(e => e.day === day);
+    const spiritKey = liteSpirit || null;
+    const tip = spiritKey ? (TIPS_COMPACT[spiritKey] || [])[day - 1] : null;
+    const replies = (practiceData.musashiReplies || {})[String(day)];
+
+    const challengeBlock = tip ? `
+      <div class="conv-block conv-challenge">
+        <div class="conv-label">今日の課題</div>
+        <div style="font-weight:600;margin-bottom:.22rem;color:var(--cream)">${escHtml(tip.t)}</div>
+        <div style="color:var(--cream2)">${escHtml(tip.a)}</div>
+      </div>` : '';
+
+    const participantBlock = entry?.text ? `
+      <div class="conv-block conv-participant">
+        <div class="conv-label">あなたの記録</div>
+        <div style="color:var(--cream2)">${escHtml(entry.text).replace(/\n/g,'<br>')}</div>
+      </div>` : '';
+
+    let musashiSection = '';
+    if (replies?.reply) {
+      const musashiFirstBlock = `
+        <div class="conv-block conv-musashi">
+          <div class="conv-label">⚔ 武蔵より</div>
+          <div style="color:var(--cream2)">${escHtml(replies.reply).replace(/\n/g,'<br>')}</div>
+        </div>`;
+      if (!replies.followUpText) {
+        musashiSection = musashiFirstBlock + `
+        <div class="conv-followup-wrap" id="followup-block-${day}">
+          <div class="conv-label">やったことを報告する</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem">武蔵の言葉を受けて、実際に行動したことを教えてください。どんな小さなことでも構いません。</div>
+          <textarea class="reflection-textarea" id="followup-text-${day}" rows="3" placeholder="例：一拍おいてから返事をするようにしました。"></textarea>
+          <button class="btn-submit" id="followup-btn-${day}" onclick="submitFollowUp(${day})" style="margin-top:.65rem">
+            ⚔️ 武蔵に報告する
+          </button>
+          <div id="followup-result-${day}" style="text-align:center;font-size:.78rem;margin-top:.4rem;color:var(--muted)"></div>
+        </div>`;
+      } else {
+        const followUpBlock = `
+        <div class="conv-block conv-participant">
+          <div class="conv-label">あなたの報告</div>
+          <div style="color:var(--cream2)">${escHtml(replies.followUpText).replace(/\n/g,'<br>')}</div>
+        </div>`;
+        const musashiSecondBlock = replies.musashiFollowUp ? `
+        <div class="conv-block conv-musashi">
+          <div class="conv-label">⚔ 武蔵より（返答）</div>
+          <div style="color:var(--cream2)">${escHtml(replies.musashiFollowUp).replace(/\n/g,'<br>')}</div>
+        </div>` : '';
+        musashiSection = musashiFirstBlock + followUpBlock + musashiSecondBlock;
+      }
+    }
+
     area.innerHTML = `
       <div class="reflection-card fade-up">
         <div class="reflection-day-label">DAY ${day} · 記録済み</div>
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">
-          <svg width="28" height="28" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="22" stroke="#3a7a4a" stroke-width="2.5"/><polyline points="15,26 22,34 37,17" stroke="#3a7a4a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span style="font-size:.88rem;color:var(--cream2)">Day ${day} の稽古を記録しました</span>
+        <div class="conv-thread">
+          ${challengeBlock}${participantBlock}${musashiSection}
         </div>
-        ${entry?.text ? `<div style="font-size:.82rem;color:var(--muted);line-height:1.7;padding:.55rem .75rem;background:var(--bg3);border-radius:6px">${escHtml(entry.text).replace(/\n/g,'<br>')}</div>` : ''}
       </div>
       ${memoBlock(day, savedMemo)}`;
     return;
@@ -1307,6 +1368,33 @@ async function submitPractice(day) {
     console.error(e);
     if (btn) { btn.disabled = false; btn.textContent = '⚔️ 稽古を記録する' }
     alert('記録に失敗しました。もう一度お試しください。');
+  }
+}
+
+/* ── Follow-up catch-ball ── */
+async function submitFollowUp(day) {
+  const text = (document.getElementById(`followup-text-${day}`)?.value || '').trim();
+  if (!text) { alert('報告する内容を入力してください。'); return; }
+  const btn    = document.getElementById(`followup-btn-${day}`);
+  const result = document.getElementById(`followup-result-${day}`);
+  if (btn) { btn.disabled = true; btn.textContent = '送信中...' }
+  try {
+    const res = await fetch(FOLLOW_UP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, day, text })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'エラーが発生しました');
+    if (!practiceData.musashiReplies) practiceData.musashiReplies = {};
+    if (!practiceData.musashiReplies[String(day)]) practiceData.musashiReplies[String(day)] = {};
+    practiceData.musashiReplies[String(day)].followUpText = text;
+    practiceData.musashiReplies[String(day)].musashiFollowUp = data.musashiFollowUp || '';
+    renderReflection(day);
+  } catch(e) {
+    console.error(e);
+    if (btn) { btn.disabled = false; btn.textContent = '⚔️ 武蔵に報告する' }
+    if (result) { result.style.color = 'var(--red)'; result.textContent = '送信に失敗しました。もう一度お試しください。' }
   }
 }
 
