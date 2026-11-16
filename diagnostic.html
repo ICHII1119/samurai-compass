@@ -2230,10 +2230,13 @@ async function renderAdminLite() {
 
     const progressMap = {};
     const rankMap = {};
+    const latestEntryMap = {};
     practiceSnap.forEach(d => {
       const data = d.data();
       progressMap[d.id] = (data.entries || []).length;
       rankMap[d.id] = data.rank || null;
+      const times = (data.entries || []).map(e => e.timestamp ? new Date(e.timestamp).getTime() : 0).filter(Boolean);
+      latestEntryMap[d.id] = times.length ? Math.max(...times) : 0;
     });
 
     const spiritNames  = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
@@ -2241,7 +2244,14 @@ async function renderAdminLite() {
 
     const docs = liteSnap.docs
       .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
+      .sort((a, b) => {
+        const ua = a.lineUserId || a.id;
+        const ub = b.lineUserId || b.id;
+        // 最終稽古記録日時で降順。記録なしは診断登録日時にフォールバック
+        const ta = latestEntryMap[ua] || (a.timestamp?.toMillis?.() || 0);
+        const tb = latestEntryMap[ub] || (b.timestamp?.toMillis?.() || 0);
+        return tb - ta;
+      });
 
     container.innerHTML = docs.map(p => {
       const userId  = p.lineUserId || p.id;
