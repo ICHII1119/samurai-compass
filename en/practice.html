@@ -20,6 +20,8 @@ firebase.initializeApp({
   appId: "1:502771859953:web:89e801832fdd42c6cb0450"
 });
 const db = firebase.firestore();
+const FOLLOW_UP_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/submitPracticeFollowUp';
+const TIPS_COMPACT = {"hei":[{"t":"Find your center","a":"Today, close your eyes for 30 seconds and take 3 deep breaths. Notice where your center is right now."},{"t":"Breath is the axis","a":"Today, the moment you feel tension or stress, exhale slowly just once. That is enough."},{"t":"Emotion is not the enemy","a":"Today, when something stirs your emotions, simply notice: 'My emotions are moving.' You don't need to fix it."},{"t":"React vs. respond","a":"Today, when someone says something to you, pause for a single beat before responding. Even 0.5 seconds is enough."},{"t":"The power of pause","a":"Today, eat the first bite of lunch with your phone set aside. Those few minutes become your pause."},{"t":"Settle the space","a":"Today, spend 5 minutes tidying your desk or bag. Small order creates inner axis."},{"t":"One week of practice","a":"Today, look back on the past 7 days and write down just one 'awareness' you noticed."},{"t":"A small ritual","a":"Starting today, add one fixed action to your morning. A deep breath, a cup of tea — anything small."},{"t":"Still mind returns","a":"Today, if you feel unsettled, simply think 'I noticed.' The act of returning is already practice."},{"t":"Eye of the storm","a":"Today, in your busiest moment, ask yourself once: 'Where is my center right now?'"},{"t":"The body knows","a":"Today, whenever you remember, lower your shoulders once. That alone brings the axis back."},{"t":"Observe the anxiety","a":"Today, if you feel anxious, write just one line: 'What is this anxiety about?' Seeing it becomes strength."},{"t":"This present moment","a":"Today, for just 5 minutes, stop thinking about what's ahead and focus only on what you're doing now."},{"t":"Week two check-in","a":"Today, repeat the Day 1 practice (30-second center check). What has changed since the first time?"},{"t":"Even without the armor","a":"Today, when you arrive home, don't walk in still in work mode. Pause at the entrance and breathe once."},{"t":"Yourself among others","a":"Today, if someone's words shake you, ask: 'Where is my center right now?'"},{"t":"Swaying vs. being swept","a":"Today, before any decision, check once: 'My axis is here.' Then move."},{"t":"One who carries an axis","a":"Today, when someone around you is anxious, practice being quietly still yourself."},{"t":"Stillness travels","a":"Today, when talking with someone, speak just a little more slowly. Stillness is born from pace."},{"t":"The practice accumulates","a":"Today, write down just one 'awareness' that most impressed you over the past 20 days."},{"t":"Still becoming.","a":"Today, choose one thing to continue in the next 21 days. Keep it small. That becomes your path."}],"jiko":[{"t":"One step beyond yesterday","a":"At the end of today, write just one line: 'How was I today?' A memo is enough — no need for a journal."},{"t":"The eye that sees yourself","a":"Today, in the middle of doing something, observe once: 'What state am I in right now?'"},{"t":"Before 'I can't'","a":"Today, write one thing you feel you 'can't do' and rephrase it: 'I haven't done it yet.'"},{"t":"A thousand days of practice","a":"Today, no matter how busy, protect 5 minutes for your own growth. Any content is fine."},{"t":"Who you're comparing to","a":"Today, if you feel rushed seeing someone else, ask: 'What will I do for myself today?'"},{"t":"Face your weakness","a":"Today, write one thing you're not good at. Writing it means you've already begun to see it."},{"t":"One week's mirror","a":"Today, write just one thing you think has 'changed a little' in the past 7 days. Small is fine."},{"t":"Have a master","a":"Today, name something that is a 'master' for you — a person, a book, an experience. What is it?"},{"t":"Within repetition","a":"Today, do one habitual action with full awareness. Example: brushing teeth, commuting, eating."},{"t":"What is confidence?","a":"Today, attempt one small challenge. Even if it doesn't go well, the attempt itself is a seed of confidence."},{"t":"Make failure your practice","a":"Today, recall a recent failure or regret, and write one line: 'What can I learn from this?'"},{"t":"The meaning of incompleteness","a":"Today, write one thing you've been meaning to do 'someday' and decide when this week you'll do it."},{"t":"The word 'yet'","a":"Today, use the word 'yet' about yourself: 'I'm still on the way.' 'I can still grow.' Words shape the heart."},{"t":"Week two reflection","a":"Today, acknowledge one thing you have kept doing since Day 1. Let yourself recognize that."},{"t":"The process of being sharpened","a":"Today, if you feel 'worn down' by something, try seeing it once as 'this is the sharpening.'"},{"t":"Beyond technique","a":"Today, spend 10 minutes on something that isn't work or skill — with full intention."},{"t":"Honesty with yourself","a":"Today, write just one honest answer to: 'What do I really want to do?' No one has to see it."},{"t":"Fellow travelers","a":"Today, tell someone who supports your growth one word of gratitude."},{"t":"Daily life is the dojo","a":"Today, when something doesn't go well, try thinking once: 'This is my practice.'"},{"t":"Ten thousand days of mastery","a":"Today, write one line: 'What kind of person do I want to be in 10 years?' That becomes your direction."},{"t":"Still becoming.","a":"Today, choose one thing to continue in the next 21 days. One step beyond yesterday — that is enough."}],"flex":[{"t":"Form with no form","a":"Today, think of one thing you do 'as usual' and ask yourself: 'Why do I do it this way?'"},{"t":"Feel the change","a":"Today, write one 'change' that has happened recently and ask: 'What is this teaching me?'"},{"t":"Signs of attachment","a":"Today, write honestly one thing you 'don't want to change.' Seeing it is the first practice."},{"t":"Let it go","a":"Today, write one habit or way of thinking that 'maybe I could let go of.'"},{"t":"A new perspective","a":"Today, pick one thing you're struggling with and write: 'What does it look like from a different angle?'"},{"t":"Failure is practice","a":"Today, take one recent thing that 'didn't go well' and try seeing it as 'that was practice.'"},{"t":"One week of change","a":"Today, write just one thing you think 'has softened a little' in the past 7 days."},{"t":"Step outside the frame","a":"Today, choose one thing you think 'should naturally be this way' and ask: 'Is it really?'"},{"t":"Stability vs. rigidity","a":"Today, write one 'thing you won't change (your axis)' and one 'thing you can change (the form).'"},{"t":"Adversity is your teacher","a":"Today, ask one question about the hardest thing you're facing: 'What can I learn from this?'"},{"t":"Change through the body","a":"Today, intentionally change one thing about how you use your body. Example: sit up straighter than usual."},{"t":"Something different today","a":"Today, change one thing: your route, your meal, your work order — anything different from usual."},{"t":"Ride the current","a":"Today, if you sense resistance to something, ask: 'If I read the flow and went with it, how would I move?'"},{"t":"Week two check","a":"Today, do Day 1's practice again (questioning 'as usual'). What looks different now?"},{"t":"Deeper fluidity","a":"Today, think of one way you're 'good at' and try doing it a different way today."},{"t":"Trust the changed self","a":"Today, write one thing you feel has 'changed recently' and receive it positively."},{"t":"Axis enables change","a":"Today, write 'the unchanging core of who I am' in one line. That is what makes change possible."},{"t":"Impact on others","a":"Today, when someone fears change, tell them 'It's okay' — in words or in how you carry yourself."},{"t":"Beyond the change","a":"Today, imagine and write just one thing: 'If I let go of the form, what would I be able to do?'"},{"t":"Supple strength","a":"Today, recall one moment you 'responded with flexibility' and recognize yourself for it."},{"t":"Still becoming.","a":"Today, choose one thing to keep changing in the next 21 days. Change becomes real strength when it becomes a habit."}],"strat":[{"t":"See the whole","a":"Today, write about something you're worried about: 'What does it look like if I step back and see the whole?'"},{"t":"Answers are in the field","a":"Today, if there's something you're stuck on, find one thing you can actually check in reality."},{"t":"The power to step back","a":"Today, if you feel rushed, consciously choose to step back and see the whole."},{"t":"Observe and see","a":"Today, in a moment of judgment, consciously use both 'the observing eye (whole)' and 'the seeing eye (detail).'"},{"t":"Data and intuition","a":"Today, when making a decision, listen to both 'data' and 'instinct.' What is each one saying?"},{"t":"Before deciding","a":"Today, if pressed to decide something, ask once: 'Does this need to be decided right now?'"},{"t":"One week from above","a":"Today, look down on this week from above and write one line: 'What mattered most?'"},{"t":"Build small decisions","a":"Today, pick one thing you're wavering on and decide: 'I will decide this today.'"},{"t":"Wait as strategy","a":"Today, identify one thing that maybe doesn't need to be rushed, and consciously wait."},{"t":"Read the timing","a":"Today, stay aware of the best timing to begin something. Not too early, not too late."},{"t":"Long view and short view","a":"Today, ask about a challenge in front of you: 'How will my self in 5 years see this decision?'"},{"t":"The nature of doubt","a":"Today, write one thing you're unsure about, then separate: 'Is this lack of information, or lack of decision?'"},{"t":"Retreat is also strategy","a":"Today, write honestly one thing that might be better to stop."},{"t":"Week two check","a":"Today, look back at something you were struggling with two weeks ago. How does it look now?"},{"t":"See the essence","a":"Today, choose just one most important thing and use the first hour on it."},{"t":"Simplify complexity","a":"Today, take what feels most complex and try: 'In one sentence, what is this about?'"},{"t":"Decide from the axis","a":"Today, before any decision, check: 'Does this align with my axis?' Then move."},{"t":"Another's perspective","a":"Today, ask someone you trust: 'What am I not seeing?'"},{"t":"Action produces the answer","a":"Today, pick one thing you're overthinking, and take just one small action."},{"t":"Strategy and integrity","a":"Today, write one thing you're not facing with full integrity, and think about how to address it."},{"t":"Still becoming.","a":"Today, choose one thing to keep in awareness for the next 21 days. Make seeing the whole a part of daily life."}],"sei":[{"t":"Work-self and home-self","a":"Today, write just one thing you honestly notice is different between your 'work self' and your 'home self.'"},{"t":"Samurai even without armor","a":"Today, when you arrive home, be aware of one samurai way of being. Example: close the door carefully."},{"t":"Small integrity","a":"Today, practice one small act of integrity: express thanks, confirm a promise, follow through on something small."},{"t":"Actions over words","a":"Today, when talking with someone, be aware of your manner — posture, gaze, how you listen."},{"t":"Time for those who matter","a":"Today, create 15 uninterrupted minutes for someone important to you. Set your phone aside."},{"t":"The power of thank you","a":"Today, say 'thank you' in words to someone you haven't expressed gratitude to."},{"t":"One week's check","a":"Today, write one moment from the past 7 days when you felt you acted with integrity."},{"t":"Role and self","a":"Today, write out the multiple roles you hold, then search for 'the core that is consistent across all of them.'"},{"t":"Name your tiredness","a":"Today, honestly tell someone you trust: 'I'm a little tired today.'"},{"t":"Integrity is felt","a":"Today, tell someone one thing: 'This about you is what I trust.'"},{"t":"Hold your boundary","a":"Today, check one thing you may be taking on too much, and consider whether you could reduce it a little."},{"t":"One unshakeable axis","a":"Today, write in one line 'the axis within you that doesn't change whether at work or at home.'"},{"t":"Leave work at the door","a":"Today, create 30 minutes after returning home where you don't think about work."},{"t":"Week two reflection","a":"Today, revisit what you wrote on Day 1 about work-self vs. home-self. What has changed?"},{"t":"The axis steadies","a":"Today, when you feel external pressure, check once: 'My axis is here.'"},{"t":"Samurai ways with family","a":"Today, be aware of one samurai way of being with family or loved ones. Example: eat together, listen to the end."},{"t":"Integrity compounds","a":"Today, confirm one action you think 'continuing this builds trust.'"},{"t":"Quality of dialogue","a":"Today, when talking with someone, listen with this awareness: 'What is this person really trying to say?'"},{"t":"Complete over perfect","a":"Today, show someone — in words or attitude — that you want to be imperfect but sincere."},{"t":"The same person","a":"Today, recall one moment where you were the same person whether at work or at home."},{"t":"Still becoming.","a":"Today, choose one thing to keep doing for those who matter in the next 21 days. Integrity becomes real through continuation."}]};
 </script>
 <script src="strings.js"></script>
 <style>
@@ -138,6 +140,14 @@ body {
   to   { opacity:1; transform:translateY(0) }
 }
 .fade-up { animation:fadeSlideUp .5s ease forwards }
+.conv-thread { display:flex; flex-direction:column; gap:.7rem; margin-bottom:.6rem }
+.conv-block { padding:.7rem .95rem; border-radius:10px; font-size:.82rem; line-height:1.7 }
+.conv-label { font-size:.6rem; letter-spacing:.12em; color:var(--muted); margin-bottom:.28rem; text-transform:uppercase }
+.conv-challenge { background:rgba(201,168,76,.05); border:1px solid rgba(201,168,76,.22) }
+.conv-participant { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07) }
+.conv-musashi { background:rgba(139,26,26,.07); border:1px solid rgba(201,168,76,.2) }
+.conv-musashi .conv-label { color:var(--gold); letter-spacing:.1em }
+.conv-followup-wrap { padding:.85rem .95rem; background:rgba(201,168,76,.03); border:1px solid rgba(201,168,76,.18); border-radius:10px; margin-top:.1rem }
 </style>
 </head>
 <body>
@@ -220,6 +230,7 @@ const todayDay = parseInt(params.get('day')) || null;
 
 let practiceData = null;
 let stampedDays  = new Set();
+let liteSpirit   = null;
 
 async function init() {
   document.getElementById('loading').textContent = S.practice.loading;
@@ -238,8 +249,12 @@ async function init() {
   }
 
   try {
-    const doc = await db.collection('practices').doc(userId).get();
+    const [doc, liteDoc] = await Promise.all([
+      db.collection('practices').doc(userId).get(),
+      db.collection('lite_results').doc(userId).get()
+    ]);
     practiceData = doc.exists ? doc.data() : { userId, entries: [], cycle: 1 };
+    liteSpirit = liteDoc.exists ? (liteDoc.data().spirit || null) : null;
     (practiceData.entries || []).forEach(e => stampedDays.add(e.day));
     render();
   } catch(e) {
@@ -307,16 +322,68 @@ function renderReflection(day) {
 
   if (stampedDays.has(day)) {
     const entry = (practiceData.entries || []).find(e => e.day === day);
+    const spiritKey = liteSpirit || null;
+    const tip = spiritKey ? (TIPS_COMPACT[spiritKey] || [])[day - 1] : null;
+    const musashiRepliesDay = (practiceData.musashiReplies || {})[String(day)];
+    const adminComment = (practiceData.adminComments || []).filter(c => Number(c.day) === day).slice(-1)[0];
+    const replies = musashiRepliesDay?.reply
+      ? musashiRepliesDay
+      : adminComment
+        ? { reply: adminComment.text, ...(musashiRepliesDay || {}) }
+        : null;
+
+    const challengeBlock = tip ? `
+      <div class="conv-block conv-challenge">
+        <div class="conv-label">Today's Challenge</div>
+        <div style="font-weight:600;margin-bottom:.22rem;color:var(--cream)">${tip.t}</div>
+        <div style="color:var(--cream2)">${tip.a}</div>
+      </div>` : '';
+
+    const participantBlock = entry?.text ? `
+      <div class="conv-block conv-participant">
+        <div class="conv-label">Your Reflection</div>
+        <div style="color:var(--cream2)">${entry.text.replace(/\n/g,'<br>')}</div>
+      </div>` : '';
+
+    let musashiSection = '';
+    if (replies?.reply) {
+      const musashiFirstBlock = `
+        <div class="conv-block conv-musashi">
+          <div class="conv-label">⚔ From Musashi</div>
+          <div style="color:var(--cream2)">${replies.reply.replace(/\n/g,'<br>')}</div>
+        </div>`;
+      if (!replies.followUpText) {
+        musashiSection = musashiFirstBlock + `
+        <div class="conv-followup-wrap" id="followup-block-${day}">
+          <div class="conv-label">Report what you did</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem">Share what you actually tried after reading Musashi's words. Even something small counts.</div>
+          <textarea class="reflection-textarea" id="followup-text-${day}" rows="3" placeholder="e.g. I paused for a breath before replying to someone."></textarea>
+          <button class="btn-submit" id="followup-btn-${day}" onclick="submitFollowUp(${day})" style="margin-top:.65rem">
+            ⚔️ Report to Musashi
+          </button>
+          <div id="followup-result-${day}" style="text-align:center;font-size:.78rem;margin-top:.4rem;color:var(--muted)"></div>
+        </div>`;
+      } else {
+        const followUpBlock = `
+        <div class="conv-block conv-participant">
+          <div class="conv-label">Your Report</div>
+          <div style="color:var(--cream2)">${replies.followUpText.replace(/\n/g,'<br>')}</div>
+        </div>`;
+        const musashiSecondBlock = replies.musashiFollowUp ? `
+        <div class="conv-block conv-musashi">
+          <div class="conv-label">⚔ From Musashi (reply)</div>
+          <div style="color:var(--cream2)">${replies.musashiFollowUp.replace(/\n/g,'<br>')}</div>
+        </div>` : '';
+        musashiSection = musashiFirstBlock + followUpBlock + musashiSecondBlock;
+      }
+    }
+
     area.innerHTML = `
-      <div class="already-stamped fade-up">
-        <div class="done-mark">
-          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-            <circle cx="26" cy="26" r="22" stroke="#c9a84c" stroke-width="2.5"/>
-            <polyline points="15,26 22,34 37,17" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+      <div class="reflection-card fade-up">
+        <div class="reflection-day-label">DAY ${day} · ${P.dayComplete(day)}</div>
+        <div class="conv-thread">
+          ${challengeBlock}${participantBlock}${musashiSection}
         </div>
-        <div style="font-weight:600;margin-bottom:.5rem">${P.dayComplete(day)}</div>
-        ${entry?.text ? `<div style="font-size:.83rem;color:var(--muted);line-height:1.7;margin-top:.5rem;padding:.6rem .8rem;background:var(--bg3);border-radius:6px">${entry.text}</div>` : ''}
       </div>
       ${memoBlock(day, savedMemo)}`;
     return;
@@ -375,6 +442,32 @@ async function saveMemo(day) {
   } finally {
     btn.disabled = false;
     btn.textContent = P.memoBtn;
+  }
+}
+
+async function submitFollowUp(day) {
+  const text = (document.getElementById(`followup-text-${day}`)?.value || '').trim();
+  if (!text) { alert('Please enter what you did.'); return; }
+  const btn    = document.getElementById(`followup-btn-${day}`);
+  const result = document.getElementById(`followup-result-${day}`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+  if (result) result.textContent = 'Musashi is composing a reply…';
+  try {
+    const r = await fetch(FOLLOW_UP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, day, text })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Failed');
+    if (!practiceData.musashiReplies) practiceData.musashiReplies = {};
+    if (!practiceData.musashiReplies[String(day)]) practiceData.musashiReplies[String(day)] = {};
+    practiceData.musashiReplies[String(day)].followUpText = text;
+    practiceData.musashiReplies[String(day)].musashiFollowUp = data.musashiFollowUp || '';
+    renderReflection(day);
+  } catch(e) {
+    if (result) result.textContent = 'Send failed: ' + e.message;
+    if (btn) { btn.disabled = false; btn.textContent = '⚔️ Report to Musashi'; }
   }
 }
 
