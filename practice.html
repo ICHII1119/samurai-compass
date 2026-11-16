@@ -778,10 +778,10 @@ async function init() {
   try {
     const [doc, liteSnap] = await Promise.all([
       db.collection('practices').doc(userId).get(),
-      db.collection('lite_results').where('lineUserId', '==', userId).limit(1).get()
+      db.collection('lite_results').doc(userId).get()
     ]);
     practiceData = doc.exists ? doc.data() : { lineUserId: userId, entries: [], cycle: 1 };
-    liteSpirit = liteSnap.empty ? null : liteSnap.docs[0].data().spirit;
+    liteSpirit = liteSnap.exists ? liteSnap.data().spirit : null;
     (practiceData.entries || []).forEach(e => stampedDays.add(e.day));
     computeStartDate();
     buildDateEntryMap();
