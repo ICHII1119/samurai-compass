@@ -477,6 +477,9 @@ body {
   line-height: 1.8;
   font-style: italic;
 }
+.dojo-followup-wrap { padding:.85rem .95rem; background:rgba(201,168,76,.03); border:1px solid rgba(201,168,76,.18); border-radius:10px; margin-top:.8rem }
+.dojo-followup-label { font-size:.6rem; letter-spacing:.12em; color:var(--muted); margin-bottom:.28rem; text-transform:uppercase }
+.dojo-followup-report { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:8px; padding:.65rem .85rem; margin-top:.6rem; font-size:.82rem; line-height:1.7; color:var(--cream2) }
 .fellow-banner {
   display: flex;
   align-items: center;
@@ -951,6 +954,7 @@ firebase.initializeApp({
   appId: "1:502771859953:web:89e801832fdd42c6cb0450"
 });
 const db = firebase.firestore();
+const DOJO_FOLLOW_UP_URL = 'https://us-central1-samurai-compass.cloudfunctions.net/submitDojoFollowUp';
 
 const SPIRIT_INFO = {
   hei:  { name: '平常心',     en: 'Heijoshin' },
@@ -1514,11 +1518,39 @@ function renderReflection(day) {
     // ファシリテーターからのコメント（武蔵BOT経由）
     const musashiMsg = (dojoData?.musashiMessages || [])
       .find(m => m.phase === currentPhase && m.day === day);
-    const commentHtml = musashiMsg ? `
-      <div class="facilitator-comment">
-        <div class="facilitator-comment-label">⚔️ ファシリテーターより</div>
-        <div class="facilitator-comment-text">${escHtml(musashiMsg.message).replace(/\n/g,'<br>')}</div>
-      </div>` : '';
+    const followUpKey = `${currentPhase}_${day}`;
+    const followUp = (dojoData?.musashiFollowUps || {})[followUpKey];
+
+    let catchBallHtml = '';
+    if (musashiMsg) {
+      const musashiBlock = `
+        <div class="facilitator-comment">
+          <div class="facilitator-comment-label">⚔️ 武蔵より</div>
+          <div class="facilitator-comment-text">${escHtml(musashiMsg.message).replace(/\n/g,'<br>')}</div>
+        </div>`;
+      if (!followUp?.followUpText) {
+        catchBallHtml = musashiBlock + `
+        <div class="dojo-followup-wrap" id="dojo-followup-block-${day}">
+          <div class="dojo-followup-label">やったことを報告する</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem">武蔵の言葉を受けて、実際に行動したことを教えてください。</div>
+          <textarea class="reflection-textarea" id="dojo-followup-text-${day}" rows="3" placeholder="例：一拍おいてから返事をするようにしました。"></textarea>
+          <button class="btn-submit" id="dojo-followup-btn-${day}" onclick="submitDojoFollowUp(${day})" style="margin-top:.65rem">⚔️ 武蔵に報告する</button>
+          <div id="dojo-followup-result-${day}" style="text-align:center;font-size:.78rem;margin-top:.4rem;color:var(--muted)"></div>
+        </div>`;
+      } else {
+        const secondMusashi = followUp.musashiFollowUp ? `
+        <div class="facilitator-comment" style="margin-top:.6rem">
+          <div class="facilitator-comment-label">⚔️ 武蔵より（返答）</div>
+          <div class="facilitator-comment-text">${escHtml(followUp.musashiFollowUp).replace(/\n/g,'<br>')}</div>
+        </div>` : '';
+        catchBallHtml = musashiBlock + `
+        <div class="dojo-followup-report">
+          <div class="dojo-followup-label">あなたの報告</div>
+          <div>${escHtml(followUp.followUpText).replace(/\n/g,'<br>')}</div>
+        </div>` + secondMusashi;
+      }
+    }
+
     area.innerHTML = `
       <div class="reflection-card fade-up">
         <div class="reflection-day-label">DAY ${day} · 記録済み</div>
@@ -1527,7 +1559,7 @@ function renderReflection(day) {
           <span style="font-size:.88rem;color:var(--cream2)">Day ${day} の稽古を記録しました</span>
         </div>
         ${entry?.text ? `<div style="font-size:.82rem;color:var(--muted);line-height:1.7;padding:.55rem .75rem;background:var(--bg3);border-radius:6px">${escHtml(entry.text).replace(/\n/g,'<br>')}</div>` : ''}
-        ${commentHtml}
+        ${catchBallHtml}
       </div>`;
     return;
   }
@@ -1741,6 +1773,34 @@ function dismissCompleteOverlay() {
   const overlay = document.getElementById('complete-overlay');
   overlay.classList.remove('show');
   overlay.classList.add('hide');
+}
+
+async function submitDojoFollowUp(day) {
+  const text = (document.getElementById(`dojo-followup-text-${day}`)?.value || '').trim();
+  if (!text) { alert('報告する内容を入力してください。'); return; }
+  const btn    = document.getElementById(`dojo-followup-btn-${day}`);
+  const result = document.getElementById(`dojo-followup-result-${day}`);
+  if (btn) { btn.disabled = true; btn.textContent = '送信中...'; }
+  if (result) result.textContent = '武蔵が返答を考えています...';
+  try {
+    const r = await fetch(DOJO_FOLLOW_UP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, phase: currentPhase, day, text })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || '送信失敗');
+    if (!dojoData.musashiFollowUps) dojoData.musashiFollowUps = {};
+    const followUpKey = `${currentPhase}_${day}`;
+    dojoData.musashiFollowUps[followUpKey] = {
+      followUpText: text,
+      musashiFollowUp: data.musashiFollowUp || ''
+    };
+    renderReflection(day);
+  } catch(e) {
+    if (result) result.textContent = '送信に失敗しました: ' + e.message;
+    if (btn) { btn.disabled = false; btn.textContent = '⚔️ 武蔵に報告する'; }
+  }
 }
 
 async function submitPractice(day) {
