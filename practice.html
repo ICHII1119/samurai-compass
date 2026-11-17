@@ -1009,9 +1009,14 @@ function render() {
   renderStreakHero();
   renderPentagonCompass();
 
-  const now = new Date();
-  calYear  = now.getFullYear();
-  calMonth = now.getMonth();
+  if (completed && startDate) {
+    calYear  = startDate.getFullYear();
+    calMonth = startDate.getMonth();
+  } else {
+    const now = new Date();
+    calYear  = now.getFullYear();
+    calMonth = now.getMonth();
+  }
   renderCalendar();
 
   if (completed) {
