@@ -1285,9 +1285,14 @@ function render() {
   renderRankBadge();
   renderPentagonCompass();
 
-  const now = new Date();
-  calYear  = now.getFullYear();
-  calMonth = now.getMonth();
+  if ((status === 'waiting_review' || status === 'completed') && startDate) {
+    calYear  = startDate.getFullYear();
+    calMonth = startDate.getMonth();
+  } else {
+    const now = new Date();
+    calYear  = now.getFullYear();
+    calMonth = now.getMonth();
+  }
   renderCalendar();
 
   if (status === 'waiting_review' || status === 'completed') {
@@ -1907,6 +1912,11 @@ function showPhaseComplete(status, spiritName) {
           これからは、あなた自身が道を切り拓いていく。<br><br>
           <em>千日の稽古を鍛とし、万日の稽古を錬とす。</em><br>
           <span style="font-size:.75rem;color:var(--muted)">— 宮本武蔵</span>
+        </div>
+        <div style="margin-top:1.4rem">
+          <a href="dojo-report.html?lid=${userId}" style="display:inline-block;font-size:.84rem;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.4);padding:.5rem 1.3rem;border-radius:100px;background:rgba(201,168,76,.08)">
+            📜 全ての稽古記録を見る
+          </a>
         </div>
       </div>`;
   } else {
