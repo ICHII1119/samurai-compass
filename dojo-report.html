@@ -33,7 +33,7 @@ body {
 .page {
   max-width: 860px;
   margin: 0 auto;
-  padding: 2rem 2rem 4rem;
+  padding: 2rem 1.2rem 4rem;
 }
 
 /* ── Print controls ── */
@@ -69,6 +69,52 @@ body {
 }
 .btn-ai:disabled { opacity: .5; cursor: default }
 
+/* ── Completion Banner (完走モード) ── */
+.completion-banner {
+  text-align: center;
+  padding: 1.8rem 1.5rem 1.5rem;
+  background: linear-gradient(135deg, rgba(154,117,32,.08), rgba(201,168,76,.05));
+  border: 1px solid rgba(201,168,76,.5);
+  border-radius: 16px;
+  margin-bottom: 2rem;
+}
+.completion-banner-icon { font-size: 2rem; margin-bottom: .5rem }
+.completion-banner-title {
+  font-family: var(--font-brush);
+  font-size: 1.7rem;
+  color: var(--gold);
+  letter-spacing: .15em;
+  margin-bottom: .3rem;
+}
+.completion-banner-tagline {
+  font-family: var(--font-brush);
+  font-size: .95rem;
+  color: var(--muted);
+  letter-spacing: .2em;
+  margin-bottom: 1rem;
+}
+.completion-spirits {
+  display: flex;
+  justify-content: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: .9rem;
+}
+.completion-spirit-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .25rem .75rem;
+  border-radius: 100px;
+  font-size: .72rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+.completion-banner-period {
+  font-size: .75rem;
+  color: var(--muted);
+}
+
 /* ── Header ── */
 .report-header {
   display: flex;
@@ -80,16 +126,16 @@ body {
 }
 .header-logo {
   font-family: var(--font-brush);
-  font-size: 1rem;
+  font-size: .9rem;
   color: var(--gold);
   letter-spacing: .12em;
-  white-space: nowrap;
 }
 .header-pic {
   width: 56px; height: 56px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--gold2);
+  flex-shrink: 0;
 }
 .header-pic-placeholder {
   width: 56px; height: 56px;
@@ -100,7 +146,7 @@ body {
   font-size: 1.4rem;
   flex-shrink: 0;
 }
-.header-info { flex: 1 }
+.header-info { flex: 1; min-width: 0 }
 .header-name {
   font-family: var(--font-brush);
   font-size: 1.6rem;
@@ -127,9 +173,7 @@ body {
 }
 
 /* ── Section ── */
-.section {
-  margin-bottom: 2.2rem;
-}
+.section { margin-bottom: 2.2rem }
 .section-title {
   font-family: var(--font-brush);
   font-size: 1.05rem;
@@ -160,35 +204,33 @@ body {
   letter-spacing: .06em;
   text-transform: uppercase;
 }
-.compass-box svg {
-  width: 200px; height: 200px;
-}
+.compass-box svg { width: 180px; height: 180px }
 
 /* ── Stats row ── */
 .stats-row {
   display: flex;
-  gap: 1rem;
+  gap: .8rem;
   flex-wrap: wrap;
   margin-bottom: 1.2rem;
 }
 .stat-card {
   flex: 1;
-  min-width: 100px;
+  min-width: 90px;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: .8rem 1rem;
+  padding: .8rem .6rem;
   text-align: center;
 }
 .stat-num {
   font-family: var(--font-brush);
-  font-size: 2rem;
+  font-size: 1.9rem;
   font-weight: 700;
   color: var(--gold);
   line-height: 1;
 }
 .stat-label {
-  font-size: .68rem;
+  font-size: .64rem;
   color: var(--muted);
   margin-top: .3rem;
 }
@@ -196,12 +238,7 @@ body {
 /* ── Spirit bars ── */
 .spirit-bars { display: flex; flex-direction: column; gap: .6rem }
 .spirit-bar-row { display: flex; align-items: center; gap: .7rem }
-.spirit-bar-label {
-  width: 80px;
-  font-size: .72rem;
-  color: var(--cream2);
-  flex-shrink: 0;
-}
+.spirit-bar-label { width: 80px; font-size: .72rem; color: var(--cream2); flex-shrink: 0 }
 .spirit-bar-track {
   flex: 1;
   height: 10px;
@@ -209,20 +246,58 @@ body {
   border-radius: 5px;
   overflow: hidden;
 }
-.spirit-bar-fill {
-  height: 100%;
-  border-radius: 5px;
-  transition: width .4s;
-}
-.spirit-bar-count {
-  font-size: .7rem;
-  color: var(--muted);
-  width: 28px;
-  text-align: right;
-  flex-shrink: 0;
-}
+.spirit-bar-fill { height: 100%; border-radius: 5px; transition: width .4s }
+.spirit-bar-count { font-size: .7rem; color: var(--muted); width: 28px; text-align: right; flex-shrink: 0 }
 
-/* ── Calendar ── */
+/* ── Phase cards (完走モード) ── */
+.phase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: .8rem;
+}
+.phase-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .9rem 1rem;
+}
+.phase-card-label {
+  font-size: .64rem;
+  color: var(--muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: .3rem;
+}
+.phase-card-spirit {
+  font-family: var(--font-brush);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: .6rem;
+}
+.phase-card-bar-track {
+  height: 6px;
+  background: var(--bg3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: .35rem;
+}
+.phase-card-bar-fill { height: 100%; border-radius: 3px }
+.phase-card-count {
+  font-size: .68rem;
+  color: var(--muted);
+  margin-bottom: .3rem;
+}
+.phase-card-dates { font-size: .64rem; color: var(--muted) }
+
+/* ── Multi-month Calendar ── */
+.month-section { margin-bottom: 1.4rem }
+.month-label {
+  font-family: var(--font-brush);
+  font-size: .88rem;
+  color: var(--gold);
+  margin-bottom: .4rem;
+  letter-spacing: .06em;
+}
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -239,7 +314,6 @@ body {
   color: var(--muted);
   background: var(--bg3);
   border: 1px solid var(--border);
-  position: relative;
 }
 .cal-cell.reflected {
   background: rgba(154,117,32,.12);
@@ -247,16 +321,9 @@ body {
   color: var(--gold);
   font-weight: 600;
 }
-.cal-cell.today {
-  border-color: var(--gold2);
-}
-.cal-dow {
-  font-size: .6rem;
-  color: var(--muted);
-  text-align: center;
-  padding: 2px 0;
-}
-.cal-check { font-size: .7rem; line-height: 1 }
+.cal-cell.today { border-color: var(--gold2) }
+.cal-dow { font-size: .58rem; color: var(--muted); text-align: center; padding: 2px 0 }
+.cal-check { font-size: .65rem; line-height: 1 }
 .cal-legend {
   display: flex;
   gap: 1rem;
@@ -345,8 +412,7 @@ body {
   .print-bar { display: none !important }
   body { background: #fff }
   .page { padding: 1rem 1.5rem }
-  .section { page-break-inside: avoid }
-  .compass-pair { page-break-inside: avoid }
+  .section, .phase-card, .month-section { page-break-inside: avoid }
 }
 </style>
 </head>
@@ -362,13 +428,22 @@ body {
       <button class="btn-print" onclick="window.print()">🖨 PDFで保存 / 印刷</button>
     </div>
 
+    <!-- 完走バナー (完走モードのみ表示) -->
+    <div class="completion-banner" id="completion-banner" style="display:none">
+      <div class="completion-banner-icon">⚔️</div>
+      <div class="completion-banner-title">道場完走</div>
+      <div class="completion-banner-tagline">Still Becoming.</div>
+      <div class="completion-spirits" id="completion-spirits"></div>
+      <div class="completion-banner-period" id="completion-banner-period"></div>
+    </div>
+
     <!-- Header -->
     <div class="report-header">
       <div id="header-pic-wrap">
         <div class="header-pic-placeholder">侍</div>
       </div>
       <div class="header-info">
-        <div class="header-logo">SAMURAI in You — 道場 振り返りレポート</div>
+        <div class="header-logo" id="header-logo">SAMURAI in You — 道場 振り返りレポート</div>
         <div class="header-name" id="header-name">——</div>
         <div class="header-meta">
           <span id="header-spirit-badge"></span>
@@ -380,23 +455,23 @@ body {
 
     <!-- 1. Pentagon Compass 比較 -->
     <div class="section">
-      <div class="section-title">PENTAGON COMPASS — 入門前 vs 21日後</div>
+      <div class="section-title" id="compass-section-title">PENTAGON COMPASS — 入門前 vs 21日後</div>
       <div class="compass-pair">
         <div class="compass-box">
           <div class="compass-box-label">入門診断（ベースライン）</div>
           <svg id="compass-before" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
         <div class="compass-box">
-          <div class="compass-box-label">21日間の稽古（現在）</div>
+          <div class="compass-box-label" id="compass-after-label">21日間の稽古（現在）</div>
           <svg id="compass-after" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
       </div>
       <p id="compass-note" style="text-align:center;font-size:.7rem;color:var(--muted);margin-top:.8rem"></p>
     </div>
 
-    <!-- 2. 21日間 統計 + Spirit 分布 -->
+    <!-- 2. 統計 + Spirit 分布 -->
     <div class="section">
-      <div class="section-title">21日間の稽古パターン</div>
+      <div class="section-title" id="stats-section-title">稽古パターン</div>
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-num" id="stat-total">0</div>
@@ -412,16 +487,24 @@ body {
         </div>
         <div class="stat-card">
           <div class="stat-num" id="stat-rate">0%</div>
-          <div class="stat-label">継続率</div>
+          <div class="stat-label" id="stat-rate-label">継続率</div>
         </div>
       </div>
       <div class="spirit-bars" id="spirit-bars"></div>
     </div>
 
+    <!-- 2b. フェーズ別進捗 (完走モードのみ) -->
+    <div class="section" id="phase-breakdown-section" style="display:none">
+      <div class="section-title">フェーズ別進捗</div>
+      <div class="phase-grid" id="phase-grid"></div>
+    </div>
+
     <!-- 3. 稽古カレンダー -->
     <div class="section">
       <div class="section-title">稽古カレンダー</div>
-      <div class="cal-grid" id="cal-grid"></div>
+      <div id="cal-container">
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
       <div class="cal-legend">
         <span>✅ 振り返り済み</span>
         <span><span style="display:inline-block;width:10px;height:10px;border:1px solid var(--border);border-radius:2px;vertical-align:middle"></span> 未記録</span>
@@ -430,9 +513,9 @@ body {
 
     <!-- 4. AI振り返り要約 -->
     <div class="section">
-      <div class="section-title">AI振り返り要約</div>
+      <div class="section-title" id="ai-section-title">AI振り返り要約</div>
       <div class="ai-summary-box" id="ai-summary-box">
-        <div class="ai-summary-placeholder">「AI振り返り要約を生成」ボタンを押してください。<br>21日間の振り返りをもとに、成長の傾向と次のステップを要約します。</div>
+        <div class="ai-summary-placeholder" id="ai-placeholder">「AI振り返り要約を生成」ボタンを押してください。<br>振り返りをもとに、成長の傾向と次のステップを要約します。</div>
       </div>
     </div>
 
@@ -454,26 +537,40 @@ body {
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 <script>
 firebase.initializeApp({
-  apiKey: "AIzaSyB9oaTvBGRaExnVLVD--OdkjPTHbYYf9HY",
+  apiKey: "AIzaSyC1qm7kUjSRk7QRwxK-W7bH1q-pqH3lklU",
   authDomain: "samurai-compass.firebaseapp.com",
   projectId: "samurai-compass",
   storageBucket: "samurai-compass.firebasestorage.app",
-  messagingSenderId: "738902963894",
-  appId: "1:738902963894:web:47e22be6f47e43a87b15f9"
+  messagingSenderId: "502771859953",
+  appId: "1:502771859953:web:89e801832fdd42c6cb0450"
 });
 const db = firebase.firestore();
 
 const SPIRITS = {
-  hei:   { name:'平常心',     en:'EQUANIMITY',       icon:'☁️', color:'#60a0b8' },
-  jiko:  { name:'自己鍛錬',   en:'SELF-CULTIVATION', icon:'🌿', color:'#4aaa5a' },
-  flex:  { name:'柔軟な適応力', en:'FLEXIBILITY',     icon:'🐦', color:'#4a88d8' },
-  strat: { name:'戦略的思考', en:'STRATEGIC',         icon:'🔥', color:'#e86040' },
-  sei:   { name:'誠実さ',     en:'INTEGRITY',         icon:'🌀', color:'#a060e0' },
+  hei:   { name:'平常心',      en:'EQUANIMITY',       icon:'☁️', color:'#60a0b8' },
+  jiko:  { name:'自己鍛錬',    en:'SELF-CULTIVATION', icon:'🌿', color:'#4aaa5a' },
+  flex:  { name:'柔軟な適応力', en:'FLEXIBILITY',      icon:'🐦', color:'#4a88d8' },
+  strat: { name:'戦略的思考',  en:'STRATEGIC',         icon:'🔥', color:'#e86040' },
+  sei:   { name:'誠実さ',      en:'INTEGRITY',         icon:'🌀', color:'#a060e0' },
 };
 const SPIRITS_ORDER = ['hei','jiko','flex','strat','sei'];
 
-let allEntries = [];
+let allEntries   = [];
+let dojoData     = {};
+let isFullyComplete = false;
 let reportUserId = '';
+
+/* ── Utils ── */
+function tsToDateStr(ts) {
+  if (!ts) return '';
+  const d = typeof ts === 'string' ? new Date(ts) : (ts.toDate ? ts.toDate() : new Date(ts));
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDate(str) {
+  if (!str) return '';
+  const [y, m, d] = str.split('-');
+  return `${y}年${Number(m)}月${Number(d)}日`;
+}
 
 /* ── データ読み込み ── */
 async function init() {
@@ -490,29 +587,42 @@ async function init() {
       db.collection('lite_results').doc(userId).get(),
     ]);
 
-    const dojo       = dojoSnap.exists    ? dojoSnap.data()       : {};
+    dojoData     = dojoSnap.exists    ? dojoSnap.data()       : {};
     const submission = submissionSnap.exists ? submissionSnap.data() : {};
     const profile    = profileSnap.exists  ? profileSnap.data()    : {};
     const lite       = liteSnap.exists     ? liteSnap.data()       : {};
 
-    const entries    = dojo.entries || [];
-    const aiScores   = dojo.compassScores || null;
-    const diagCounts = dojo.diagnosticCounts || submission.counts || null;
-    const diagTotal  = dojo.diagnosticTotal  || submission.total  || 1;
-    const rank       = dojo.rank || '十級';
+    const entries    = dojoData.entries || [];
+    const aiScores   = dojoData.compassScores || null;
+    const diagCounts = dojoData.diagnosticCounts || submission.counts || null;
+    const diagTotal  = dojoData.diagnosticTotal  || submission.total  || 1;
+    const rank       = dojoData.rank || '十級';
     const spirit     = lite.spirit || submission.spirit || '';
     const nickname   = lite.nickname || profile.displayName || '';
     const pic        = profile.pictureUrl || '';
 
+    const spiritPlan = dojoData.spiritPlan || [];
+    isFullyComplete  = dojoData.phaseStatus === 'completed' &&
+                       dojoData.currentPhase > spiritPlan.length;
+
     allEntries = entries;
+
+    // エントリーに日付文字列を付与（tsから正規化）
+    allEntries.forEach(e => {
+      if (!e.dateStr) {
+        e.dateStr = e.date || tsToDateStr(e.timestamp);
+      }
+    });
 
     renderHeader({ nickname, pic, spirit, rank, entries, lite });
     renderCompassBefore({ diagCounts, diagTotal });
     renderCompassAfter({ entries, aiScores, diagCounts, diagTotal });
-    renderStats(entries, lite);
+    renderStats(entries, spiritPlan);
     renderSpiritBars(entries);
+    if (isFullyComplete) renderPhaseBreakdown(entries, spiritPlan);
     renderCalendar(entries, lite);
     renderHighlights(entries);
+    if (isFullyComplete) renderCompletionBanner(spiritPlan, nickname);
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('report-body').style.display = 'block';
@@ -527,6 +637,36 @@ function showError(msg) {
   const el = document.getElementById('error-msg');
   el.style.display = 'block';
   el.textContent = msg;
+}
+
+/* ── 完走バナー ── */
+function renderCompletionBanner(spiritPlan, nickname) {
+  document.getElementById('completion-banner').style.display = '';
+
+  // Spirit チップ
+  const spiritsHtml = spiritPlan.map(s => {
+    const sp = SPIRITS[s] || { name: s, icon: '⚔️', color: 'var(--gold)' };
+    return `<span class="completion-spirit-chip" style="color:${sp.color};border-color:${sp.color}66;background:${sp.color}11">${sp.icon} ${sp.name}</span>`;
+  }).join('');
+  document.getElementById('completion-spirits').innerHTML = spiritsHtml;
+
+  // 期間
+  const start = dojoData.dojoStartedAt ? fmtDate(tsToDateStr(dojoData.dojoStartedAt)) : '';
+  const end   = dojoData.phaseCompletedAt ? fmtDate(tsToDateStr(dojoData.phaseCompletedAt)) : '';
+  if (start && end) {
+    document.getElementById('completion-banner-period').textContent = `${start} 〜 ${end}`;
+  }
+
+  // ヘッダーロゴ更新
+  document.getElementById('header-logo').textContent = 'SAMURAI in You — 道場完走レポート';
+
+  // コンパスラベル更新
+  document.getElementById('compass-section-title').textContent = 'PENTAGON COMPASS — 入門前 vs 完走後';
+  document.getElementById('compass-after-label').textContent   = '道場完走（稽古分布）';
+
+  // AI セクションラベル
+  document.getElementById('ai-section-title').textContent = 'AI完走要約';
+  document.getElementById('ai-placeholder').innerHTML = '「AI振り返り要約を生成」ボタンを押してください。<br>全フェーズの振り返りをもとに、成長の傾向と次のステップを要約します。';
 }
 
 /* ── Header ── */
@@ -544,11 +684,18 @@ function renderHeader({ nickname, pic, spirit, rank, entries, lite }) {
       `<span class="spirit-badge" style="color:${sp.color};border-color:${sp.color}66;background:${sp.color}11">${sp.icon} ${sp.name}</span>`;
   }
 
-  const ts = lite.timestamp?.toDate?.();
-  if (ts) {
-    const start = ts.toLocaleDateString('ja-JP');
-    const end   = new Date(ts.getTime() + 21*24*60*60*1000).toLocaleDateString('ja-JP');
-    document.getElementById('header-period').textContent = `${start} 〜 ${end}`;
+  // 期間表示
+  if (isFullyComplete) {
+    const start = dojoData.dojoStartedAt ? fmtDate(tsToDateStr(dojoData.dojoStartedAt)) : '';
+    const end   = dojoData.phaseCompletedAt ? fmtDate(tsToDateStr(dojoData.phaseCompletedAt)) : '';
+    if (start && end) document.getElementById('header-period').textContent = `${start} 〜 ${end}`;
+  } else {
+    const ts = lite.timestamp?.toDate?.();
+    if (ts) {
+      const start = ts.toLocaleDateString('ja-JP');
+      const end   = new Date(ts.getTime() + 21*24*60*60*1000).toLocaleDateString('ja-JP');
+      document.getElementById('header-period').textContent = `${start} 〜 ${end}`;
+    }
   }
 
   document.getElementById('header-rank').textContent = `段位：${rank}`;
@@ -557,76 +704,73 @@ function renderHeader({ nickname, pic, spirit, rank, entries, lite }) {
 /* ── Pentagon Compass ── */
 function drawCompass(svgId, values, color) {
   const svg = document.getElementById(svgId);
-  const cx = 100, cy = 100, maxR = 72;
-  const angles = SPIRITS_ORDER.map((_, i) => (-90 + i * 72) * Math.PI / 180);
+  const W = 200, H = 200, cx = 100, cy = 105, r = 72;
+  const labels = ['平常心','自己鍛錬','柔軟な適応力','戦略的思考','誠実さ'];
+  const angles = labels.map((_,i) => (i * 2 * Math.PI / 5) - Math.PI / 2);
 
-  const toPath = pts => pts.map((p,i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
-  const pts = angles.map((a, i) => ({
-    x: cx + maxR * values[i] * Math.cos(a),
-    y: cy + maxR * values[i] * Math.sin(a),
-  }));
-
-  let grid = '';
-  [0.33, 0.66, 1].forEach((f, idx) => {
-    const gPts = angles.map(a => ({
-      x: (cx + maxR * f * Math.cos(a)).toFixed(1),
-      y: (cy + maxR * f * Math.sin(a)).toFixed(1),
-    }));
-    grid += `<path d="${gPts.map((p,i)=>`${i===0?'M':'L'}${p.x},${p.y}`).join(' ')} Z" fill="none" stroke="rgba(0,0,0,.12)" stroke-width="${idx===2?1.2:.6}"/>`;
+  // Grid
+  let gridHtml = '';
+  [.25,.5,.75,1].forEach(scale => {
+    const pts = angles.map(a => `${cx + r * scale * Math.cos(a)},${cy + r * scale * Math.sin(a)}`).join(' ');
+    gridHtml += `<polygon points="${pts}" fill="none" stroke="${color}" stroke-width=".5" opacity=".2"/>`;
+  });
+  angles.forEach(a => {
+    gridHtml += `<line x1="${cx}" y1="${cy}" x2="${cx+r*Math.cos(a)}" y2="${cy+r*Math.sin(a)}" stroke="${color}" stroke-width=".5" opacity=".3"/>`;
   });
 
-  const axes = angles.map(a =>
-    `<line x1="${cx}" y1="${cy}" x2="${(cx+maxR*Math.cos(a)).toFixed(1)}" y2="${(cy+maxR*Math.sin(a)).toFixed(1)}" stroke="rgba(0,0,0,.08)" stroke-width="1"/>`
-  ).join('');
+  // Filled area
+  const pts = angles.map((a,i) => `${cx + r * (values[i]||0) * Math.cos(a)},${cy + r * (values[i]||0) * Math.sin(a)}`).join(' ');
+  const filled = `<polygon points="${pts}" fill="${color}" fill-opacity=".25" stroke="${color}" stroke-width="1.5"/>`;
 
-  const labels = SPIRITS_ORDER.map((s, i) => {
-    const offset = 16;
-    const x = cx + (maxR + offset) * Math.cos(angles[i]);
-    const y = cy + (maxR + offset) * Math.sin(angles[i]);
-    const sp = SPIRITS[s];
-    return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="${sp.color}" font-family="Inter,sans-serif" font-weight="600">${sp.name}</text>`;
-  }).join('');
+  // Labels
+  let labelsHtml = '';
+  labels.forEach((lb, i) => {
+    const lx = cx + (r + 14) * Math.cos(angles[i]);
+    const ly = cy + (r + 14) * Math.sin(angles[i]);
+    const anchor = lx < cx - 5 ? 'end' : lx > cx + 5 ? 'start' : 'middle';
+    labelsHtml += `<text x="${lx}" y="${ly+3}" text-anchor="${anchor}" font-size="7.5" fill="${color}" opacity=".8">${lb}</text>`;
+  });
 
-  svg.innerHTML = grid + axes +
-    `<path d="${toPath(pts)}" fill="${color}22" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>` +
-    labels;
+  svg.innerHTML = gridHtml + filled + labelsHtml;
 }
 
 function renderCompassBefore({ diagCounts, diagTotal }) {
   if (!diagCounts) {
     drawCompass('compass-before', [0.4,0.4,0.4,0.4,0.4], '#9a7520');
-    document.getElementById('compass-note').textContent = '※ 詳細診断データがありません。簡易診断のみ受診した場合はベースラインが表示されません。';
+    document.getElementById('compass-note').textContent = '※ 詳細診断データがありません。';
     return;
   }
-  const values = SPIRITS_ORDER.map(s => Math.min((diagCounts[s] || 0) / diagTotal, 1));
+  const order = ['hei','jiko','flex','strat','sei'];
+  const values = order.map(s => Math.min((diagCounts[s] || 0) / (diagTotal * 0.4), 1));
   drawCompass('compass-before', values, '#9a7520');
 }
 
 function renderCompassAfter({ entries, aiScores, diagCounts, diagTotal }) {
-  let values;
   if (aiScores) {
-    values = SPIRITS_ORDER.map(s => (aiScores[s] || 0) / 100);
-  } else {
-    const counts = {};
-    SPIRITS_ORDER.forEach(s => counts[s] = 0);
-    entries.forEach(e => { if (counts[e.spirit] !== undefined) counts[e.spirit]++; });
-    const maxCount = Math.max(...Object.values(counts), 1);
-    values = SPIRITS_ORDER.map(s => counts[s] / maxCount);
+    const order = ['hei','jiko','flex','strat','sei'];
+    const values = order.map(s => Math.min((aiScores[s] || 0) / 100, 1));
+    drawCompass('compass-after', values, '#4a88d8');
+    return;
   }
+  const counts = {};
+  SPIRITS_ORDER.forEach(s => counts[s] = 0);
+  entries.forEach(e => { if (counts[e.spirit] !== undefined) counts[e.spirit]++; });
+  const max = Math.max(...Object.values(counts), 1);
+  const order = ['hei','jiko','flex','strat','sei'];
+  const values = order.map(s => counts[s] / max);
   drawCompass('compass-after', values, '#4a88d8');
-  if (!aiScores) {
-    document.getElementById('compass-note').textContent = '※ 「現在」のチャートは稽古件数の分布を示しています。AIスコアが更新されると詳細な評価に切り替わります。';
-  }
+  document.getElementById('compass-note').textContent = '※ 「現在」は稽古件数の分布を示しています。';
 }
 
 /* ── Stats ── */
-function renderStats(entries, lite) {
+function renderStats(entries, spiritPlan) {
   document.getElementById('stat-total').textContent = entries.length;
-  const uniqueDays = new Set(entries.map(e => e.date)).size;
-  document.getElementById('stat-days').textContent = uniqueDays;
 
-  // 最長連続日数
-  const dates = [...new Set(entries.map(e => e.date))].sort();
+  // 日付一覧（tsから取得）
+  const dates = [...new Set(entries.map(e => e.dateStr).filter(Boolean))].sort();
+  document.getElementById('stat-days').textContent = dates.length;
+
+  // 最長連続
   let maxStreak = 0, streak = 0, prev = null;
   dates.forEach(d => {
     if (prev) {
@@ -638,9 +782,20 @@ function renderStats(entries, lite) {
   });
   document.getElementById('stat-streak').textContent = maxStreak;
 
-  // 継続率（21日間基準）
-  const rate = Math.round(uniqueDays / 21 * 100);
-  document.getElementById('stat-rate').textContent = Math.min(rate, 100) + '%';
+  // 継続率
+  if (isFullyComplete && spiritPlan.length) {
+    const denominator = spiritPlan.length * 21;
+    const dojoEntries = entries.filter(e => e.phase !== undefined && e.phase !== null);
+    const dojoDates = new Set(dojoEntries.map(e => e.dateStr).filter(Boolean));
+    const rate = Math.min(Math.round(dojoDates.size / denominator * 100), 100);
+    document.getElementById('stat-rate').textContent = rate + '%';
+    document.getElementById('stat-rate-label').textContent = '継続率（道場全体）';
+    document.getElementById('stats-section-title').textContent = `道場全体の稽古パターン（${spiritPlan.length}フェーズ）`;
+  } else {
+    const rate = Math.min(Math.round(dates.length / 21 * 100), 100);
+    document.getElementById('stat-rate').textContent = rate + '%';
+    document.getElementById('stats-section-title').textContent = '21日間の稽古パターン';
+  }
 }
 
 /* ── Spirit bars ── */
@@ -664,41 +819,115 @@ function renderSpiritBars(entries) {
   }).join('');
 }
 
+/* ── フェーズ別進捗 (完走モード) ── */
+function renderPhaseBreakdown(entries, spiritPlan) {
+  document.getElementById('phase-breakdown-section').style.display = '';
+
+  const html = spiritPlan.map((spirit, i) => {
+    const sp = SPIRITS[spirit] || { name: spirit, icon: '⚔️', color: 'var(--gold)' };
+    const phaseEntries = entries.filter(e => Number(e.phase) === i);
+    const count = phaseEntries.length;
+    const pct   = Math.min(Math.round(count / 21 * 100), 100);
+
+    // 開始・終了日
+    const tsDates = phaseEntries
+      .map(e => e.dateStr)
+      .filter(Boolean)
+      .sort();
+    const startD = tsDates[0]  ? fmtDate(tsDates[0])  : '—';
+    const endD   = tsDates[tsDates.length - 1] ? fmtDate(tsDates[tsDates.length - 1]) : '—';
+
+    return `
+      <div class="phase-card">
+        <div class="phase-card-label">Phase ${i + 1}</div>
+        <div class="phase-card-spirit" style="color:${sp.color}">${sp.icon} ${sp.name}</div>
+        <div class="phase-card-bar-track">
+          <div class="phase-card-bar-fill" style="width:${pct}%;background:${sp.color}"></div>
+        </div>
+        <div class="phase-card-count">${count} / 21日&nbsp;&nbsp;${pct}%</div>
+        <div class="phase-card-dates">${startD}<br>${endD}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('phase-grid').innerHTML = html;
+}
+
 /* ── Calendar ── */
 function renderCalendar(entries, lite) {
-  const ts = lite.timestamp?.toDate?.();
-  const startDate = ts ? new Date(ts) : (() => {
-    const sorted = [...entries].sort((a,b) => a.date.localeCompare(b.date));
-    return sorted.length ? new Date(sorted[0].date) : new Date();
-  })();
-
-  const entryDates = new Set(entries.map(e => e.date));
-  const today = new Date();
-  const toStr = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-
+  const entryDates = new Set(entries.map(e => e.dateStr).filter(Boolean));
   const DOWS = ['日','月','火','水','木','金','土'];
-  let html = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+  const toStr = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const today = toStr(new Date());
 
-  // 開始日の曜日までの空白
-  const startDay = new Date(startDate);
-  startDay.setHours(0,0,0,0);
-  const firstDow = startDay.getDay();
-  for (let i = 0; i < firstDow; i++) html += '<div></div>';
+  if (isFullyComplete) {
+    // 月別カレンダー（完走モード）
+    const startTs = dojoData.dojoStartedAt;
+    const endTs   = dojoData.phaseCompletedAt;
+    const startDate = startTs
+      ? (() => { const d = new Date(startTs.toDate ? startTs.toDate() : startTs); d.setDate(1); return d; })()
+      : (() => {
+          const sorted = [...entries].map(e => e.dateStr).filter(Boolean).sort();
+          if (!sorted.length) return new Date();
+          const d = new Date(sorted[0]); d.setDate(1); return d;
+        })();
+    const endDate = endTs
+      ? new Date(endTs.toDate ? endTs.toDate() : endTs)
+      : new Date();
 
-  for (let i = 0; i < 28; i++) {
-    const d = new Date(startDay);
-    d.setDate(d.getDate() + i);
-    if (d > today) break;
-    const dateStr = toStr(d);
-    const reflected = entryDates.has(dateStr);
-    const cls = `cal-cell${reflected ? ' reflected' : ''}`;
-    html += `<div class="${cls}">
-      <span>${d.getDate()}</span>
-      ${reflected ? '<span class="cal-check">✅</span>' : ''}
-    </div>`;
+    let html = '';
+    const cur = new Date(startDate);
+    while (cur <= endDate) {
+      const y = cur.getFullYear();
+      const m = cur.getMonth();
+      const lastDay = new Date(y, m + 1, 0).getDate();
+      const firstDow = new Date(y, m, 1).getDay();
+
+      let monthHtml = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+      for (let i = 0; i < firstDow; i++) monthHtml += '<div></div>';
+      for (let d = 1; d <= lastDay; d++) {
+        const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const reflected = entryDates.has(dateStr);
+        const isToday   = dateStr === today;
+        let cls = 'cal-cell';
+        if (reflected) cls += ' reflected';
+        if (isToday)   cls += ' today';
+        monthHtml += `<div class="${cls}"><span>${d}</span>${reflected ? '<span class="cal-check">✅</span>' : ''}</div>`;
+      }
+
+      html += `
+        <div class="month-section">
+          <div class="month-label">${y}年${m + 1}月</div>
+          <div class="cal-grid">${monthHtml}</div>
+        </div>`;
+
+      cur.setMonth(cur.getMonth() + 1);
+    }
+    document.getElementById('cal-container').innerHTML = html;
+
+  } else {
+    // 単月カレンダー（進行中モード）
+    const ts = lite.timestamp?.toDate?.();
+    const startDate = ts ? new Date(ts) : (() => {
+      const sorted = [...entries].map(e => e.dateStr).filter(Boolean).sort();
+      return sorted.length ? new Date(sorted[0]) : new Date();
+    })();
+
+    startDate.setHours(0,0,0,0);
+    const firstDow = startDate.getDay();
+    let html = DOWS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+    for (let i = 0; i < firstDow; i++) html += '<div></div>';
+
+    for (let i = 0; i < 28; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      if (d > new Date()) break;
+      const dateStr = toStr(d);
+      const reflected = entryDates.has(dateStr);
+      const cls = `cal-cell${reflected ? ' reflected' : ''}${dateStr === today ? ' today' : ''}`;
+      html += `<div class="${cls}"><span>${d.getDate()}</span>${reflected ? '<span class="cal-check">✅</span>' : ''}</div>`;
+    }
+    document.getElementById('cal-grid').innerHTML = html;
   }
-
-  document.getElementById('cal-grid').innerHTML = html;
 }
 
 /* ── Highlight reflections ── */
@@ -708,40 +937,43 @@ function renderHighlights(entries) {
     return;
   }
 
-  // Spirit ごとに最も深い（長い）振り返りを1件選出
-  // 稽古回数が多い Spirit 順に並べて最大5件
   const countBySpirit = {};
   SPIRITS_ORDER.forEach(s => countBySpirit[s] = 0);
   entries.forEach(e => { if (countBySpirit[e.spirit] !== undefined) countBySpirit[e.spirit]++; });
-
   const spiritsSorted = [...SPIRITS_ORDER].sort((a,b) => countBySpirit[b] - countBySpirit[a]);
+
+  const reflectionText = e => e.reflection || e.text || '';
 
   const top5 = spiritsSorted
     .map(spirit => {
-      const candidates = entries.filter(e => e.spirit === spirit && e.reflection);
+      const candidates = entries.filter(e => e.spirit === spirit && reflectionText(e));
       if (!candidates.length) return null;
-      return candidates.sort((a,b) => (b.reflection || '').length - (a.reflection || '').length)[0];
+      return candidates.sort((a,b) => reflectionText(b).length - reflectionText(a).length)[0];
     })
     .filter(Boolean)
     .slice(0, 5);
 
   document.getElementById('highlight-entries').innerHTML = top5.map(e => {
     const sp = SPIRITS[e.spirit] || { name: e.spirit, icon:'⚔️', color:'var(--gold)' };
+    const text = reflectionText(e);
+    const dateLabel = e.dateStr || '';
+    const phaseLabel = (e.phase !== undefined && e.phase !== null)
+      ? ` / Phase ${Number(e.phase) + 1}`
+      : '';
     return `
       <div class="reflection-card">
         <div class="reflection-meta">
-          <span class="reflection-date">${e.date}</span>
+          <span class="reflection-date">${dateLabel}${phaseLabel}</span>
           <span class="reflection-spirit" style="color:${sp.color};border-color:${sp.color}66;background:${sp.color}11">${sp.icon} ${sp.name}</span>
         </div>
         ${e.challengeTitle ? `<div class="reflection-challenge">課題：${e.challengeTitle}</div>` : ''}
-        <div class="reflection-text">${e.reflection}</div>
+        <div class="reflection-text">${text}</div>
       </div>`;
   }).join('');
 }
 
 /* ── AI Summary ── */
 async function generateSummary() {
-  // AI呼び出しは管理者用のサーバー関数（anthropicProxy）経由。管理者PINはこのページを開いている間だけメモリに保持する
   if (!window._adminPin) {
     const pin = prompt('管理者PINを入力してください');
     if (!pin) return;
@@ -765,10 +997,37 @@ async function generateSummary() {
 
   const SPIRIT_NAMES = { hei:'平常心', jiko:'自己鍛錬', flex:'柔軟な適応力', strat:'戦略的思考', sei:'誠実さ' };
 
+  const reflectionText = e => e.reflection || e.text || '';
+
   const journalText = [...entries]
-    .sort((a,b) => a.date.localeCompare(b.date))
-    .map(e => `【${e.date} / ${SPIRIT_NAMES[e.spirit] || e.spirit}】課題「${e.challengeTitle || ''}」\n振り返り：${e.reflection || ''}`)
+    .filter(e => reflectionText(e))
+    .sort((a,b) => (a.dateStr||'').localeCompare(b.dateStr||''))
+    .map(e => {
+      const phaseLabel = (e.phase !== undefined) ? ` Phase${Number(e.phase)+1}` : '';
+      return `【${e.dateStr||''}${phaseLabel} / ${SPIRIT_NAMES[e.spirit] || e.spirit}】${e.challengeTitle ? `課題「${e.challengeTitle}」` : ''}\n振り返り：${reflectionText(e)}`;
+    })
     .join('\n\n');
+
+  const spiritPlan = dojoData.spiritPlan || [];
+  const systemPrompt = isFullyComplete
+    ? `あなたはSAMURAI in Youの道場長として、全${spiritPlan.length}フェーズの道場を完走した参加者へ、完走レポートを作成します。
+客観的かつ温かみのある文体で、以下の4点を簡潔にまとめてください：
+
+1. 【道場全体の傾向】どのSpiritの課題に多く取り組み、どのようなテーマが繰り返し現れたか
+2. 【成長が見られた点】全フェーズを通じて気づきや変化が感じられる振り返りの特徴
+3. 【次の課題】まだ深められていない視点や、今後伸ばせる部分
+4. 【道を続けるために】この参加者に「Still Becoming.」の精神で次のステップを提案する
+
+箇条書きではなく、道場長からの手紙のような温かみのある文章で。1000字以内。`
+    : `あなたはSAMURAI in Youの道場長として、21日間の稽古を終えた参加者へ振り返りレポートを作成します。
+客観的かつ温かみのある文体で、以下の4点を簡潔にまとめてください：
+
+1. 【稽古の全体傾向】どのSpiritの課題に多く取り組み、どのようなテーマが繰り返し現れたか
+2. 【成長が見られた点】21日間を通じて気づきや変化が感じられる振り返りの特徴
+3. 【まだ伸びしろがある点】触れられていない視点や浅い気づきにとどまっている部分
+4. 【次のステップ】この参加者に次のステージとして何を勧めるか
+
+箇条書きではなく、道場長からの手紙のような温かみのある文章で。800字以内。`;
 
   try {
     const res = await fetch('https://us-central1-samurai-compass.cloudfunctions.net/anthropicProxy', {
@@ -776,25 +1035,17 @@ async function generateSummary() {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window._adminPin}` },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 800,
-        system: `あなたはSAMURAI in Youの道場長として、21日間の稽古を終えた参加者へ振り返りレポートを作成します。
-客観的かつ温かみのある文体で、以下の4点を簡潔にまとめてください：
-
-1. 【稽古の全体傾向】どのSpiritの課題に多く取り組み、どのようなテーマが繰り返し現れたか
-2. 【成長が見られた点】21日間を通じて気づきや変化が感じられる振り返りの特徴
-3. 【まだ伸びしろがある点】触れられていない視点や浅い気づきにとどまっている部分
-4. 【月額道場へのすすめ】この参加者に次のステージとして何を勧めるか
-
-箇条書きではなく、道場長からの手紙のような温かみのある文章で。800字以内。`,
+        max_tokens: isFullyComplete ? 1200 : 800,
+        system: systemPrompt,
         messages: [{
           role: 'user',
-          content: `以下は参加者の21日間の振り返り記録です。\n\n${journalText}`,
+          content: `以下は参加者の振り返り記録です（全${entries.length}件）。\n\n${journalText}`,
         }],
       }),
     });
 
     const data = await res.json();
-    if (res.status === 403) window._adminPin = null; // PINが違う場合は次回あらためて入力
+    if (res.status === 403) window._adminPin = null;
     if (!res.ok) throw new Error(data.error?.message || (res.status === 403 ? '管理者PINが正しくありません' : res.status));
     const text = data.content?.[0]?.text?.trim() || '';
     box.textContent = text;
