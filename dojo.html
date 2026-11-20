@@ -1419,20 +1419,13 @@ function render() {
   } else if (todayDay >= 1 && todayDay <= 21) {
     renderReflection(todayDay);
   } else {
-    // ?day= なし → phaseStartedAt / dojoStartedAt から今日の日数を算出
+    // ?day= なし → Firestoreの currentDay から最後に配信された日を算出
+    // currentDay = "次に配信する日番号"（配信後に+1される）
+    // 例: Day1配信後 → currentDay=2 → 表示するのはDay1
     let computedDay = null;
     if (dojoData.phaseStatus === 'active') {
-      const refTs = dojoData.phaseStartedAt || dojoData.dojoStartedAt;
-      if (refTs) {
-        const startLocal = refTs.toDate();
-        startLocal.setHours(0, 0, 0, 0);
-        const todayLocal = new Date();
-        todayLocal.setHours(0, 0, 0, 0);
-        const diff = Math.floor((todayLocal - startLocal) / 86400000);
-        computedDay = Math.max(1, Math.min(21, diff + 1));
-      } else {
-        computedDay = 1;
-      }
+      const stored = dojoData.currentDay || 1;
+      computedDay = Math.max(1, Math.min(21, stored > 1 ? stored - 1 : 1));
     }
     if (computedDay) {
       renderReflection(computedDay);
