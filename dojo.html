@@ -1113,7 +1113,9 @@ function escHtml(s) {
 
 function calcRank() {
   const status = dojoData?.phaseStatus;
-  const totalCompleted = currentPhase + (status === 'completed' ? 1 : 0);
+  // waiting_review は21日完了済み（レビュー待ち）なので完了扱い
+  const extraCompleted = (status === 'completed' || status === 'waiting_review') ? 1 : 0;
+  const totalCompleted = currentPhase + extraCompleted;
   if (totalCompleted === 0) return { title: '入門中', sub: 'In Training', level: 0 };
   // 十級(1完了)〜一級(10完了) → 段位へ
   const KYU = ['十級','九級','八級','七級','六級','五級','四級','三級','二級','一級'];
@@ -1930,6 +1932,9 @@ async function submitDojoFollowUp(day) {
 }
 
 async function submitPractice(day) {
+  // 二重送信防止
+  if (stampedDays.has(day)) { renderReflection(day); return; }
+
   const textEl = document.getElementById('reflection-text');
   const text   = textEl?.value?.trim() || '';
   const btn    = document.getElementById('submit-btn');
