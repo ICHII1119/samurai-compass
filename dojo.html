@@ -2046,7 +2046,7 @@ function showPhaseComplete(status, spiritName) {
         </div>
       </div>`;
   } else {
-    const calUrl = 'https://cal.com/samurai-in-you/21dayafterfeedback';
+    const calUrl = `https://cal.com/samurai-in-you/21dayafterfeedback?metadata[lineUserId]=${userId}&metadata[type]=dojo&metadata[phase]=${currentPhase}`;
 
     // 今日の「間の問い」を日数から選ぶ（0〜4をループ）
     const prompts = WAITING_PROMPTS[currentSpirit] || WAITING_PROMPTS.hei;
