@@ -1091,6 +1091,9 @@ let dojoData      = null;
 let currentPhase  = 0;
 let currentSpirit = null;
 let spiritPlan    = [];
+let skillPlan     = [];
+let dojoTrack     = 'spirit'; // 'spirit' | 'skill'
+let activePlan    = [];       // spiritPlan or skillPlan
 let phaseEntries  = [];
 let stampedDays   = new Set();
 let startDate     = null;
@@ -1113,20 +1116,31 @@ function escHtml(s) {
 
 function calcRank() {
   const status = dojoData?.phaseStatus;
-  // waiting_review は21日完了済み（レビュー待ち）なので完了扱い
-  const extraCompleted = (status === 'completed' || status === 'waiting_review') ? 1 : 0;
+  // waiting_review / completed は完了済み扱い
+  const extraCompleted = (status === 'completed' || status === 'waiting_review' || status === 'skill_completed') ? 1 : 0;
+
+  if (dojoTrack === 'skill') {
+    // Skill稽古中：四級〜錬士
+    const SKILL_RANKS = ['四級','三級','二級','一級','初段','二段','三段','四段','五段','錬士'];
+    const totalSkill = currentPhase + extraCompleted;
+    // Spirit5段階完了分(5)＋Skill完了数
+    const spiritBase = spiritPlan.length || 5;
+    const sub = `Skill ${totalSkill}/${skillPlan.length || 10}`;
+    if (totalSkill === 0) return { title: '五級', sub, level: 2 };
+    const rank = SKILL_RANKS[Math.min(totalSkill - 1, SKILL_RANKS.length - 1)];
+    return { title: rank, sub, level: totalSkill >= 5 ? 4 : 3 };
+  }
+
+  // Spirit稽古中（従来のロジック）
   const totalCompleted = currentPhase + extraCompleted;
   if (totalCompleted === 0) return { title: '入門中', sub: 'In Training', level: 0 };
-  // 十級(1完了)〜一級(10完了) → 段位へ
-  const KYU = ['十級','九級','八級','七級','六級','五級','四級','三級','二級','一級'];
-  if (totalCompleted <= 10) {
+  const KYU = ['十級','九級','八級','七級','六級','五級'];
+  if (totalCompleted <= KYU.length) {
     const kyu = KYU[totalCompleted - 1];
-    const level = totalCompleted >= 6 ? 2 : 1;
-    return { title: kyu, sub: `${totalCompleted}st Spirit`, level };
+    return { title: kyu, sub: `Spirit ${totalCompleted}/${spiritPlan.length || 5}`, level: totalCompleted >= 3 ? 2 : 1 };
   }
-  // 初段以上
   const DAN = ['初段','二段','三段','四段','五段'];
-  const danIdx = Math.min(totalCompleted - 11, DAN.length - 1);
+  const danIdx = Math.min(totalCompleted - KYU.length - 1, DAN.length - 1);
   return { title: DAN[danIdx], sub: 'SAMURAI', level: 5 };
 }
 
@@ -1171,9 +1185,12 @@ async function init() {
     if (!doc.exists) { showError('道場のデータが見つかりません。<br>管理者にお問い合わせください。'); return; }
     dojoData = doc.data();
 
-    spiritPlan   = dojoData.spiritPlan || [];
-    currentPhase = dojoData.currentPhase ?? 0;
-    currentSpirit = spiritPlan[currentPhase] || null;
+    spiritPlan    = dojoData.spiritPlan || [];
+    skillPlan     = dojoData.skillPlan  || [];
+    dojoTrack     = dojoData.track      || 'spirit';
+    activePlan    = dojoTrack === 'skill' ? skillPlan : spiritPlan;
+    currentPhase  = dojoData.currentPhase ?? 0;
+    currentSpirit = activePlan[currentPhase] || null;
 
     const allEntries = dojoData.entries || [];
     phaseEntries = allEntries.filter(e => e.phase === currentPhase);
@@ -1291,10 +1308,53 @@ function calcStreakIfToday(todayDayNum) {
   return calcStreakFrom(hypothetical, todayDayNum);
 }
 
+const SKILL_INFO = {
+  Attunement:    { name: '嗜む',      en: 'Attunement'    },
+  Cultivation:   { name: '資質器量',  en: 'Cultivation'   },
+  Psychosomatic: { name: '心身一如',  en: 'Psychosomatic' },
+  Objectivity:   { name: '虚の心',    en: 'Objectivity'   },
+  Adaptability:  { name: '有構無構',  en: 'Adaptability'  },
+  Optimization:  { name: '二刀一',    en: 'Optimization'  },
+  Discernment:   { name: '打つと当たる', en: 'Discernment' },
+  Perspective:   { name: '観見',      en: 'Perspective'   },
+  Rhythm:        { name: '陰陽の足',  en: 'Rhythm'        },
+  Timing:        { name: '拍子',      en: 'Timing'        },
+};
+
+/* ── Skill Track List ── */
+function renderSkillList() {
+  const el = document.getElementById('pentagon-compass');
+  if (!el) return;
+  const isWaiting = dojoData.phaseStatus === 'waiting_review';
+  const isAllDone = dojoData.phaseStatus === 'skill_completed';
+  const count = stampedDays.size;
+  const items = skillPlan.map((sk, i) => {
+    const done   = i < currentPhase || isAllDone;
+    const active = i === currentPhase && !isAllDone;
+    const info   = SKILL_INFO[sk] || { name: sk, en: sk };
+    const color  = done ? '#6dc46d' : active ? 'var(--gold)' : '#3a3a48';
+    const icon   = done ? '✓' : active ? (isWaiting ? '⏳' : '▶') : '○';
+    const pct    = active ? Math.round((count / 21) * 100) : done ? 100 : 0;
+    return `
+      <div style="display:flex;align-items:center;gap:.7rem;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+        <span style="color:${color};font-size:1rem;width:1.2rem;text-align:center;flex-shrink:0">${icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.82rem;color:${color};font-weight:${active ? '600' : 'normal'}">${info.name} <span style="font-size:.7rem;opacity:.6">${sk}</span></div>
+          ${active ? `<div style="height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:.3rem"><div style="height:100%;width:${pct}%;background:var(--gold);border-radius:2px"></div></div>` : ''}
+        </div>
+        ${active ? `<span style="font-size:.72rem;color:var(--gold);flex-shrink:0">Day ${count}/21</span>` : ''}
+      </div>`;
+  }).join('');
+  el.innerHTML = `<div style="padding:.5rem 0">${items}</div>
+    <div class="pentagon-status" style="margin-top:.5rem">${isAllDone ? '<span style="color:#6dc46d">✓ Skill全完了</span>' : isWaiting ? `<span style="color:var(--gold)">⏳ 振り返り待ち</span>` : `<span style="color:var(--gold)">⚔️ Skill稽古中</span>`}</div>`;
+}
+
 /* ── Pentagon Compass ── */
 function renderPentagonCompass() {
   const el = document.getElementById('pentagon-compass');
   if (!el) return;
+
+  if (dojoTrack === 'skill') { renderSkillList(); return; }
 
   // c1=bright highlight, c2=dark gradient end, cs=3D shadow color
   const SP = [
@@ -1389,13 +1449,16 @@ function render() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('main-content').style.display = 'block';
 
-  const info       = SPIRIT_INFO[currentSpirit] || { name: '—', en: '—' };
-  const phaseNum   = currentPhase + 2;   // 入門(Phase 1)を含めてカウント
-  const totalPhase = (spiritPlan.length || 4) + 1; // 入門+道場の合計
+  const info       = dojoTrack === 'skill'
+    ? (SKILL_INFO[currentSpirit] || { name: currentSpirit || '—', en: currentSpirit || '—' })
+    : (SPIRIT_INFO[currentSpirit] || { name: '—', en: '—' });
+  const trackLabel = dojoTrack === 'skill' ? 'Skill' : 'Phase';
+  const phaseNum   = currentPhase + 1;
+  const totalPhase = activePlan.length || (dojoTrack === 'skill' ? 10 : 5);
   const count      = stampedDays.size;
   const status     = dojoData.phaseStatus;
 
-  document.getElementById('phase-badge').textContent  = `Phase ${phaseNum}/${totalPhase} — ${info.name}`;
+  document.getElementById('phase-badge').textContent  = `${trackLabel} ${phaseNum}/${totalPhase} — ${info.name}`;
   document.getElementById('spirit-name').textContent  = info.name;
   document.getElementById('spirit-en').textContent    = info.en;
   document.getElementById('stamped-count').textContent = count;
@@ -1415,7 +1478,7 @@ function render() {
   }
   renderCalendar();
 
-  if (status === 'waiting_review' || status === 'completed') {
+  if (status === 'waiting_review' || status === 'completed' || status === 'skill_completed') {
     showPhaseComplete(status, info.name);
     document.getElementById('reflection-area').innerHTML = '';
   } else if (todayDay >= 1 && todayDay <= 21) {
@@ -2028,14 +2091,32 @@ const WAITING_PROMPTS = {
 function showPhaseComplete(status, spiritName) {
   const area = document.getElementById('phase-complete-area');
 
-  if (status === 'completed') {
+  if (status === 'skill_completed') {
+    // Skill全完了
     area.innerHTML = `
       <div class="waiting-card fade-up">
         <div style="font-size:2rem;margin-bottom:.7rem">⚔️</div>
-        <div class="waiting-title">すべての稽古、完了。</div>
+        <div class="waiting-title">10のSkill、すべて完了。</div>
+        <div class="waiting-desc">
+          Spiritで軸を立て、Skillで剣を研いだ。<br>
+          ここからは、あなた自身が師となれ。<br><br>
+          <em>千日の稽古を鍛とし、万日の稽古を錬とす。</em><br>
+          <span style="font-size:.75rem;color:var(--muted)">— 宮本武蔵</span>
+        </div>
+        <div style="margin-top:1.4rem">
+          <a href="dojo-report.html?lid=${userId}" style="display:inline-block;font-size:.84rem;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.4);padding:.5rem 1.3rem;border-radius:100px;background:rgba(201,168,76,.08)">
+            📜 全ての稽古記録を見る
+          </a>
+        </div>
+      </div>`;
+  } else if (status === 'completed') {
+    area.innerHTML = `
+      <div class="waiting-card fade-up">
+        <div style="font-size:2rem;margin-bottom:.7rem">⚔️</div>
+        <div class="waiting-title">すべてのSpiritの鍛錬、完了。</div>
         <div class="waiting-desc">
           ${spiritPlan.length}つのSpiritの鍛錬を修めた。<br>
-          これからは、あなた自身が道を切り拓いていく。<br><br>
+          次のステップとして、10のSkill稽古に進むことができます。<br><br>
           <em>千日の稽古を鍛とし、万日の稽古を錬とす。</em><br>
           <span style="font-size:.75rem;color:var(--muted)">— 宮本武蔵</span>
         </div>
@@ -2046,7 +2127,7 @@ function showPhaseComplete(status, spiritName) {
         </div>
       </div>`;
   } else {
-    const calUrl = `https://cal.com/samurai-in-you/21dayafterfeedback?metadata[lineUserId]=${userId}&metadata[type]=dojo&metadata[phase]=${currentPhase}`;
+    const calUrl = `https://cal.com/samurai-in-you/21dayafterfeedback?metadata[lineUserId]=${userId}&metadata[type]=dojo&metadata[phase]=${currentPhase}&metadata[track]=${dojoTrack}`;
 
     // 今日の「間の問い」を日数から選ぶ（0〜4をループ）
     const prompts = WAITING_PROMPTS[currentSpirit] || WAITING_PROMPTS.hei;
@@ -2060,11 +2141,14 @@ function showPhaseComplete(status, spiritName) {
     }
     const todayPrompt = prompts[promptIdx];
 
-    // 次の Spirit を取得
-    const nextSpirit = spiritPlan[currentPhase + 1] || null;
-    const nextInfo   = nextSpirit ? (SPIRIT_INFO[nextSpirit] || {}) : null;
-    const nextLine   = nextInfo
-      ? `<div class="waiting-next-spirit">次の稽古：Phase ${currentPhase + 3}「${nextInfo.name}」</div>`
+    // 次のPhase/Skill を取得
+    const nextKey  = activePlan[currentPhase + 1] || null;
+    const nextInfo = dojoTrack === 'skill'
+      ? (nextKey ? SKILL_INFO[nextKey] : null)
+      : (nextKey ? SPIRIT_INFO[nextKey] : null);
+    const trackLabel = dojoTrack === 'skill' ? 'Skill' : 'Phase';
+    const nextLine = nextInfo
+      ? `<div class="waiting-next-spirit">次の稽古：${trackLabel} ${currentPhase + 2}「${nextInfo.name}」</div>`
       : '';
 
     area.innerHTML = `

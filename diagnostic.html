@@ -1285,6 +1285,7 @@ const SEND_DOJO_INVITE_URL  = 'https://us-central1-samurai-compass.cloudfunction
 const MUSASHI_DOJO_SEND_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendMusashiDojoMessage';
 const START_DOJO_URL            = 'https://us-central1-samurai-compass.cloudfunctions.net/startDojo';
 const ADVANCE_DOJO_PHASE_URL    = 'https://us-central1-samurai-compass.cloudfunctions.net/advanceDojoPhase';
+const START_SKILL_TRACK_URL     = 'https://us-central1-samurai-compass.cloudfunctions.net/startSkillTrack';
 const SEND_DOJO_DIAGNOSTIC_URL  = 'https://us-central1-samurai-compass.cloudfunctions.net/sendDojoDiagnosticUrl';
 const SEND_COACH_FEEDBACK_URL   = 'https://us-central1-samurai-compass.cloudfunctions.net/sendCoachFeedback';
 const ASSIGN_COACH_URL          = 'https://us-central1-samurai-compass.cloudfunctions.net/assignCoach';
@@ -2982,27 +2983,45 @@ async function renderAdminDojo() {
             </div>
           </div>`;
       } else {
-        const spirit    = spiritPlan[currentPhase] || '—';
-        const spName    = SPIRIT_JP_D[spirit] || spirit;
-        const statusCfg = PHASE_STATUS_LABELS[phaseStatus] || { label: phaseStatus || '—', color: 'var(--muted)', bg: 'transparent', border: 'var(--border)' };
-        const planLine  = spiritPlan.map((s, i) => {
+        const dojoTrack   = dojoData.track || 'spirit';
+        const activePlan  = dojoTrack === 'skill' ? (dojoData.skillPlan || []) : spiritPlan;
+        const SKILL_JP_D  = { Attunement:'嗜む', Cultivation:'資質器量', Psychosomatic:'心身一如', Objectivity:'虚の心', Adaptability:'有構無構', Optimization:'二刀一', Discernment:'打つと当たる', Perspective:'観見', Rhythm:'陰陽の足', Timing:'拍子' };
+        const nameMapD    = dojoTrack === 'skill' ? SKILL_JP_D : SPIRIT_JP_D;
+        const spirit      = activePlan[currentPhase] || '—';
+        const spName      = nameMapD[spirit] || spirit;
+        const statusCfg   = PHASE_STATUS_LABELS[phaseStatus] || { label: phaseStatus || '—', color: 'var(--muted)', bg: 'transparent', border: 'var(--border)' };
+        const planLine    = activePlan.map((s, i) => {
           const done = i < currentPhase;
           const cur  = i === currentPhase;
           const col  = done ? '#6dc46d' : cur ? 'var(--gold)' : 'var(--muted)';
-          return `<span style="color:${col};font-size:.68rem">${done ? '✓' : cur ? '▶' : '○'} ${SPIRIT_JP_D[s] || s}</span>`;
+          return `<span style="color:${col};font-size:.68rem">${done ? '✓' : cur ? '▶' : '○'} ${nameMapD[s] || s}</span>`;
         }).join('<span style="color:var(--border);margin:0 .2rem">›</span>');
+
+        const trackBadge = dojoTrack === 'skill'
+          ? `<span style="font-size:.65rem;padding:.1rem .4rem;border-radius:100px;background:rgba(108,180,108,.15);border:1px solid rgba(108,180,108,.4);color:#6dc46d;margin-left:.4rem">Skill稽古</span>`
+          : '';
+
+        const advanceLabel = dojoTrack === 'skill' ? '⚔️ 次のSkillへ進む' : '⚔️ 次のSpiritへ進む';
+
+        // Spirit全完了かつSkill未開始の場合「Skill開始」ボタンを表示
+        const showSkillStart = dojoTrack === 'spirit' && phaseStatus === 'completed';
 
         phaseHtml = `
           <div style="padding:.6rem 1.1rem;border-bottom:1px solid rgba(201,168,76,.08);background:rgba(0,0,0,.1)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.4rem">
               <div>
-                <span style="font-size:.72rem;padding:.15rem .5rem;border-radius:100px;background:${statusCfg.bg};border:1px solid ${statusCfg.border};color:${statusCfg.color}">${statusCfg.label}</span>
+                <span style="font-size:.72rem;padding:.15rem .5rem;border-radius:100px;background:${statusCfg.bg};border:1px solid ${statusCfg.border};color:${statusCfg.color}">${statusCfg.label}</span>${trackBadge}
                 <span style="font-size:.75rem;color:var(--cream2);margin-left:.5rem">${spName} — Day ${currentDay ?? '?'}/21</span>
               </div>
               ${phaseStatus === 'waiting_review' ? `
                 <button id="advance-btn-${userId}" onclick="adminAdvanceDojoPhase('${userId}',this)"
                   style="font-size:.72rem;padding:.3rem .8rem;border-radius:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(--gold);cursor:pointer;font-weight:600">
-                  ⚔️ 次のSpiritへ進む
+                  ${advanceLabel}
+                </button>` : ''}
+              ${showSkillStart ? `
+                <button id="skill-start-btn-${userId}" onclick="adminStartSkillTrack('${userId}',this)"
+                  style="font-size:.72rem;padding:.3rem .8rem;border-radius:6px;background:rgba(108,180,108,.15);border:1px solid rgba(108,180,108,.5);color:#6dc46d;cursor:pointer;font-weight:600">
+                  🗡 Skill開始
                 </button>` : ''}
             </div>
             <div style="display:flex;gap:.25rem;flex-wrap:wrap;align-items:center">${planLine}</div>
@@ -3124,10 +3143,12 @@ async function adminAdvanceDojoPhase(userId, btn) {
       body: JSON.stringify({ userId }),
     });
     const data = await res.json();
-    if (!data.ok && data.status !== 'completed') throw new Error(data.error || '失敗');
-    const msg = data.status === 'completed'
-      ? '全Phase完了メッセージを送信しました。'
-      : `次のSpirit「${data.nextSpirit}」へ進みました。`;
+    if (!data.ok && data.status !== 'completed' && data.status !== 'skill_completed') throw new Error(data.error || '失敗');
+    const msg = data.status === 'skill_completed'
+      ? '全Skill完了メッセージを送信しました。'
+      : data.status === 'completed'
+      ? '全Spirit完了メッセージを送信しました。'
+      : `次「${data.nextItem}」へ進みました。`;
     alert(msg);
     renderAdminLearners();
   } catch(e) {
@@ -3135,6 +3156,28 @@ async function adminAdvanceDojoPhase(userId, btn) {
     alert('エラー: ' + e.message);
     btn.disabled = false;
     btn.textContent = '⚔️ 次のSpiritへ進む';
+  }
+}
+
+async function adminStartSkillTrack(userId, btn) {
+  if (!confirm(`Skillトラックを開始します。\n5つのSpirit完了後に行ってください。\n\nよろしいですか？`)) return;
+  btn.disabled = true;
+  btn.textContent = '処理中...';
+  try {
+    const res = await fetch(START_SKILL_TRACK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PIN}` },
+      body: JSON.stringify({ userId }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '失敗');
+    alert(`Skillトラック開始。最初のSkill「${data.firstSkill}」の朝メッセージが明日から配信されます。`);
+    renderAdminLearners();
+  } catch(e) {
+    console.error('adminStartSkillTrack error:', e);
+    alert('エラー: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '🗡 Skill開始';
   }
 }
 
