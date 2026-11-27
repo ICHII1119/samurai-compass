@@ -7,33 +7,39 @@
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:      #1a1a1f;
-  --bg2:     #222228;
-  --bg3:     #2a2a32;
-  --cream:   #f0ead8;
-  --cream2:  #c8bfa8;
-  --muted:   #7a7060;
-  --gold:    #c9a84c;
-  --gold2:   #a07828;
-  --gold-dim:rgba(201,168,76,.12);
-  --border:  rgba(201,168,76,.18);
+  --navy:    #132844;
+  --ink:     #15283f;
+  --bg:      #f4f6f9;
+  --bg2:     #ffffff;
+  --bg3:     #eef1f5;
+  --cream:   #15283f;
+  --cream2:  #4a5a6a;
+  --muted:   #758293;
+  --gold:    #e2b84a;
+  --gold2:   #c9a030;
+  --gold-dim:rgba(226,184,74,.12);
+  --border:  #e5eaf0;
+  --line:    #e5eaf0;
   --r:       12px;
-  --font:    'Open Sans', -apple-system, sans-serif;
-  --font-b:  'Zen Old Mincho', serif;
+  --font:    'Noto Sans JP', sans-serif;
+  --font-b:  'Barlow Condensed', sans-serif;
+  --font-brush: 'Cormorant Garamond', serif;
   --c-hei:   #60a0b8;
   --c-jiko:  #c87840;
   --c-flex:  #70a860;
   --c-strat: #9878c8;
   --c-sei:   #c86878;
+  color-scheme: light;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 html { -webkit-text-size-adjust: 100% }
 body {
   background: var(--bg);
-  color: var(--cream);
+  color: var(--ink);
   font-family: var(--font);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -43,8 +49,9 @@ body {
 /* ── Header ── */
 .report-header {
   text-align: center;
-  padding: 2.5rem 1.5rem 2rem;
-  border-bottom: 1px solid var(--border);
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg2);
   position: relative;
 }
 .report-header::after {
@@ -54,17 +61,17 @@ body {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
-.logo-img { width: 52px; height: 52px; object-fit: contain; margin-bottom: .6rem }
+.logo-img { width: 44px; height: 44px; object-fit: contain; margin-bottom: .5rem }
 .report-title {
-  font-family: var(--font-b);
-  font-size: 1.35rem;
-  font-weight: 900;
-  color: var(--cream);
-  letter-spacing: .05em;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--navy);
   margin-bottom: .25rem;
 }
 .report-subtitle {
-  font-size: .75rem;
+  font-size: .68rem;
   letter-spacing: .25em;
   color: var(--muted);
 }
@@ -119,19 +126,20 @@ body {
   margin-bottom: .6rem;
 }
 .section-title {
-  font-family: var(--font-b);
+  font-family: 'Barlow Condensed', sans-serif;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--cream);
+  letter-spacing: .5px;
+  color: var(--navy);
   margin-bottom: 1rem;
   padding-bottom: .5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line);
 }
 
 /* ── Spirit Card ── */
 .spirit-card {
   background: var(--bg2);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: var(--r);
   padding: 1.3rem;
   position: relative;
@@ -185,7 +193,7 @@ body {
 .practice-log { display: flex; flex-direction: column; gap: .8rem }
 .practice-entry {
   background: var(--bg2);
-  border: 1px solid rgba(201,168,76,.12);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 1rem 1.1rem;
   display: flex;
@@ -215,14 +223,14 @@ body {
 /* ── Practice Diary ── */
 .diary-entry {
   background: var(--bg2);
-  border: 1px solid rgba(201,168,76,.12);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 1rem 1.1rem;
   display: flex;
   gap: .9rem;
   align-items: flex-start;
 }
-.diary-block { margin-top: .6rem; padding-top: .55rem; border-top: 1px solid rgba(255,255,255,.04) }
+.diary-block { margin-top: .6rem; padding-top: .55rem; border-top: 1px solid var(--line) }
 .diary-block-label {
   font-size: .62rem;
   letter-spacing: .12em;
@@ -232,9 +240,9 @@ body {
 .diary-memo-block {
   margin-top: .6rem;
   padding: .55rem .7rem;
-  background: rgba(255,255,255,.04);
+  background: var(--bg3);
   border-radius: 6px;
-  border-left: 2px solid rgba(201,168,76,.25);
+  border-left: 2px solid rgba(226,184,74,.35);
 }
 .diary-comment-block {
   margin-top: .6rem;
@@ -299,6 +307,9 @@ body {
   width: 52px; height: 52px;
   margin: 1.5rem auto 0;
 }
+
+/* ── Rank badge ── */
+.rank-badge-large .badge-text { color: var(--gold2) !important; }
 
 /* ── Loading / Error ── */
 .loading { text-align: center; padding: 4rem 1.5rem; color: var(--muted); font-size: .9rem }

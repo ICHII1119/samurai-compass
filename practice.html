@@ -7,31 +7,37 @@
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:        #1a1a1f;
-  --bg2:       #222228;
-  --bg3:       #2a2a32;
-  --cream:     #f0ead8;
-  --cream2:    #c8bfa8;
-  --muted:     #7a7060;
-  --gold:      #c9a84c;
-  --gold2:     #a07828;
-  --gold-dim:  rgba(201,168,76,.12);
+  --navy:      #132844;
+  --ink:       #15283f;
+  --bg:        #f4f6f9;
+  --bg2:       #ffffff;
+  --bg3:       #eef1f5;
+  --cream:     #15283f;
+  --cream2:    #4a5a6a;
+  --muted:     #758293;
+  --gold:      #e2b84a;
+  --gold2:     #c9a030;
+  --gold-dim:  rgba(226,184,74,.12);
   --red:       #8b1a1a;
-  --border:    rgba(201,168,76,.18);
+  --border:    #e5eaf0;
+  --line:      #e5eaf0;
   --green:     #3a7a4a;
   --green-dim: rgba(58,122,74,.18);
   --r:         12px;
-  --font:      'Open Sans', -apple-system, sans-serif;
-  --font-b:    'Zen Old Mincho', serif;
+  --font:      'Noto Sans JP', sans-serif;
+  --font-b:    'Barlow Condensed', sans-serif;
+  --font-brush: 'Cormorant Garamond', serif;
+  color-scheme: light;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 html { -webkit-text-size-adjust: 100% }
 body {
   background: var(--bg);
-  color: var(--cream);
+  color: var(--ink);
   font-family: var(--font);
   min-height: 100vh;
   min-height: 100dvh;
@@ -43,14 +49,17 @@ body {
 .page-header {
   text-align: center;
   padding: 1.4rem 1.2rem .9rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg2);
+  box-shadow: 0 1px 8px rgba(0,0,0,.06);
 }
 .logo-img { width: 38px; height: 38px; object-fit: contain; margin-bottom: .35rem }
 .page-title {
   font-family: var(--font-b);
   font-size: .9rem;
   letter-spacing: .22em;
-  color: var(--gold);
+  color: var(--navy);
+  font-weight: 700;
 }
 
 /* ── Rank Strip ── */
@@ -59,7 +68,7 @@ body {
   align-items: center;
   gap: .9rem;
   padding: .9rem 1.3rem;
-  border-bottom: 1px solid rgba(201,168,76,.1);
+  border-bottom: 1px solid var(--line);
   max-width: 480px;
   margin: 0 auto;
 }
@@ -69,8 +78,8 @@ body {
 .rank-strip-name {
   font-family: var(--font-b);
   font-size: 1.1rem;
-  font-weight: 900;
-  color: var(--cream);
+  font-weight: 700;
+  color: var(--navy);
   letter-spacing: .06em;
   line-height: 1;
 }
@@ -121,8 +130,9 @@ body {
 .cal-month-label {
   font-family: var(--font-b);
   font-size: .95rem;
-  color: var(--cream);
+  color: var(--navy);
   letter-spacing: .04em;
+  font-weight: 700;
 }
 .cal-nav-btn {
   background: none;
@@ -181,7 +191,7 @@ body {
   color: var(--cream2);
   display: block;
 }
-.cal-cell.out-period .cal-num { color: rgba(255,255,255,.08) }
+.cal-cell.out-period .cal-num { color: rgba(0,0,0,.18) }
 .cal-cell.sun-col .cal-num   { color: #c08080 }
 .cal-cell.sat-col .cal-num   { color: #7090b8 }
 .cal-cell.completed .cal-num { color: var(--cream) }
@@ -317,8 +327,8 @@ body {
 /* ── Pentagon Compass ── */
 .pentagon-section { max-width: 480px; margin: 0 auto; padding: .55rem 1.2rem }
 .pentagon-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
+  background: var(--navy);
+  border: 1px solid var(--navy);
   border-radius: var(--r);
   padding: 1rem .5rem .8rem;
 }
@@ -327,7 +337,7 @@ body {
   font-family: var(--font-b);
   font-size: .66rem;
   letter-spacing: .22em;
-  color: var(--muted);
+  color: rgba(255,255,255,.45);
   margin-bottom: .3rem;
 }
 .pentagon-status {
@@ -337,6 +347,7 @@ body {
   margin-top: .45rem;
   min-height: 1.1rem;
   font-weight: 600;
+  color: var(--gold);
 }
 @keyframes spiritRingPulse {
   0%   { transform: scale(1);    opacity: .65 }
@@ -423,9 +434,9 @@ body {
 .reflection-textarea {
   width: 100%;
   background: var(--bg3);
-  border: 1px solid rgba(201,168,76,.2);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  color: var(--cream);
+  color: var(--ink);
   font-family: var(--font);
   font-size: .9rem;
   line-height: 1.7;
@@ -577,7 +588,7 @@ body {
 .conv-block { padding:.7rem .95rem; border-radius:10px; font-size:.82rem; line-height:1.7 }
 .conv-label { font-size:.6rem; letter-spacing:.12em; color:var(--muted); margin-bottom:.28rem; text-transform:uppercase }
 .conv-challenge { background:rgba(201,168,76,.05); border:1px solid rgba(201,168,76,.22) }
-.conv-participant { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07) }
+.conv-participant { background:var(--bg3); border:1px solid var(--line) }
 .conv-musashi { background:rgba(139,26,26,.07); border:1px solid rgba(201,168,76,.2) }
 .conv-musashi .conv-label { color:var(--gold); letter-spacing:.1em }
 .conv-followup-wrap { padding:.85rem .95rem; background:rgba(201,168,76,.03); border:1px solid rgba(201,168,76,.18); border-radius:10px; margin-top:.1rem }
