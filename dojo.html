@@ -846,6 +846,15 @@ body {
   font-size: .72rem;
   color: var(--muted);
 }
+.journal-entry-challenge {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--gold2);
+  border-left: 2px solid var(--gold);
+  padding-left: .5rem;
+  margin-bottom: .45rem;
+  line-height: 1.4;
+}
 .journal-entry-text {
   font-size: .88rem;
   color: var(--cream2);
@@ -2509,12 +2518,14 @@ function toggleJournal() {
         const d = new Date(e.timestamp);
         return `${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`;
       })();
+      const tip = TIPS_COMPACT[spirit] && TIPS_COMPACT[spirit][e.day - 1];
       html += `
         <div class="journal-entry">
           <div class="journal-entry-hd">
             <span class="journal-entry-day">Day ${e.day}</span>
             <span class="journal-entry-date">${dateLabel}</span>
           </div>
+          ${tip ? `<div class="journal-entry-challenge">⚔ ${escHtml(tip.t)}</div>` : ''}
           <div class="journal-entry-text">${escHtml(e.text).replace(/\n/g,'<br>')}</div>
         </div>`;
     });
