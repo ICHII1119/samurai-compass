@@ -7,64 +7,274 @@
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Zen+Old+Mincho:wght@400;700;900&family=Yuji+Syuku&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:        #1a1a1f;
-  --bg2:       #222228;
-  --bg3:       #2a2a32;
-  --cream:     #f0ead8;
-  --cream2:    #d8d0bc;
-  --muted:     #a09480;
-  --gold:      #c9a84c;
-  --gold2:     #a07828;
-  --gold-dim:  rgba(201,168,76,.12);
+  /* Light theme — reference: tsugumi-study-2027-ai.aiichii.chatgpt.site */
+  --navy:      #132844;
+  --ink:       #15283f;
+  --muted:     #758293;
+  --line:      #e5eaf0;
+  --gold:      #e2b84a;
+  --gold2:     #c9a030;
+  --gold-dim:  rgba(226,184,74,.12);
+  --bg:        #f4f6f9;
+  --bg2:       #ffffff;
+  --bg3:       #eef1f5;
   --red:       #8b1a1a;
-  --border:    rgba(201,168,76,.18);
   --green:     #3a7a4a;
   --green-dim: rgba(58,122,74,.18);
   --r:         12px;
-  --font:      'Inter', 'Open Sans', -apple-system, sans-serif;
-  --font-b:    'Zen Old Mincho', serif;
+  /* Aliases for JS-generated HTML that uses dark-theme var names */
+  --cream:     #15283f;
+  --cream2:    #4a5a6a;
+  --border:    #e5eaf0;
+  --sidebar-w: 242px;
+  --font:      'Noto Sans JP', sans-serif;
+  --font-b:    'Barlow Condensed', sans-serif;
   --font-brush: 'Cormorant Garamond', serif;
+  color-scheme: light;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 html { -webkit-text-size-adjust: 100% }
 body {
   background: var(--bg);
-  color: var(--cream);
+  color: var(--ink);
   font-family: var(--font);
-  font-size: 16px;
+  font-size: 14px;
   min-height: 100vh;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
+  display: flex;
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  inset: 0 auto 0 0;
+  padding: 28px 20px 20px;
+  z-index: 10;
+  overflow-y: auto;
+}
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  line-height: 1.1;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.sidebar-logo-mark {
+  background: var(--navy);
+  color: var(--bg2);
+  border-radius: 8px;
+  width: 38px;
+  height: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 1px;
+  position: relative;
+  flex-shrink: 0;
+}
+.sidebar-logo-mark .gold-dot {
+  color: var(--gold);
+  font-size: 22px;
+  position: absolute;
+  bottom: -3px;
+  right: 3px;
+  line-height: 1;
+}
+.sidebar-tagline {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1.8px;
+  color: #8c97a6;
+  margin: 16px 0 24px;
+  text-transform: uppercase;
+}
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+}
+.sidebar-nav-item:hover { background: var(--bg); color: var(--ink); }
+.sidebar-nav-item.active { background: var(--navy); color: var(--bg2); }
+.sidebar-nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+
+/* Phase info block in sidebar */
+.sidebar-phase-block {
+  margin-top: 24px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+}
+.sidebar-phase-eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1.8px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.sidebar-spirit-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--navy);
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+.sidebar-spirit-en {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .15em;
+  margin-bottom: 10px;
+}
+.sidebar-progress-wrap { margin-top: 8px; }
+.sidebar-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.sidebar-progress-label .pct {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  color: var(--gold2);
+}
+.sidebar-progress-bg {
+  height: 5px;
+  background: var(--bg3);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.sidebar-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold2), var(--gold));
+  border-radius: 100px;
+  transition: width .6s ease;
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sidebar-footer-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--navy);
+  color: var(--gold);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: .5px;
+}
+.sidebar-footer-info { min-width: 0; }
+.sidebar-footer-label { font-size: 12px; font-weight: 500; color: var(--ink); }
+.sidebar-footer-sub   { font-size: 10px; color: var(--muted); }
+
+/* ── Main wrap ── */
+.main-wrap {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   padding-bottom: 3rem;
 }
 
-/* ── Header ── */
-.page-header {
-  text-align: center;
-  padding: 1.4rem 1.2rem .9rem;
-  border-bottom: 1px solid var(--border);
-}
-.logo-img { width: 38px; height: 38px; object-fit: contain; margin-bottom: .35rem }
-.page-title {
-  font-family: 'Yuji Syuku', serif;
-  font-size: 1.75rem;
-  letter-spacing: .18em;
-  color: var(--gold);
-}
-
-/* ── Phase Strip ── */
-.phase-strip {
+/* ── Top bar ── */
+.top-bar {
   display: flex;
   align-items: center;
-  gap: .9rem;
-  padding: .9rem 1.3rem;
-  border-bottom: 1px solid rgba(201,168,76,.1);
-  max-width: 480px;
-  margin: 0 auto;
+  justify-content: space-between;
+  padding: 16px 32px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg2);
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
+.top-bar-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--navy);
+}
+.top-bar-date {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.top-bar-phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+/* Content padding wrapper */
+.content-pad { padding: 0 32px; }
+
+/* ── Old header styles (kept for compatibility, hidden in new layout) ── */
+.page-header { display: none; }
+.logo-img { display: none; }
+
+/* ── Phase Strip (hidden — moved to sidebar) ── */
+.phase-strip { display: none; }
 .phase-icon {
   width: 44px; height: 44px;
   flex-shrink: 0;
@@ -149,27 +359,25 @@ body {
   margin-top: .05rem;
 }
 
-/* ── Phase banner ── */
-.phase-banner {
-  max-width: 480px;
-  margin: .7rem auto 0;
-  padding: 0 1.2rem;
-}
+/* ── Phase banner (hidden — phase-badge moved to top bar) ── */
+.phase-banner { display: none; }
 .phase-badge {
   display: inline-flex;
   align-items: center;
   gap: .4rem;
-  background: rgba(201,168,76,.08);
-  border: 1px solid rgba(201,168,76,.25);
+  background: var(--bg2);
+  border: 1px solid var(--line);
   border-radius: 100px;
   padding: .28rem .85rem;
   font-size: .85rem;
-  color: var(--gold);
+  color: var(--navy);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
   letter-spacing: .1em;
 }
 
 /* ── Section wrap ── */
-.sw { padding: .75rem 1.2rem; max-width: 480px; margin: 0 auto }
+.sw { padding: .75rem 32px; max-width: 800px; }
 
 /* ── Calendar Card ── */
 .cal-card {
@@ -250,7 +458,7 @@ body {
   color: var(--cream2);
   display: block;
 }
-.cal-cell.out-period .cal-num { color: rgba(255,255,255,.08) }
+.cal-cell.out-period .cal-num { color: rgba(0,0,0,.12) }
 .cal-cell.sun-col .cal-num   { color: #c08080 }
 .cal-cell.sat-col .cal-num   { color: #7090b8 }
 .cal-cell.completed .cal-num { color: var(--cream) }
@@ -316,7 +524,7 @@ body {
   font-size: .85rem; color: var(--cream2); margin-bottom: .35rem;
 }
 .streak-progress-track {
-  height: 4px; background: rgba(255,255,255,.07); border-radius: 2px; overflow: hidden;
+  height: 4px; background: rgba(0,0,0,.07); border-radius: 2px; overflow: hidden;
 }
 .streak-progress-fill {
   height: 100%; border-radius: 2px;
@@ -371,7 +579,7 @@ body {
 }
 
 /* ── Reflection form ── */
-.reflection-section { max-width: 480px; margin: 0 auto; padding: 0 1.2rem .8rem }
+.reflection-section { max-width: 800px; padding: 0 32px .8rem }
 .reflection-card {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -479,7 +687,7 @@ body {
 }
 .dojo-followup-wrap { padding:.85rem .95rem; background:rgba(201,168,76,.03); border:1px solid rgba(201,168,76,.18); border-radius:10px; margin-top:.8rem }
 .dojo-followup-label { font-size:.6rem; letter-spacing:.12em; color:var(--muted); margin-bottom:.28rem; text-transform:uppercase }
-.dojo-followup-report { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:8px; padding:.65rem .85rem; margin-top:.6rem; font-size:.82rem; line-height:1.7; color:var(--cream2) }
+.dojo-followup-report { background:var(--bg3); border:1px solid var(--line); border-radius:8px; padding:.65rem .85rem; margin-top:.6rem; font-size:.82rem; line-height:1.7; color:var(--cream2) }
 .fellow-banner {
   display: flex;
   align-items: center;
@@ -614,7 +822,7 @@ body {
 }
 .journal-entry {
   background: var(--bg2);
-  border: 1px solid rgba(255,255,255,.07);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: .75rem .9rem;
   margin-bottom: .4rem;
@@ -776,6 +984,16 @@ body {
 .loading-screen { text-align: center; padding: 4rem 1.5rem; color: var(--muted); font-size: .9rem }
 .error-screen   { text-align: center; padding: 3rem 1.5rem; color: var(--muted) }
 
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .sidebar { display: none; }
+  .main-wrap { margin-left: 0; }
+  .top-bar { padding: 14px 20px 10px; }
+  .sw { padding: .75rem 20px; }
+  .pentagon-section { padding: .55rem 20px; }
+  .reflection-section { padding: 0 20px .8rem; }
+}
+
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(12px) }
   to   { opacity: 1; transform: translateY(0) }
@@ -783,13 +1001,14 @@ body {
 .fade-up { animation: fadeSlideUp .35s ease forwards }
 
 /* ── Pentagon Compass ── */
-.pentagon-section { max-width: 480px; margin: 0 auto; padding: .55rem 1.2rem }
+.pentagon-section { max-width: 800px; padding: .55rem 32px }
 .pentagon-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
+  background: var(--navy);
+  border: 1px solid rgba(0,0,0,.12);
   border-radius: var(--r);
   padding: .9rem .5rem .7rem;
 }
+.pentagon-title { color: rgba(255,255,255,.5) !important; }
 .pentagon-title {
   text-align: center;
   font-family: var(--font);
@@ -956,106 +1175,151 @@ body {
 </head>
 <body>
 
-<div class="page-header">
-  <img src="logo.png" alt="SAMURAI in You" class="logo-img">
-  <div class="page-title">道場の記録</div>
-</div>
+<!-- ======== SIDEBAR ======== -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-logo-mark">S<span class="gold-dot">.</span></div>
+    <div>SAMURAI<br>IN YOU</div>
+  </div>
+  <div class="sidebar-tagline">The Way of the Warrior</div>
 
-<div class="loading-screen" id="loading">読み込み中...</div>
-
-<div id="main-content" style="display:none">
-
-  <!-- Phase banner -->
-  <div class="phase-banner sw" style="padding-top:.6rem;padding-bottom:0">
-    <span class="phase-badge" id="phase-badge">Phase 1/4</span>
+  <div class="sidebar-nav">
+    <div class="sidebar-nav-item active">
+      <span class="sidebar-nav-icon">⛩</span>
+      今日の稽古
+    </div>
+    <div class="sidebar-nav-item">
+      <span class="sidebar-nav-icon">📅</span>
+      稽古記録
+    </div>
+    <div class="sidebar-nav-item">
+      <span class="sidebar-nav-icon">📊</span>
+      レポート
+    </div>
   </div>
 
-  <!-- Phase strip -->
-  <div class="phase-strip">
-    <div class="phase-icon">⛩</div>
-    <div class="phase-info">
-      <div class="phase-spirit-name" id="spirit-name">—</div>
-      <div class="phase-spirit-en"  id="spirit-en">—</div>
-      <div id="rank-badge-wrap"></div>
-    </div>
-    <div class="phase-progress">
-      <div class="phase-progress-label">
+  <!-- Phase info (IDs written by JS render()) -->
+  <div class="sidebar-phase-block">
+    <div class="sidebar-phase-eyebrow">現在のフェーズ</div>
+    <div class="sidebar-spirit-name" id="spirit-name">—</div>
+    <div class="sidebar-spirit-en"  id="spirit-en">—</div>
+    <div id="rank-badge-wrap"></div>
+    <div class="sidebar-progress-wrap">
+      <div class="sidebar-progress-label">
         <span>稽古の進捗</span>
-        <span class="pcount"><span id="stamped-count">0</span> / 21 日</span>
+        <span class="pct"><span id="stamped-count">0</span> / 21日</span>
       </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Pentagon Compass -->
-  <div class="pentagon-section">
-    <div class="pentagon-card">
-      <div class="pentagon-title">PENTAGON COMPASS</div>
-      <div id="pentagon-compass"></div>
-    </div>
-  </div>
-
-  <!-- Calendar -->
-  <div class="sw">
-    <div class="cal-card">
-      <div class="cal-nav">
-        <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
-        <span class="cal-month-label" id="cal-month-label"></span>
-        <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
-      </div>
-      <div class="cal-weekdays">
-        <div class="cal-wd">日</div><div class="cal-wd">月</div>
-        <div class="cal-wd">火</div><div class="cal-wd">水</div>
-        <div class="cal-wd">木</div><div class="cal-wd">金</div>
-        <div class="cal-wd">土</div>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
-      <div class="cal-legend">
-        <div class="legend-item"><div class="cal-check" style="width:12px;height:12px;font-size:.5rem">✓</div><span>稽古完了</span></div>
-        <div class="legend-item"><div class="cal-dot gold-dot"></div><span>今日の稽古</span></div>
-        <div class="legend-item"><div class="cal-dot gray-dot"></div><span>未記録</span></div>
-        <div class="legend-item"><span class="cal-star">⭐</span><span>節目</span></div>
+      <div class="sidebar-progress-bg">
+        <div class="sidebar-progress-fill" id="progress-fill" style="width:0%"></div>
       </div>
     </div>
-    <div class="streak-bar" id="streak-bar" style="display:none"></div>
   </div>
 
-  <!-- Past day detail -->
-  <div class="sw" id="day-detail-wrap" style="display:none">
-    <div id="day-detail-area"></div>
-  </div>
-
-  <!-- Today's reflection -->
-  <div class="reflection-section" id="reflection-area"></div>
-
-  <!-- Fellow practitioners banner -->
-  <div class="sw" id="fellow-wrap" style="display:none">
-    <div class="fellow-banner" id="fellow-banner"></div>
-  </div>
-
-  <!-- Phase complete / Waiting screen -->
-  <div class="sw" id="phase-complete-area" style="display:none"></div>
-
-  <!-- Journal history -->
-  <div class="sw" id="journal-section" style="display:none">
-    <div class="journal-toggle" onclick="toggleJournal()">
-      <span class="journal-toggle-label">
-        📖 稽古の記録を見る
-        <span class="journal-toggle-count" id="journal-count"></span>
-      </span>
-      <span class="journal-toggle-arrow" id="journal-arrow">▼</span>
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-badge">道場</div>
+    <div class="sidebar-footer-info">
+      <div class="sidebar-footer-label">稽古記録</div>
+      <div class="sidebar-footer-sub" id="sidebar-date">—</div>
     </div>
-    <div class="journal-list" id="journal-list" style="display:none"></div>
+  </div>
+</nav>
+
+<!-- ======== MAIN WRAP ======== -->
+<div class="main-wrap">
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="top-bar-title">道場の記録</div>
+    <div class="top-bar-date" id="topbar-date">—</div>
+    <span class="phase-badge" id="phase-badge">Phase —</span>
   </div>
 
-</div>
+  <div class="loading-screen" id="loading">読み込み中...</div>
 
-<div class="error-screen" id="error-screen" style="display:none">
-  <div style="font-size:1.5rem;margin-bottom:.8rem">⚠️</div>
-  <div id="error-msg" style="color:var(--cream2)">URLが正しくありません。<br>LINEのメッセージから開いてください。</div>
-</div>
+  <div id="main-content" style="display:none">
+
+    <!-- Pentagon Compass -->
+    <div class="pentagon-section" style="padding-top:1.2rem">
+      <div class="pentagon-card">
+        <div class="pentagon-title">PENTAGON COMPASS</div>
+        <div id="pentagon-compass"></div>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="sw">
+      <div class="cal-card">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+          <span class="cal-month-label" id="cal-month-label"></span>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-weekdays">
+          <div class="cal-wd">日</div><div class="cal-wd">月</div>
+          <div class="cal-wd">火</div><div class="cal-wd">水</div>
+          <div class="cal-wd">木</div><div class="cal-wd">金</div>
+          <div class="cal-wd">土</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <div class="legend-item"><div class="cal-check" style="width:12px;height:12px;font-size:.5rem">✓</div><span>稽古完了</span></div>
+          <div class="legend-item"><div class="cal-dot gold-dot"></div><span>今日の稽古</span></div>
+          <div class="legend-item"><div class="cal-dot gray-dot"></div><span>未記録</span></div>
+          <div class="legend-item"><span class="cal-star">⭐</span><span>節目</span></div>
+        </div>
+      </div>
+      <div class="streak-bar" id="streak-bar" style="display:none"></div>
+    </div>
+
+    <!-- Past day detail -->
+    <div class="sw" id="day-detail-wrap" style="display:none">
+      <div id="day-detail-area"></div>
+    </div>
+
+    <!-- Today's reflection -->
+    <div class="reflection-section" id="reflection-area"></div>
+
+    <!-- Fellow practitioners banner -->
+    <div class="sw" id="fellow-wrap" style="display:none">
+      <div class="fellow-banner" id="fellow-banner"></div>
+    </div>
+
+    <!-- Phase complete / Waiting screen -->
+    <div class="sw" id="phase-complete-area" style="display:none"></div>
+
+    <!-- Journal history -->
+    <div class="sw" id="journal-section" style="display:none">
+      <div class="journal-toggle" onclick="toggleJournal()">
+        <span class="journal-toggle-label">
+          📖 稽古の記録を見る
+          <span class="journal-toggle-count" id="journal-count"></span>
+        </span>
+        <span class="journal-toggle-arrow" id="journal-arrow">▼</span>
+      </div>
+      <div class="journal-list" id="journal-list" style="display:none"></div>
+    </div>
+
+  </div>
+
+  <div class="error-screen" id="error-screen" style="display:none">
+    <div style="font-size:1.5rem;margin-bottom:.8rem">⚠️</div>
+    <div id="error-msg" style="color:var(--cream2)">URLが正しくありません。<br>LINEのメッセージから開いてください。</div>
+  </div>
+
+</div><!-- /.main-wrap -->
+
+<script>
+/* Sidebar date display */
+(function() {
+  var d = new Date();
+  var days = ['日','月','火','水','木','金','土'];
+  var str = d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + days[d.getDay()] + '）';
+  var el = document.getElementById('sidebar-date');
+  var tb = document.getElementById('topbar-date');
+  if (el) el.textContent = str;
+  if (tb) tb.textContent = str;
+})();
+</script>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
