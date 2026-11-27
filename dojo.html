@@ -1018,18 +1018,17 @@ body {
 /* ── Pentagon Compass ── */
 .pentagon-section { max-width: 800px; padding: .55rem 32px }
 .pentagon-card {
-  background: var(--navy);
-  border: 1px solid rgba(0,0,0,.12);
+  background: var(--bg2);
+  border: 1px solid var(--line);
   border-radius: var(--r);
   padding: .9rem .5rem .7rem;
 }
-.pentagon-title { color: rgba(255,255,255,.5) !important; }
 .pentagon-title {
   text-align: center;
-  font-family: var(--font);
-  font-size: .8rem;
-  font-weight: 500;
-  letter-spacing: .18em;
+  font-family: var(--font-b);
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .2em;
   color: var(--muted);
   margin-bottom: .2rem;
 }
@@ -1039,6 +1038,7 @@ body {
   letter-spacing: .06em;
   margin-top: .35rem;
   min-height: 1rem;
+  color: var(--ink);
 }
 @keyframes spiritRingPulse {
   0%   { transform: scale(1);    opacity: .65 }
@@ -1635,13 +1635,12 @@ function renderPentagonCompass() {
 
   if (dojoTrack === 'skill') { renderSkillList(); return; }
 
-  // c1=bright highlight, c2=dark gradient end, cs=3D shadow color
   const SP = [
-    { id:'hei',   name:'平常心',     kanji:'平', c1:'#ffe060', c2:'#a07820', cs:'#705010', cx:120, cy: 47, lx:120, ly: 17, ta:'middle' },
-    { id:'jiko',  name:'自己鍛錬',   kanji:'鍛', c1:'#ff8060', c2:'#b03020', cs:'#7a1a08', cx:194, cy:101, lx:228, ly:104, ta:'start'  },
-    { id:'strat', name:'戦略的思考', kanji:'謀', c1:'#b070ff', c2:'#6030a0', cs:'#3a1878', cx:166, cy:188, lx:180, ly:221, ta:'start'  },
-    { id:'sei',   name:'誠実さ',     kanji:'誠', c1:'#60a0ff', c2:'#2050b0', cs:'#0e2878', cx: 74, cy:188, lx: 60, ly:221, ta:'end'    },
-    { id:'flex',  name:'柔軟な適応', kanji:'適', c1:'#50d090', c2:'#1a7050', cs:'#0a3820', cx: 46, cy:101, lx: 18, ly:104, ta:'end'    },
+    { id:'hei',   name:'平常心',     kanji:'平', c:'#3a80a0', cbg:'rgba(58,128,160,.13)',  cx:120, cy: 47, lx:120, ly: 17, ta:'middle' },
+    { id:'jiko',  name:'自己鍛錬',   kanji:'鍛', c:'#2e8a3e', cbg:'rgba(46,138,62,.13)',   cx:194, cy:101, lx:228, ly:104, ta:'start'  },
+    { id:'strat', name:'戦略的思考', kanji:'謀', c:'#c04020', cbg:'rgba(192,64,32,.13)',    cx:166, cy:188, lx:180, ly:221, ta:'start'  },
+    { id:'sei',   name:'誠実さ',     kanji:'誠', c:'#7040c0', cbg:'rgba(112,64,192,.13)',   cx: 74, cy:188, lx: 60, ly:221, ta:'end'    },
+    { id:'flex',  name:'柔軟な適応', kanji:'適', c:'#2a6ab8', cbg:'rgba(42,106,184,.13)',   cx: 46, cy:101, lx: 18, ly:104, ta:'end'    },
   ];
 
   const excluded  = dojoData.excludedSpirit;
@@ -1649,13 +1648,9 @@ function renderPentagonCompass() {
   const isAllDone = dojoData.phaseStatus === 'completed';
   const count     = stampedDays.size;
   const pts       = SP.map(s => `${s.cx},${s.cy}`).join(' ');
-  const CIRC      = (2 * Math.PI * 28).toFixed(1); // progress ring circumference (r=28)
+  const CIRC      = (2 * Math.PI * 24).toFixed(1);
 
-  const defs = SP.map(s => `
-    <radialGradient id="pg-${s.id}" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="${s.c1}"/>
-      <stop offset="100%" stop-color="${s.c2}"/>
-    </radialGradient>`).join('');
+  const spokes = SP.map(s => `<line x1="120" y1="125" x2="${s.cx}" y2="${s.cy}" stroke="#e5eaf0" stroke-width="1"/>`).join('');
 
   let nodes = '';
   SP.forEach(s => {
@@ -1667,56 +1662,53 @@ function renderPentagonCompass() {
     const arc        = (Math.min(count / 21, 1) * parseFloat(CIRC)).toFixed(1);
 
     if (isComplete) {
-      nodes += `
-        <circle cx="${s.cx}" cy="${s.cy+4}" r="24" fill="${s.cs}" opacity=".9"/>
-        <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="url(#pg-${s.id})" stroke="${s.c1}" stroke-width="2"/>`;
+      nodes += `<circle cx="${s.cx}" cy="${s.cy}" r="22" fill="${s.cbg}" stroke="${s.c}" stroke-width="2"/>`;
       if (isLite) {
         nodes += `
-          <circle cx="${s.cx+17}" cy="${s.cy-17}" r="8.5" fill="#1a1a1f" stroke="${s.c1}" stroke-width="1.5"/>
-          <text x="${s.cx+17}" y="${s.cy-13}" text-anchor="middle" font-size="8.5" fill="${s.c1}" font-weight="bold">入</text>`;
+          <circle cx="${s.cx+15}" cy="${s.cy-15}" r="8" fill="#fff" stroke="${s.c}" stroke-width="1.5"/>
+          <text x="${s.cx+15}" y="${s.cy-10}" text-anchor="middle" font-size="8" fill="${s.c}" font-weight="bold">入</text>`;
       } else {
         nodes += `
-          <circle cx="${s.cx+17}" cy="${s.cy-17}" r="8.5" fill="#3a8a4a" stroke="rgba(255,255,255,.85)" stroke-width="1.5"/>
-          <text x="${s.cx+17}" y="${s.cy-13}" text-anchor="middle" font-size="10" fill="white" font-weight="bold">✓</text>`;
+          <circle cx="${s.cx+15}" cy="${s.cy-15}" r="8" fill="${s.c}" stroke="#fff" stroke-width="1.5"/>
+          <text x="${s.cx+15}" y="${s.cy-11}" text-anchor="middle" font-size="10" fill="white" font-weight="bold">✓</text>`;
       }
     } else if (isActive) {
-      const fill = isWaiting ? `${s.c1}35` : `${s.c1}18`;
       const ringClass = isWaiting ? '' : ' class="spirit-outer-ring"';
       nodes += `
-        <circle cx="${s.cx}" cy="${s.cy}" r="31" fill="none" stroke="${s.c1}" stroke-width="1.5"${ringClass}/>
-        <circle cx="${s.cx}" cy="${s.cy+4}" r="24" fill="${s.cs}" opacity=".9"/>
-        <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="${fill}" stroke="${s.c1}" stroke-width="2.5"/>
-        <circle cx="${s.cx}" cy="${s.cy}" r="28" fill="none" stroke="${s.c1}" stroke-width="2.5" opacity=".5"
-          stroke-dasharray="${arc} ${CIRC}" transform="rotate(-90 ${s.cx} ${s.cy})" stroke-linecap="round"/>`;
+        <circle cx="${s.cx}" cy="${s.cy}" r="28" fill="none" stroke="${s.c}" stroke-width="1.5" opacity=".3"${ringClass}/>
+        <circle cx="${s.cx}" cy="${s.cy}" r="22" fill="${s.c}" stroke="none"/>
+        <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="none" stroke="${s.c}" stroke-width="2.5" opacity=".55"
+          stroke-dasharray="${arc} ${CIRC}" transform="rotate(-90 ${s.cx} ${s.cy})" stroke-linecap="round"/>
+        <text x="${s.cx}" y="${s.cy+5}" text-anchor="middle" font-size="12" fill="white" font-family="'Noto Sans JP',sans-serif" font-weight="bold">${s.kanji}</text>`;
     } else {
-      nodes += `
-        <circle cx="${s.cx}" cy="${s.cy+4}" r="24" fill="#0c0c14" opacity=".9"/>
-        <circle cx="${s.cx}" cy="${s.cy}" r="24" fill="#1c1c26" stroke="#2a2a36" stroke-width="1.5"/>`;
+      nodes += `<circle cx="${s.cx}" cy="${s.cy}" r="22" fill="#fff" stroke="#dce3ec" stroke-width="1.5"/>`;
     }
 
-    const lc = (isComplete || isActive) ? s.c1 : '#363646';
+    const lc = isActive ? s.c : isComplete ? s.c : '#b0bcc8';
     const fw = (isComplete || isActive) ? '600' : 'normal';
-    nodes += `<text x="${s.lx}" y="${s.ly}" text-anchor="${s.ta}" font-size="10" fill="${lc}" letter-spacing="0.3" font-family="'Open Sans',sans-serif" font-weight="${fw}">${s.name}</text>`;
+    nodes += `<text x="${s.lx}" y="${s.ly}" text-anchor="${s.ta}" font-size="10" fill="${lc}" letter-spacing="0.3" font-family="'Noto Sans JP',sans-serif" font-weight="${fw}">${s.name}</text>`;
   });
 
   const centerText = isAllDone
-    ? `<text x="120" y="112" text-anchor="middle" font-family="serif" font-size="12" fill="#ffe060" letter-spacing="1">全完了</text>`
-    : `<text x="120" y="108" text-anchor="middle" font-size="10" fill="#4a4a5a" font-family="'Open Sans',sans-serif">Phase ${currentPhase+2}/${spiritPlan.length+1}</text>
-       <text x="120" y="123" text-anchor="middle" font-size="9"  fill="#3a3a48" font-family="'Open Sans',sans-serif">${count}/21日</text>`;
+    ? `<text x="120" y="120" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-size="13" fill="#c9a030" letter-spacing="1">全完了</text>`
+    : `<text x="120" y="119" text-anchor="middle" font-size="9.5" fill="#e2b84a" font-family="'Barlow Condensed',sans-serif" font-weight="600" letter-spacing="1.5">PHASE ${currentPhase+2}/${spiritPlan.length+1}</text>
+       <text x="120" y="134" text-anchor="middle" font-size="11" fill="#132844" font-family="'Barlow Condensed',sans-serif" font-weight="700">${count}/21</text>`;
 
   const activeSP = SP.find(s => s.id === spiritPlan[currentPhase]);
   const statusText = isAllDone
-    ? `<span style="color:#ffe060">✓ 道場全完了</span>`
+    ? `<span style="color:#c9a030">✓ 道場全完了</span>`
     : activeSP
       ? (isWaiting
-          ? `<span style="color:${activeSP.c1}">⏳ 振り返り待ち — ${activeSP.name}</span>`
-          : `<span style="color:${activeSP.c1}">⚔️ 稽古中 — ${activeSP.name}</span>`)
+          ? `<span style="color:${activeSP.c}">⏳ 振り返り待ち — ${activeSP.name}</span>`
+          : `<span style="color:${activeSP.c}">⚔️ 稽古中 — ${activeSP.name}</span>`)
       : '';
 
   el.innerHTML = `
     <svg viewBox="-40 -15 320 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:310px;display:block;margin:0 auto;overflow:visible">
-      <defs>${defs}</defs>
-      <polygon points="${pts}" fill="rgba(201,168,76,.025)" stroke="rgba(255,255,255,.07)" stroke-width="1.5"/>
+      <polygon points="${pts}" fill="#f4f6f9" stroke="#e5eaf0" stroke-width="1.5"/>
+      ${spokes}
+      <circle cx="120" cy="125" r="30" fill="#fff" stroke="#e5eaf0" stroke-width="1.5"/>
+      <circle cx="120" cy="125" r="28" fill="none" stroke="rgba(226,184,74,.4)" stroke-width="1"/>
       ${centerText}
       ${nodes}
     </svg>
